@@ -76,27 +76,15 @@ export const XmlSerializeConfig = StructType({
  *
  * @example
  * ```ts
- * import { xml_parse, XmlParseConfig } from "@elaraai/east-node";
+ * const parseXML = East.function([BlobType], XmlNode, ($, xmlBlob) => {
+ *     const config = $.const(East.value({
+ *         preserveWhitespace: false,
+ *         decodeEntities: true,
+ *     }, XmlParseConfig));
  *
- * const xmlData = East.value('<book id="123"><title>East Guide</title></book>');
- * const blob = xmlData.encodeUtf8();
- * const config = East.value({
- *   preserveWhitespace: false,
- *   decodeEntities: true,
- * }, XmlParseConfig);
- *
- * const doc = xml_parse(blob, config);
- * // Returns: {
- * //   tag: "book",
- * //   attributes: {"id": "123"},
- * //   children: [
- * //     variant("ELEMENT", {
- * //       tag: "title",
- * //       attributes: {},
- * //       children: [variant("TEXT", "East Guide")]
- * //     })
- * //   ]
- * // }
+ *     return xml_parse(xmlBlob, config);
+ *     // Returns: { tag: "book", attributes: {"id": "123"}, children: [...] }
+ * });
  * ```
  *
  * @remarks
@@ -131,34 +119,21 @@ export const xml_parse: PlatformFunctionDef<
  *
  * @example
  * ```ts
- * import { xml_serialize, XmlSerializeConfig, XmlNode } from "@elaraai/east-node";
+ * const serializeXML = East.function([XmlNode], BlobType, ($, doc) => {
+ *     const config = $.const(East.value({
+ *         indent: variant('some', "  "),
+ *         includeXmlDeclaration: true,
+ *         encodeEntities: true,
+ *         selfClosingTags: true,
+ *     }, XmlSerializeConfig));
  *
- * const doc = East.value({
- *   tag: "book",
- *   attributes: new Map([["id", "123"]]),
- *   children: [
- *     variant("ELEMENT", {
- *       tag: "title",
- *       attributes: new Map(),
- *       children: [variant("TEXT", "East Guide")]
- *     })
- *   ]
- * }, XmlNode);
- *
- * const config = East.value({
- *   indent: variant('some', "  "),  // 2-space indentation
- *   includeXmlDeclaration: true,
- *   encodeEntities: true,
- *   selfClosingTags: true,
- * }, XmlSerializeConfig);
- *
- * const blob = xml_serialize(doc, config);
- * const xmlText = blob.decodeUtf8();
- * // Returns:
- * // <?xml version="1.0" encoding="UTF-8"?>
- * // <book id="123">
- * //   <title>East Guide</title>
- * // </book>
+ *     return xml_serialize(doc, config);
+ *     // Returns blob that decodes to:
+ *     // <?xml version="1.0" encoding="UTF-8"?>
+ *     // <book id="123">
+ *     //   <title>East Guide</title>
+ *     // </book>
+ * });
  * ```
  *
  * @remarks

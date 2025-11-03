@@ -64,26 +64,21 @@ export const CsvDataType = ArrayType(CsvRowType);
  *
  * @example
  * ```ts
- * import { csv_parse, CsvParseConfig } from "@elaraai/east-node";
+ * const parseCSV = East.function([BlobType], CsvDataType, ($, csvBlob) => {
+ *     const config = $.const(East.value({
+ *         delimiter: variant('some', ','),
+ *         quoteChar: variant('some', '"'),
+ *         escapeChar: variant('some', '"'),
+ *         newline: variant('none', null),
+ *         hasHeader: true,
+ *         nullString: variant('some', ''),
+ *         skipEmptyLines: true,
+ *         trimFields: false,
+ *     }, CsvParseConfig));
  *
- * const csvData = East.value("name,age\nAlice,30\nBob,25");
- * const blob = csvData.encodeUtf8();
- * const config = East.value({
- *   delimiter: variant('some', ','),
- *   quoteChar: variant('some', '"'),
- *   escapeChar: variant('some', '"'),
- *   newline: variant('none', null),  // Auto-detect
- *   hasHeader: true,
- *   nullString: variant('some', ''),
- *   skipEmptyLines: true,
- *   trimFields: false,
- * }, CsvParseConfig);
- *
- * const rows = csv_parse(blob, config);
- * // Returns: [
- * //   {"name": some("Alice"), "age": some("30")},
- * //   {"name": some("Bob"), "age": some("25")}
- * // ]
+ *     return csv_parse(csvBlob, config);
+ *     // Returns: [{"name": some("Alice"), "age": some("30")}, ...]
+ * });
  * ```
  *
  * @remarks
@@ -120,26 +115,20 @@ export const csv_parse: PlatformFunctionDef<
  *
  * @example
  * ```ts
- * import { csv_serialize, CsvSerializeConfig, CsvDataType } from "@elaraai/east-node";
+ * const serializeCSV = East.function([CsvDataType], BlobType, ($, data) => {
+ *     const config = $.const(East.value({
+ *         delimiter: ',',
+ *         quoteChar: '"',
+ *         escapeChar: '"',
+ *         newline: '\n',
+ *         includeHeader: true,
+ *         nullString: '',
+ *         alwaysQuote: false,
+ *     }, CsvSerializeConfig));
  *
- * const data = East.value([
- *   new Map([["name", variant('some', "Alice")], ["age", variant('some', "30")]]),
- *   new Map([["name", variant('some', "Bob")], ["age", variant('some', "25")]]),
- * ], CsvDataType);
- *
- * const config = East.value({
- *   delimiter: ',',
- *   quoteChar: '"',
- *   escapeChar: '"',
- *   newline: '\n',
- *   includeHeader: true,
- *   nullString: '',
- *   alwaysQuote: false,
- * }, CsvSerializeConfig);
- *
- * const blob = csv_serialize(data, config);
- * const csvText = blob.decodeUtf8();
- * // Returns: "name,age\nAlice,30\nBob,25"
+ *     return csv_serialize(data, config);
+ *     // Returns blob that decodes to: "name,age\nAlice,30\nBob,25"
+ * });
  * ```
  *
  * @remarks
