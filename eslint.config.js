@@ -34,6 +34,12 @@ export default [
     }
   },
   {
+    files: ['src/platform.ts'],
+    rules: {
+      '@typescript-eslint/no-floating-promises': 'off'
+    }
+  },
+  {
     files: ['test/**/*.ts', 'example/**/*.ts'],
     languageOptions: {
       parser: tsparser,

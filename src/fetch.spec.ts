@@ -1,0 +1,81 @@
+/**
+ * Copyright (c) 2025 Elara AI Pty Ltd
+ * Licensed under AGPL-3.0. See LICENSE file for details.
+ */
+import { variant } from "@elaraai/east";
+import { describeEast, assertEast } from "./test.js";
+import { Fetch, FetchRequestConfig, FetchImpl } from "./fetch.js";
+
+await describeEast("Fetch platform functions", (test) => {
+    // Note: These tests require network access
+
+    test("get fetches data from URL", $ => {
+        const response = $.let(Fetch.get("https://www.google.com"));
+        const len = $.let(response.length());
+
+        // Response should not be empty
+        $(assertEast.greater(len, 0n));
+    });
+
+    test("post sends data to URL", $ => {
+        const response = $.let(Fetch.post("https://httpbin.org/post", "test data"));
+        const len = $.let(response.length());
+
+        // Response should not be empty
+        $(assertEast.greater(len, 0n));
+
+        // Response should contain our data
+        $(assertEast.equal(response.contains("test data"), true));
+    });
+
+    test("request performs GET request", $ => {
+        const config = $.let({
+            url: "https://www.google.com",
+            method: variant("GET", null),
+            headers: new Map<string, string>(),
+            body: variant("none", null),
+        }, FetchRequestConfig);
+
+        const response = $.let(Fetch.request(config));
+
+        $(assertEast.equal(response.ok, true));
+        $(assertEast.equal(response.status, 200n));
+
+        const bodyLen = $.let(response.body.length());
+        $(assertEast.greater(bodyLen, 0n));
+    });
+
+    test("request handles POST with body", $ => {
+        const headers = $.let(new Map([["Content-Type", "application/json"]]));
+        const config = $.let({
+            url: "https://httpbin.org/post",
+            method: variant("POST", null),
+            headers,
+            body: variant("some", '{"test": "data"}'),
+        }, FetchRequestConfig);
+
+        const response = $.let(Fetch.request(config));
+
+        $(assertEast.equal(response.ok, true));
+        $(assertEast.equal(response.status, 200n));
+    });
+
+    test("request returns response headers", $ => {
+        const config = $.let({
+            url: "https://www.google.com",
+            method: variant("GET", null),
+            headers: new Map<string, string>(),
+            body: variant("none", null),
+        }, FetchRequestConfig);
+
+        const response = $.let(Fetch.request(config));
+
+        // Check that headers map is not empty
+        const headersSize = $.let(response.headers.size());
+        $(assertEast.greater(headersSize, 0n));
+
+        // Check that content-type header exists (Google always returns this)
+        const hasContentType = $.let(response.headers.has("content-type"));
+        $(assertEast.equal(hasContentType, true));
+    });
+}, FetchImpl);
