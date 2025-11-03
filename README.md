@@ -43,16 +43,17 @@ compiled("/path/to/input.txt");
 
 ## Platform Functions
 
-East Node provides six platform modules:
+East Node provides seven platform modules:
 
 | Module | Functions | Description |
 |--------|-----------|-------------|
-| **Console** | `log`, `error`, `write`, `readLine` | Console I/O operations |
+| **Console** | `log`, `error`, `write` | Console I/O operations |
 | **FileSystem** | `readFile`, `writeFile`, `exists`, `createDirectory`, etc. | File system operations (11 functions) |
 | **Fetch** | `get`, `post`, `request` | HTTP client using Fetch API |
 | **Crypto** | `randomBytes`, `hashSha256`, `uuid` | Cryptographic operations |
 | **Time** | `now`, `sleep` | Time and delay operations |
 | **Path** | `join`, `resolve`, `dirname`, `basename`, `extname` | Path manipulation |
+| **Format** | `csv_parse`, `csv_serialize`, `xml_parse`, `xml_serialize` | CSV and XML parsing/serialization |
 
 **Complete platform:**
 ```typescript
