@@ -15,6 +15,7 @@ Usage guide for East Node.js platform functions.
   - [Time Operations](#time-operations)
   - [Path Manipulation](#path-manipulation)
   - [Data Formats](#data-formats)
+  - [Random Number Generation](#random-number-generation)
 - [Testing](#testing)
 - [Error Handling](#error-handling)
 
@@ -37,12 +38,11 @@ const processFile = East.function(
 );
 
 // Compile with NodePlatform (includes all platform functions)
-const compiled = processFile.toIR().compile(NodePlatform);
+const compiled = East.compile(processFile.toIR(), NodePlatform);
 await compiled("input.txt");
 
 // Or compile with specific modules only
-import { ConsoleImpl, FileSystemImpl } from "@elaraai/east-node";
-const compiled2 = processFile.toIR().compile([...ConsoleImpl, ...FileSystemImpl]);
+const compiled2 = East.compile(processFile.toIR(), [...Console.Implementation, ...FileSystem.Implementation]);
 ```
 
 ---
@@ -53,7 +53,7 @@ const compiled2 = processFile.toIR().compile([...ConsoleImpl, ...FileSystemImpl]
 
 **Import:**
 ```typescript
-import { Console, ConsoleImpl } from "@elaraai/east-node";
+import { Console } from "@elaraai/east-node";
 ```
 
 **Functions:**
@@ -76,7 +76,7 @@ const greet = East.function([StringType], NullType, ($, name) => {
 
 **Import:**
 ```typescript
-import { FileSystem, FileSystemImpl } from "@elaraai/east-node";
+import { FileSystem } from "@elaraai/east-node";
 ```
 
 **Functions:**
@@ -109,7 +109,7 @@ const copyFile = East.function([StringType, StringType], NullType, ($, src, dest
 
 **Import:**
 ```typescript
-import { Fetch, FetchImpl, FetchRequestConfig, FetchMethod } from "@elaraai/east-node";
+import { Fetch, FetchRequestConfig, FetchMethod } from "@elaraai/east-node";
 ```
 
 **Functions:**
@@ -141,7 +141,7 @@ const fetchData = East.function([], StringType, $ => {
 
 **Import:**
 ```typescript
-import { Crypto, CryptoImpl } from "@elaraai/east-node";
+import { Crypto } from "@elaraai/east-node";
 ```
 
 **Functions:**
@@ -168,7 +168,7 @@ const generateToken = East.function([], StringType, $ => {
 
 **Import:**
 ```typescript
-import { Time, TimeImpl } from "@elaraai/east-node";
+import { Time } from "@elaraai/east-node";
 ```
 
 **Functions:**
@@ -193,7 +193,7 @@ const measureTime = East.function([], IntegerType, $ => {
 
 **Import:**
 ```typescript
-import { Path, PathImpl } from "@elaraai/east-node";
+import { Path } from "@elaraai/east-node";
 ```
 
 **Functions:**
@@ -221,7 +221,7 @@ const processPath = East.function([StringType], StringType, ($, filepath) => {
 
 **Import:**
 ```typescript
-import { Format, FormatImpl, csv_parse, csv_serialize, xml_parse, xml_serialize } from "@elaraai/east-node";
+import { Format, csv_parse, csv_serialize, xml_parse, xml_serialize } from "@elaraai/east-node";
 // Or individual: import { CsvParseConfig, CsvSerializeConfig, XmlNode, etc. } from "@elaraai/east-node";
 ```
 
@@ -271,6 +271,58 @@ const parseCSV = East.function([BlobType], ArrayType(DictType(StringType, Option
 
     return csv_parse(csvData, config);
 });
+```
+
+---
+
+### Random Number Generation
+
+**Import:**
+```typescript
+import { Random } from "@elaraai/east-node";
+```
+
+**Functions:**
+| Signature | Description | Example |
+|-----------|-------------|---------|
+| `uniform(): FloatExpr` | Uniform random float in [0.0, 1.0) | `Random.uniform()` |
+| `normal(): FloatExpr` | Standard normal distribution N(0,1) | `Random.normal()` |
+| `range(min: IntegerExpr \| bigint, max: IntegerExpr \| bigint): IntegerExpr` | Random integer in [min, max] (inclusive) | `Random.range(1n, 6n)` |
+| `exponential(lambda: FloatExpr \| number): FloatExpr` | Exponential distribution with rate λ | `Random.exponential(0.5)` |
+| `weibull(shape: FloatExpr \| number): FloatExpr` | Weibull distribution with shape parameter | `Random.weibull(2.0)` |
+| `bernoulli(p: FloatExpr \| number): IntegerExpr` | Binary outcome: 0 or 1 with probability p | `Random.bernoulli(0.5)` |
+| `binomial(n: IntegerExpr \| bigint, p: FloatExpr \| number): IntegerExpr` | Number of successes in n trials | `Random.binomial(10n, 0.5)` |
+| `geometric(p: FloatExpr \| number): IntegerExpr` | Trials until first success | `Random.geometric(0.2)` |
+| `poisson(lambda: FloatExpr \| number): IntegerExpr` | Events in fixed interval (rate λ) | `Random.poisson(3.0)` |
+| `pareto(alpha: FloatExpr \| number): FloatExpr` | Pareto distribution (power law) | `Random.pareto(1.16)` |
+| `logNormal(mu: FloatExpr \| number, sigma: FloatExpr \| number): FloatExpr` | Log-normal distribution | `Random.logNormal(0.0, 1.0)` |
+| `irwinHall(n: IntegerExpr \| bigint): FloatExpr` | Sum of n uniform variables | `Random.irwinHall(12n)` |
+| `bates(n: IntegerExpr \| bigint): FloatExpr` | Average of n uniform variables | `Random.bates(12n)` |
+| `seed(value: IntegerExpr \| bigint): NullExpr` | Seed RNG for reproducibility | `Random.seed(12345n)` |
+
+**Example:**
+```typescript
+import { East, IntegerType, FloatType } from "@elaraai/east";
+import { Random } from "@elaraai/east-node";
+
+// Roll a six-sided die
+const rollDice = East.function([], IntegerType, $ => {
+    return Random.range(1n, 6n);
+});
+
+// Generate normally distributed values
+const generateNormal = East.function([], FloatType, $ => {
+    const z = $.let(Random.normal());
+    // Scale to mean=100, stddev=15
+    return z.multiply(15.0).add(100.0);
+});
+
+// Compile with Random.Implementation
+const compiled1 = East.compile(rollDice.toIR(), Random.Implementation);
+const compiled2 = East.compile(generateNormal.toIR(), Random.Implementation);
+
+const diceRoll = compiled1();  // e.g., 4n
+const iqScore = compiled2();   // e.g., 103.7
 ```
 
 ---

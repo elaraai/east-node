@@ -81,91 +81,11 @@ export const console_write: PlatformFunctionDef<[typeof StringType], typeof Null
     East.platform("console_write", [StringType], NullType);
 
 /**
- * Grouped console I/O platform functions.
- *
- * Provides standard console operations for East programs.
- *
- * @example
- * ```ts
- * import { East, NullType } from "@elaraai/east";
- * import { Console, ConsoleImpl } from "@elaraai/east-node";
- *
- * const greet = East.function([], NullType, $ => {
- *     $(Console.log("Hello, World!"));
- *     $(Console.error("This is a warning"));
- *     $(Console.write("No newline here"));
- * });
- *
- * const compiled = greet.toIR().compile(ConsoleImpl);
- * await compiled();
- * ```
- */
-export const Console = {
-    /**
-     * Writes a message to stdout with a newline.
-     *
-     * Outputs a string message to standard output (stdout) followed by a newline character.
-     * This is useful for general logging and output in East programs.
-     *
-     * @param message - The message to write to stdout
-     * @returns Null
-     * @throws {EastError} When writing to stdout fails
-     *
-     * @example
-     * ```ts
-     * const logMessage = East.function([], NullType, $ => {
-     *     $(Console.log("Hello, World!"));
-     * });
-     * ```
-     */
-    log: console_log,
-
-    /**
-     * Writes a message to stderr with a newline.
-     *
-     * Outputs a string message to standard error (stderr) followed by a newline character.
-     * This is used for error messages and warnings, keeping them separate from normal output.
-     *
-     * @param message - The message to write to stderr
-     * @returns Null
-     * @throws {EastError} When writing to stderr fails
-     *
-     * @example
-     * ```ts
-     * const logError = East.function([], NullType, $ => {
-     *     $(Console.error("Error: Invalid input"));
-     * });
-     * ```
-     */
-    error: console_error,
-
-    /**
-     * Writes a message to stdout without a newline.
-     *
-     * Outputs a string message to standard output (stdout) without appending a newline.
-     * This allows building output incrementally or creating progress indicators.
-     *
-     * @param message - The message to write to stdout
-     * @returns Null
-     * @throws {EastError} When writing to stdout fails
-     *
-     * @example
-     * ```ts
-     * const showProgress = East.function([], NullType, $ => {
-     *     $(Console.write("Processing... "));
-     *     $(Console.log("done!"));
-     * });
-     * ```
-     */
-    write: console_write,
-} as const;
-
-/**
  * Node.js implementation of console platform functions.
  *
- * Pass this array to compile to enable console I/O operations.
+ * Pass this array to {@link East.compile} to enable console I/O operations.
  */
-export const ConsoleImpl: PlatformFunction[] = [
+const ConsoleImpl: PlatformFunction[] = [
     console_log.implement((msg: string) => {
         try {
             console.log(msg);
@@ -197,3 +117,102 @@ export const ConsoleImpl: PlatformFunction[] = [
         }
     })
 ];
+
+/**
+ * Grouped console I/O platform functions.
+ *
+ * Provides standard console operations for East programs.
+ *
+ * @example
+ * ```ts
+ * import { East, NullType } from "@elaraai/east";
+ * import { Console } from "@elaraai/east-node";
+ *
+ * const greet = East.function([], NullType, $ => {
+ *     $(Console.log("Hello, World!"));
+ *     $(Console.error("This is a warning"));
+ *     $(Console.write("No newline here"));
+ * });
+ *
+ * const compiled = East.compile(greet.toIR(), Console.Implementation);
+ * await compiled();
+ * ```
+ */
+export const Console = {
+    /**
+     * Writes a message to stdout with a newline.
+     *
+     * Outputs a string message to standard output (stdout) followed by a newline character.
+     * This is useful for general logging and output in East programs.
+     *
+     * @param message - The message to write to stdout
+     * @returns Null
+     * @throws {EastError} When writing to stdout fails
+     *
+     * @example
+     * ```ts
+     * const logMessage = East.function([], NullType, $ => {
+     *     $(Console.log("Hello, World!"));
+     * });
+     *
+     * const compiled = East.compile(logMessage.toIR(), Console.Implementation);
+     * await compiled();  // Outputs: Hello, World!
+     * ```
+     */
+    log: console_log,
+
+    /**
+     * Writes a message to stderr with a newline.
+     *
+     * Outputs a string message to standard error (stderr) followed by a newline character.
+     * This is used for error messages and warnings, keeping them separate from normal output.
+     *
+     * @param message - The message to write to stderr
+     * @returns Null
+     * @throws {EastError} When writing to stderr fails
+     *
+     * @example
+     * ```ts
+     * const logError = East.function([], NullType, $ => {
+     *     $(Console.error("Error: Invalid input"));
+     * });
+     *
+     * const compiled = East.compile(logError.toIR(), Console.Implementation);
+     * await compiled();  // Outputs to stderr: Error: Invalid input
+     * ```
+     */
+    error: console_error,
+
+    /**
+     * Writes a message to stdout without a newline.
+     *
+     * Outputs a string message to standard output (stdout) without appending a newline.
+     * This allows building output incrementally or creating progress indicators.
+     *
+     * @param message - The message to write to stdout
+     * @returns Null
+     * @throws {EastError} When writing to stdout fails
+     *
+     * @example
+     * ```ts
+     * const showProgress = East.function([], NullType, $ => {
+     *     $(Console.write("Processing... "));
+     *     $(Console.log("done!"));
+     * });
+     *
+     * const compiled = East.compile(showProgress.toIR(), Console.Implementation);
+     * await compiled();  // Outputs: Processing... done!
+     * ```
+     */
+    write: console_write,
+
+    /**
+     * Node.js implementation of console platform functions.
+     *
+     * Pass this to {@link East.compile} to enable console I/O operations.
+     */
+    Implementation: ConsoleImpl,
+} as const;
+
+// Export for backwards compatibility
+export { ConsoleImpl };

@@ -143,9 +143,12 @@ export const csv_serialize: PlatformFunctionDef<
     typeof BlobType
 > = East.platform("csv_serialize", [CsvDataType, CsvSerializeConfig], BlobType);
 
-// Implementation
-
-export const CsvImpl: PlatformFunction[] = [
+/**
+ * Node.js implementation of CSV platform functions.
+ *
+ * Pass this array to {@link East.compile} to enable CSV operations.
+ */
+const CsvImpl: PlatformFunction[] = [
     csv_parse.implement((blob: Uint8Array, config: ValueTypeOf<typeof CsvParseConfig>) => {
         try {
             return parseCsv(blob, config);
@@ -170,6 +173,113 @@ export const CsvImpl: PlatformFunction[] = [
         }
     }),
 ];
+
+/**
+ * Grouped CSV platform functions.
+ *
+ * Provides CSV parsing and serialization operations for East programs.
+ *
+ * @example
+ * ```ts
+ * import { East, BlobType } from "@elaraai/east";
+ * import { CSV, CsvParseConfig } from "@elaraai/east-node";
+ *
+ * const parseCSV = East.function([BlobType], CsvDataType, ($, csvBlob) => {
+ *     const config = $.const(East.value({
+ *         delimiter: variant('some', ','),
+ *         quoteChar: variant('some', '"'),
+ *         escapeChar: variant('some', '"'),
+ *         newline: variant('none', null),
+ *         hasHeader: true,
+ *         nullString: variant('some', ''),
+ *         skipEmptyLines: true,
+ *         trimFields: false,
+ *     }, CsvParseConfig));
+ *
+ *     return CSV.parse(csvBlob, config);
+ * });
+ *
+ * const compiled = East.compile(parseCSV.toIR(), CSV.Implementation);
+ * const csvData = new TextEncoder().encode("name,age\nAlice,30\nBob,25");
+ * compiled(csvData);  // Returns parsed CSV data
+ * ```
+ */
+export const CSV = {
+    /**
+     * Parses CSV data from a binary blob into structured row data.
+     *
+     * Converts CSV-formatted binary data into an array of row dictionaries.
+     * Supports configurable delimiters, quote characters, and header handling.
+     *
+     * @param blob - The CSV data as a binary blob (UTF-8 encoded)
+     * @param config - Parsing configuration
+     * @returns An array of row dictionaries
+     * @throws {EastError} When CSV is malformed
+     *
+     * @example
+     * ```ts
+     * const parseCSV = East.function([BlobType], CsvDataType, ($, csvBlob) => {
+     *     const config = $.const(East.value({
+     *         delimiter: variant('some', ','),
+     *         hasHeader: true,
+     *         skipEmptyLines: true,
+     *         trimFields: false,
+     *     }, CsvParseConfig));
+     *
+     *     return CSV.parse(csvBlob, config);
+     * });
+     *
+     * const compiled = East.compile(parseCSV.toIR(), CSV.Implementation);
+     * const csvData = new TextEncoder().encode("name,age\nAlice,30");
+     * compiled(csvData);  // Returns: [{"name": some("Alice"), "age": some("30")}]
+     * ```
+     */
+    parse: csv_parse,
+
+    /**
+     * Serializes structured row data into CSV-formatted binary data.
+     *
+     * Converts an array of row dictionaries into CSV-formatted binary data.
+     * Supports configurable delimiters, quote characters, and formatting options.
+     *
+     * @param data - An array of row dictionaries to serialize
+     * @param config - Serialization configuration
+     * @returns A binary blob containing the CSV-formatted data
+     * @throws {EastError} When configuration is invalid
+     *
+     * @example
+     * ```ts
+     * const serializeCSV = East.function([CsvDataType], BlobType, ($, data) => {
+     *     const config = $.const(East.value({
+     *         delimiter: ',',
+     *         quoteChar: '"',
+     *         escapeChar: '"',
+     *         newline: '\n',
+     *         includeHeader: true,
+     *         nullString: '',
+     *         alwaysQuote: false,
+     *     }, CsvSerializeConfig));
+     *
+     *     return CSV.serialize(data, config);
+     * });
+     *
+     * const compiled = East.compile(serializeCSV.toIR(), CSV.Implementation);
+     * const data = [new Map([["name", variant("some", "Alice")], ["age", variant("some", "30")]])];
+     * compiled(data);  // Returns blob: "name,age\nAlice,30"
+     * ```
+     */
+    serialize: csv_serialize,
+
+    /**
+     * Node.js implementation of CSV platform functions.
+     *
+     * Pass this to {@link East.compile} to enable CSV operations.
+     */
+    Implementation: CsvImpl,
+} as const;
+
+// Export for backwards compatibility
+export { CsvImpl };
 
 // Helper Functions
 

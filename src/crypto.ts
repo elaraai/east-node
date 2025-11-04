@@ -103,102 +103,11 @@ export const crypto_hash_sha256_bytes: PlatformFunctionDef<[typeof BlobType], ty
 export const crypto_uuid: PlatformFunctionDef<[], typeof StringType> = East.platform("crypto_uuid", [], StringType);
 
 /**
- * Grouped cryptographic platform functions.
- *
- * Provides cryptographic operations for East programs.
- *
- * @example
- * ```ts
- * import { East, NullType } from "@elaraai/east";
- * import { Crypto, CryptoImpl } from "@elaraai/east-node";
- *
- * const generateId = East.function([], StringType, $ => {
- *     const id = $.let(Crypto.uuid());
- *     const hash = $.let(Crypto.hashSha256("data"));
- *     return id;
- * });
- * ```
- */
-export const Crypto = {
-    /**
-     * Generates cryptographically secure random bytes.
-     *
-     * Produces random bytes using a CSPRNG, suitable for generating encryption keys,
-     * tokens, and other security-sensitive random data.
-     *
-     * @param length - The number of random bytes to generate (must be positive)
-     * @returns Random bytes as a Blob (Uint8Array)
-     * @throws {EastError} When random generation fails
-     *
-     * @example
-     * ```ts
-     * const generateToken = East.function([], BlobType, $ => {
-     *     return Crypto.randomBytes(32n);
-     * });
-     * ```
-     */
-    randomBytes: crypto_random_bytes,
-
-    /**
-     * Computes SHA-256 hash of a string.
-     *
-     * Calculates the SHA-256 cryptographic hash of a UTF-8 encoded string and returns
-     * the result as a lowercase hexadecimal string (64 characters).
-     *
-     * @param data - The string to hash (will be UTF-8 encoded)
-     * @returns The SHA-256 hash as a lowercase hexadecimal string (64 characters)
-     *
-     * @example
-     * ```ts
-     * const hashPassword = East.function([StringType], StringType, ($, password) => {
-     *     return Crypto.hashSha256(password);
-     * });
-     * ```
-     */
-    hashSha256: crypto_hash_sha256,
-
-    /**
-     * Computes SHA-256 hash of binary data.
-     *
-     * Calculates the SHA-256 cryptographic hash of binary data and returns the result
-     * as raw bytes (32 bytes).
-     *
-     * @param data - The binary data to hash (Blob/Uint8Array)
-     * @returns The SHA-256 hash as binary data (32 bytes)
-     *
-     * @example
-     * ```ts
-     * const hashFile = East.function([BlobType], BlobType, ($, fileData) => {
-     *     return Crypto.hashSha256Bytes(fileData);
-     * });
-     * ```
-     */
-    hashSha256Bytes: crypto_hash_sha256_bytes,
-
-    /**
-     * Generates a random UUID v4.
-     *
-     * Creates a version 4 UUID using cryptographically secure random numbers.
-     * Returns a 36-character string in standard format.
-     *
-     * @returns A UUID v4 string in standard format (8-4-4-4-12 hex digits)
-     *
-     * @example
-     * ```ts
-     * const createRecord = East.function([], StringType, $ => {
-     *     return Crypto.uuid();
-     * });
-     * ```
-     */
-    uuid: crypto_uuid,
-} as const;
-
-/**
  * Node.js implementation of cryptographic platform functions.
  *
- * Pass this array to compile to enable crypto operations.
+ * Pass this array to {@link East.compile} to enable crypto operations.
  */
-export const CryptoImpl: PlatformFunction[] = [
+const CryptoImpl: PlatformFunction[] = [
     crypto_random_bytes.implement((length: bigint) => {
         try {
             return randomBytes(Number(length));
@@ -240,3 +149,118 @@ export const CryptoImpl: PlatformFunction[] = [
         }
     }),
 ];
+
+/**
+ * Grouped cryptographic platform functions.
+ *
+ * Provides cryptographic operations for East programs.
+ *
+ * @example
+ * ```ts
+ * import { East, StringType } from "@elaraai/east";
+ * import { Crypto } from "@elaraai/east-node";
+ *
+ * const generateId = East.function([], StringType, $ => {
+ *     return Crypto.uuid();
+ * });
+ *
+ * const compiled = East.compile(generateId.toIR(), Crypto.Implementation);
+ * compiled();  // "550e8400-e29b-41d4-a716-446655440000"
+ * ```
+ */
+export const Crypto = {
+    /**
+     * Generates cryptographically secure random bytes.
+     *
+     * Produces random bytes using a CSPRNG, suitable for generating encryption keys,
+     * tokens, and other security-sensitive random data.
+     *
+     * @param length - The number of random bytes to generate (must be positive)
+     * @returns Random bytes as a Blob (Uint8Array)
+     * @throws {EastError} When random generation fails
+     *
+     * @example
+     * ```ts
+     * const generateToken = East.function([], BlobType, $ => {
+     *     return Crypto.randomBytes(32n);
+     * });
+     *
+     * const compiled = East.compile(generateToken.toIR(), Crypto.Implementation);
+     * compiled();  // Uint8Array(32) [...]
+     * ```
+     */
+    randomBytes: crypto_random_bytes,
+
+    /**
+     * Computes SHA-256 hash of a string.
+     *
+     * Calculates the SHA-256 cryptographic hash of a UTF-8 encoded string and returns
+     * the result as a lowercase hexadecimal string (64 characters).
+     *
+     * @param data - The string to hash (will be UTF-8 encoded)
+     * @returns The SHA-256 hash as a lowercase hexadecimal string (64 characters)
+     *
+     * @example
+     * ```ts
+     * const hashPassword = East.function([StringType], StringType, ($, password) => {
+     *     return Crypto.hashSha256(password);
+     * });
+     *
+     * const compiled = East.compile(hashPassword.toIR(), Crypto.Implementation);
+     * compiled("password");  // "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"
+     * ```
+     */
+    hashSha256: crypto_hash_sha256,
+
+    /**
+     * Computes SHA-256 hash of binary data.
+     *
+     * Calculates the SHA-256 cryptographic hash of binary data and returns the result
+     * as raw bytes (32 bytes).
+     *
+     * @param data - The binary data to hash (Blob/Uint8Array)
+     * @returns The SHA-256 hash as binary data (32 bytes)
+     *
+     * @example
+     * ```ts
+     * const hashFile = East.function([BlobType], BlobType, ($, fileData) => {
+     *     return Crypto.hashSha256Bytes(fileData);
+     * });
+     *
+     * const compiled = East.compile(hashFile.toIR(), Crypto.Implementation);
+     * const fileData = new Uint8Array([1, 2, 3]);
+     * compiled(fileData);  // Uint8Array(32) [...]
+     * ```
+     */
+    hashSha256Bytes: crypto_hash_sha256_bytes,
+
+    /**
+     * Generates a random UUID v4.
+     *
+     * Creates a version 4 UUID using cryptographically secure random numbers.
+     * Returns a 36-character string in standard format.
+     *
+     * @returns A UUID v4 string in standard format (8-4-4-4-12 hex digits)
+     *
+     * @example
+     * ```ts
+     * const createRecord = East.function([], StringType, $ => {
+     *     return Crypto.uuid();
+     * });
+     *
+     * const compiled = East.compile(createRecord.toIR(), Crypto.Implementation);
+     * compiled();  // "550e8400-e29b-41d4-a716-446655440000"
+     * ```
+     */
+    uuid: crypto_uuid,
+
+    /**
+     * Node.js implementation of cryptographic platform functions.
+     *
+     * Pass this to {@link East.compile} to enable crypto operations.
+     */
+    Implementation: CryptoImpl,
+} as const;
+
+// Export for backwards compatibility
+export { CryptoImpl };

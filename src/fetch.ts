@@ -139,95 +139,11 @@ export const fetch_post: PlatformFunctionDef<[typeof StringType, typeof StringTy
 export const fetch_request: PlatformFunctionDef<[typeof FetchRequestConfig], typeof FetchResponse> = East.platform("fetch_request", [FetchRequestConfig], FetchResponse);
 
 /**
- * Grouped fetch platform functions.
- *
- * Provides HTTP client operations using the fetch API.
- *
- * @example
- * ```ts
- * import { East, StringType } from "@elaraai/east";
- * import { Fetch, FetchImpl } from "@elaraai/east-node";
- *
- * const getData = East.function([], StringType, $ => {
- *     const response = $.let(Fetch.get("https://api.example.com/data"));
- *     return response;
- * });
- * ```
- */
-export const Fetch = {
-    /**
-     * Performs an HTTP GET request and returns the response body.
-     *
-     * Makes a simple GET request to the specified URL and returns the response body text.
-     * Throws an error if the response status is not in the 200-299 range.
-     *
-     * @param url - The URL to fetch
-     * @returns The response body as a string
-     * @throws {EastError} When request fails or status is not 2xx
-     *
-     * @example
-     * ```ts
-     * const fetchData = East.function([], StringType, $ => {
-     *     return Fetch.get("https://api.example.com/data");
-     * });
-     * ```
-     */
-    get: fetch_get,
-
-    /**
-     * Performs an HTTP POST request with a string body.
-     *
-     * Makes a POST request to the specified URL with the provided string body.
-     * Sets Content-Type to "text/plain" by default.
-     * Throws an error if the response status is not in the 200-299 range.
-     *
-     * @param url - The URL to post to
-     * @param body - The request body as a string
-     * @returns The response body as a string
-     * @throws {EastError} When request fails or status is not 2xx
-     *
-     * @example
-     * ```ts
-     * const postData = East.function([], StringType, $ => {
-     *     return Fetch.post("https://api.example.com/submit", "data");
-     * });
-     * ```
-     */
-    post: fetch_post,
-
-    /**
-     * Performs a full HTTP request with custom configuration.
-     *
-     * Makes an HTTP request with complete control over method, headers, and body.
-     * Returns the full response including status, headers, and body.
-     * Does not throw on non-2xx status - check the `ok` field instead.
-     *
-     * @param config - The request configuration
-     * @returns The complete HTTP response
-     * @throws {EastError} When request fails at the network level
-     *
-     * @example
-     * ```ts
-     * const makeRequest = East.function([], FetchResponse, $ => {
-     *     const config = East.value({
-     *         url: "https://api.example.com/data",
-     *         method: variant("GET", null),
-     *         headers: new Map(),
-     *         body: variant("none", null),
-     *     }, FetchRequestConfig);
-     *     return Fetch.request(config);
-     * });
-     * ```
-     */
-    request: fetch_request,
-} as const;
-
-/**
  * Node.js implementation of fetch platform functions.
  *
- * Pass this array to compile to enable fetch operations.
+ * Pass this array to {@link East.compileAsync} to enable fetch operations.
  */
-export const FetchImpl: PlatformFunction[] = [
+const FetchImpl: PlatformFunction[] = [
     fetch_get.implementAsync(async (url: string) => {
         try {
             const response = await fetch(url);
@@ -307,3 +223,109 @@ export const FetchImpl: PlatformFunction[] = [
         }
     }),
 ];
+
+/**
+ * Grouped fetch platform functions.
+ *
+ * Provides HTTP client operations using the fetch API.
+ *
+ * @example
+ * ```ts
+ * import { East, StringType } from "@elaraai/east";
+ * import { Fetch } from "@elaraai/east-node";
+ *
+ * const getData = East.function([], StringType, $ => {
+ *     const response = $.let(Fetch.get("https://api.example.com/data"));
+ *     return response;
+ * });
+ *
+ * const compiled = await East.compileAsync(getData.toIR(), Fetch.Implementation);
+ * await compiled();  // Returns response body as string
+ * ```
+ */
+export const Fetch = {
+    /**
+     * Performs an HTTP GET request and returns the response body.
+     *
+     * Makes a simple GET request to the specified URL and returns the response body text.
+     * Throws an error if the response status is not in the 200-299 range.
+     *
+     * @param url - The URL to fetch
+     * @returns The response body as a string
+     * @throws {EastError} When request fails or status is not 2xx
+     *
+     * @example
+     * ```ts
+     * const fetchData = East.function([], StringType, $ => {
+     *     return Fetch.get("https://api.example.com/data");
+     * });
+     *
+     * const compiled = await East.compileAsync(fetchData.toIR(), Fetch.Implementation);
+     * await compiled();  // Returns: response body as string
+     * ```
+     */
+    get: fetch_get,
+
+    /**
+     * Performs an HTTP POST request with a string body.
+     *
+     * Makes a POST request to the specified URL with the provided string body.
+     * Sets Content-Type to "text/plain" by default.
+     * Throws an error if the response status is not in the 200-299 range.
+     *
+     * @param url - The URL to post to
+     * @param body - The request body as a string
+     * @returns The response body as a string
+     * @throws {EastError} When request fails or status is not 2xx
+     *
+     * @example
+     * ```ts
+     * const postData = East.function([], StringType, $ => {
+     *     return Fetch.post("https://api.example.com/submit", "data");
+     * });
+     *
+     * const compiled = await East.compileAsync(postData.toIR(), Fetch.Implementation);
+     * await compiled();  // Returns: response body as string
+     * ```
+     */
+    post: fetch_post,
+
+    /**
+     * Performs a full HTTP request with custom configuration.
+     *
+     * Makes an HTTP request with complete control over method, headers, and body.
+     * Returns the full response including status, headers, and body.
+     * Does not throw on non-2xx status - check the `ok` field instead.
+     *
+     * @param config - The request configuration
+     * @returns The complete HTTP response
+     * @throws {EastError} When request fails at the network level
+     *
+     * @example
+     * ```ts
+     * const makeRequest = East.function([], FetchResponse, $ => {
+     *     const config = East.value({
+     *         url: "https://api.example.com/data",
+     *         method: variant("GET", null),
+     *         headers: new Map(),
+     *         body: variant("none", null),
+     *     }, FetchRequestConfig);
+     *     return Fetch.request(config);
+     * });
+     *
+     * const compiled = await East.compileAsync(makeRequest.toIR(), Fetch.Implementation);
+     * const response = await compiled();  // Returns: FetchResponse object
+     * ```
+     */
+    request: fetch_request,
+
+    /**
+     * Node.js implementation of fetch platform functions.
+     *
+     * Pass this to {@link East.compileAsync} to enable fetch operations.
+     */
+    Implementation: FetchImpl,
+} as const;
+
+// Export for backwards compatibility
+export { FetchImpl };

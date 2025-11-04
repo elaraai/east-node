@@ -298,6 +298,111 @@ export const fs_read_file_bytes: PlatformFunctionDef<[typeof StringType], typeof
 export const fs_write_file_bytes: PlatformFunctionDef<[typeof StringType, typeof BlobType], typeof NullType> = East.platform("fs_write_file_bytes", [StringType, BlobType], NullType);
 
 /**
+ * Node.js implementation of file system platform functions.
+ *
+ * Pass this array to {@link East.compile} to enable file system operations.
+ */
+const FileSystemImpl: PlatformFunction[] = [
+    fs_read_file.implement((path: string) => {
+        try {
+            return readFileSync(path, 'utf-8');
+        } catch (err: any) {
+            throw new EastError(`Failed to read file ${path}: ${err.message}`, {
+                location: { filename: "fs_read_file", line: 0n, column: 0n },
+                cause: err
+            });
+        }
+    }),
+    fs_write_file.implement((path: string, content: string) => {
+        try {
+            writeFileSync(path, content, 'utf-8');
+        } catch (err: any) {
+            throw new EastError(`Failed to write file ${path}: ${err.message}`, {
+                location: { filename: "fs_write_file", line: 0n, column: 0n },
+                cause: err
+            });
+        }
+    }),
+    fs_append_file.implement((path: string, content: string) => {
+        try {
+            appendFileSync(path, content, 'utf-8');
+        } catch (err: any) {
+            throw new EastError(`Failed to append to file ${path}: ${err.message}`, {
+                location: { filename: "fs_append_file", line: 0n, column: 0n },
+                cause: err
+            });
+        }
+    }),
+    fs_delete_file.implement((path: string) => {
+        try {
+            unlinkSync(path);
+        } catch (err: any) {
+            throw new EastError(`Failed to delete file ${path}: ${err.message}`, {
+                location: { filename: "fs_delete_file", line: 0n, column: 0n },
+                cause: err
+            });
+        }
+    }),
+    fs_exists.implement((path: string) => {
+        return existsSync(path);
+    }),
+    fs_is_file.implement((path: string) => {
+        try {
+            return existsSync(path) && statSync(path).isFile();
+        } catch {
+            return false;
+        }
+    }),
+    fs_is_directory.implement((path: string) => {
+        try {
+            return existsSync(path) && statSync(path).isDirectory();
+        } catch {
+            return false;
+        }
+    }),
+    fs_create_directory.implement((path: string) => {
+        try {
+            mkdirSync(path, { recursive: true });
+        } catch (err: any) {
+            throw new EastError(`Failed to create directory ${path}: ${err.message}`, {
+                location: { filename: "fs_create_directory", line: 0n, column: 0n },
+                cause: err
+            });
+        }
+    }),
+    fs_read_directory.implement((path: string) => {
+        try {
+            return readdirSync(path);
+        } catch (err: any) {
+            throw new EastError(`Failed to read directory ${path}: ${err.message}`, {
+                location: { filename: "fs_read_directory", line: 0n, column: 0n },
+                cause: err
+            });
+        }
+    }),
+    fs_read_file_bytes.implement((path: string) => {
+        try {
+            return readFileSync(path);
+        } catch (err: any) {
+            throw new EastError(`Failed to read file bytes ${path}: ${err.message}`, {
+                location: { filename: "fs_read_file_bytes", line: 0n, column: 0n },
+                cause: err
+            });
+        }
+    }),
+    fs_write_file_bytes.implement((path: string, content: Uint8Array) => {
+        try {
+            writeFileSync(path, content);
+        } catch (err: any) {
+            throw new EastError(`Failed to write file bytes ${path}: ${err.message}`, {
+                location: { filename: "fs_write_file_bytes", line: 0n, column: 0n },
+                cause: err
+            });
+        }
+    }),
+];
+
+/**
  * Grouped file system platform functions.
  *
  * Provides file system operations for East programs.
@@ -305,14 +410,14 @@ export const fs_write_file_bytes: PlatformFunctionDef<[typeof StringType, typeof
  * @example
  * ```ts
  * import { East, NullType } from "@elaraai/east";
- * import { FileSystem, FileSystemImpl } from "@elaraai/east-node";
+ * import { FileSystem } from "@elaraai/east-node";
  *
  * const processFile = East.function([], NullType, $ => {
  *     const content = $.let(FileSystem.readFile("input.txt"));
  *     $(FileSystem.writeFile("output.txt", content));
  * });
  *
- * const compiled = processFile.toIR().compile(FileSystemImpl);
+ * const compiled = East.compile(processFile.toIR(), FileSystem.Implementation);
  * await compiled();
  * ```
  */
@@ -333,6 +438,9 @@ export const FileSystem = {
      *     const content = $.let(FileSystem.readFile("config.txt"));
      *     return content;
      * });
+     *
+     * const compiled = East.compile(readConfig.toIR(), FileSystem.Implementation);
+     * await compiled();  // Returns file content as string
      * ```
      */
     readFile: fs_read_file,
@@ -353,6 +461,9 @@ export const FileSystem = {
      * const saveOutput = East.function([], NullType, $ => {
      *     $(FileSystem.writeFile("output.txt", "Hello, World!"));
      * });
+     *
+     * const compiled = East.compile(saveOutput.toIR(), FileSystem.Implementation);
+     * await compiled();  // File written successfully
      * ```
      */
     writeFile: fs_write_file,
@@ -523,112 +634,21 @@ export const FileSystem = {
      * const saveBinary = East.function([BlobType], NullType, ($, data) => {
      *     $(FileSystem.writeFileBytes("output.bin", data));
      * });
+     *
+     * const compiled = East.compile(saveBinary.toIR(), FileSystem.Implementation);
+     * const binaryData = new Uint8Array([1, 2, 3, 4]);
+     * await compiled(binaryData);  // Binary data written to file
      * ```
      */
     writeFileBytes: fs_write_file_bytes,
+
+    /**
+     * Node.js implementation of file system platform functions.
+     *
+     * Pass this to {@link East.compile} to enable file system operations.
+     */
+    Implementation: FileSystemImpl,
 } as const;
 
-/**
- * Node.js implementation of file system platform functions.
- *
- * Pass this array to compile to enable file system operations.
- */
-export const FileSystemImpl: PlatformFunction[] = [
-    fs_read_file.implement((path: string) => {
-        try {
-            return readFileSync(path, 'utf-8');
-        } catch (err: any) {
-            throw new EastError(`Failed to read file ${path}: ${err.message}`, {
-                location: { filename: "fs_read_file", line: 0n, column: 0n },
-                cause: err
-            });
-        }
-    }),
-    fs_write_file.implement((path: string, content: string) => {
-        try {
-            writeFileSync(path, content, 'utf-8');
-        } catch (err: any) {
-            throw new EastError(`Failed to write file ${path}: ${err.message}`, {
-                location: { filename: "fs_write_file", line: 0n, column: 0n },
-                cause: err
-            });
-        }
-    }),
-    fs_append_file.implement((path: string, content: string) => {
-        try {
-            appendFileSync(path, content, 'utf-8');
-        } catch (err: any) {
-            throw new EastError(`Failed to append to file ${path}: ${err.message}`, {
-                location: { filename: "fs_append_file", line: 0n, column: 0n },
-                cause: err
-            });
-        }
-    }),
-    fs_delete_file.implement((path: string) => {
-        try {
-            unlinkSync(path);
-        } catch (err: any) {
-            throw new EastError(`Failed to delete file ${path}: ${err.message}`, {
-                location: { filename: "fs_delete_file", line: 0n, column: 0n },
-                cause: err
-            });
-        }
-    }),
-    fs_exists.implement((path: string) => {
-        return existsSync(path);
-    }),
-    fs_is_file.implement((path: string) => {
-        try {
-            return existsSync(path) && statSync(path).isFile();
-        } catch {
-            return false;
-        }
-    }),
-    fs_is_directory.implement((path: string) => {
-        try {
-            return existsSync(path) && statSync(path).isDirectory();
-        } catch {
-            return false;
-        }
-    }),
-    fs_create_directory.implement((path: string) => {
-        try {
-            mkdirSync(path, { recursive: true });
-        } catch (err: any) {
-            throw new EastError(`Failed to create directory ${path}: ${err.message}`, {
-                location: { filename: "fs_create_directory", line: 0n, column: 0n },
-                cause: err
-            });
-        }
-    }),
-    fs_read_directory.implement((path: string) => {
-        try {
-            return readdirSync(path);
-        } catch (err: any) {
-            throw new EastError(`Failed to read directory ${path}: ${err.message}`, {
-                location: { filename: "fs_read_directory", line: 0n, column: 0n },
-                cause: err
-            });
-        }
-    }),
-    fs_read_file_bytes.implement((path: string) => {
-        try {
-            return readFileSync(path);
-        } catch (err: any) {
-            throw new EastError(`Failed to read file bytes ${path}: ${err.message}`, {
-                location: { filename: "fs_read_file_bytes", line: 0n, column: 0n },
-                cause: err
-            });
-        }
-    }),
-    fs_write_file_bytes.implement((path: string, content: Uint8Array) => {
-        try {
-            writeFileSync(path, content);
-        } catch (err: any) {
-            throw new EastError(`Failed to write file bytes ${path}: ${err.message}`, {
-                location: { filename: "fs_write_file_bytes", line: 0n, column: 0n },
-                cause: err
-            });
-        }
-    }),
-];
+// Export for backwards compatibility
+export { FileSystemImpl };

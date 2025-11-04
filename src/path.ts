@@ -122,6 +122,64 @@ export const path_basename: PlatformFunctionDef<[typeof StringType], typeof Stri
 export const path_extname: PlatformFunctionDef<[typeof StringType], typeof StringType> = East.platform("path_extname", [StringType], StringType);
 
 /**
+ * Node.js implementation of path platform functions.
+ *
+ * Pass this array to {@link East.compile} to enable path operations.
+ */
+const PathImpl: PlatformFunction[] = [
+    path_join.implement((segments: string[]) => {
+        try {
+            return join(...segments);
+        } catch (err: any) {
+            throw new EastError(`Failed to join path segments: ${err.message}`, {
+                location: { filename: "path_join", line: 0n, column: 0n },
+                cause: err
+            });
+        }
+    }),
+    path_resolve.implement((path: string) => {
+        try {
+            return resolve(path);
+        } catch (err: any) {
+            throw new EastError(`Failed to resolve path: ${err.message}`, {
+                location: { filename: "path_resolve", line: 0n, column: 0n },
+                cause: err
+            });
+        }
+    }),
+    path_dirname.implement((path: string) => {
+        try {
+            return dirname(path);
+        } catch (err: any) {
+            throw new EastError(`Failed to get dirname: ${err.message}`, {
+                location: { filename: "path_dirname", line: 0n, column: 0n },
+                cause: err
+            });
+        }
+    }),
+    path_basename.implement((path: string) => {
+        try {
+            return basename(path);
+        } catch (err: any) {
+            throw new EastError(`Failed to get basename: ${err.message}`, {
+                location: { filename: "path_basename", line: 0n, column: 0n },
+                cause: err
+            });
+        }
+    }),
+    path_extname.implement((path: string) => {
+        try {
+            return extname(path);
+        } catch (err: any) {
+            throw new EastError(`Failed to get extname: ${err.message}`, {
+                location: { filename: "path_extname", line: 0n, column: 0n },
+                cause: err
+            });
+        }
+    }),
+];
+
+/**
  * Grouped path manipulation platform functions.
  *
  * Provides path utilities for East programs.
@@ -129,7 +187,7 @@ export const path_extname: PlatformFunctionDef<[typeof StringType], typeof Strin
  * @example
  * ```ts
  * import { East, StringType } from "@elaraai/east";
- * import { Path, PathImpl } from "@elaraai/east-node";
+ * import { Path } from "@elaraai/east-node";
  *
  * const buildPath = East.function([], StringType, $ => {
  *     const segments = East.value(["dir", "subdir", "file.txt"]);
@@ -137,6 +195,9 @@ export const path_extname: PlatformFunctionDef<[typeof StringType], typeof Strin
  *     const ext = $.let(Path.extname(fullPath));
  *     return fullPath;
  * });
+ *
+ * const compiled = East.compile(buildPath.toIR(), Path.Implementation);
+ * await compiled();  // Returns: "dir/subdir/file.txt"
  * ```
  */
 export const Path = {
@@ -225,67 +286,22 @@ export const Path = {
      * @example
      * ```ts
      * const getExtension = East.function([], StringType, $ => {
-     *     return Path.extname("file.txt");  // Returns: ".txt"
+     *     return Path.extname("file.txt");
      * });
+     *
+     * const compiled = East.compile(getExtension.toIR(), Path.Implementation);
+     * await compiled();  // Returns: ".txt"
      * ```
      */
     extname: path_extname,
+
+    /**
+     * Node.js implementation of path platform functions.
+     *
+     * Pass this to {@link East.compile} to enable path operations.
+     */
+    Implementation: PathImpl,
 } as const;
 
-/**
- * Node.js implementation of path platform functions.
- *
- * Pass this array to compile to enable path operations.
- */
-export const PathImpl: PlatformFunction[] = [
-    path_join.implement((segments: string[]) => {
-        try {
-            return join(...segments);
-        } catch (err: any) {
-            throw new EastError(`Failed to join path segments: ${err.message}`, {
-                location: { filename: "path_join", line: 0n, column: 0n },
-                cause: err
-            });
-        }
-    }),
-    path_resolve.implement((path: string) => {
-        try {
-            return resolve(path);
-        } catch (err: any) {
-            throw new EastError(`Failed to resolve path: ${err.message}`, {
-                location: { filename: "path_resolve", line: 0n, column: 0n },
-                cause: err
-            });
-        }
-    }),
-    path_dirname.implement((path: string) => {
-        try {
-            return dirname(path);
-        } catch (err: any) {
-            throw new EastError(`Failed to get dirname: ${err.message}`, {
-                location: { filename: "path_dirname", line: 0n, column: 0n },
-                cause: err
-            });
-        }
-    }),
-    path_basename.implement((path: string) => {
-        try {
-            return basename(path);
-        } catch (err: any) {
-            throw new EastError(`Failed to get basename: ${err.message}`, {
-                location: { filename: "path_basename", line: 0n, column: 0n },
-                cause: err
-            });
-        }
-    }),
-    path_extname.implement((path: string) => {
-        try {
-            return extname(path);
-        } catch (err: any) {
-            throw new EastError(`Failed to get extname: ${err.message}`, {
-                location: { filename: "path_extname", line: 0n, column: 0n },
-                cause: err
-            });
-        }
-    }),
-];
+// Export for backwards compatibility
+export { PathImpl };

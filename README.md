@@ -8,6 +8,7 @@
 - **🖥️ Console I/O** - stdout/stderr output, stdin input
 - **🌐 HTTP Client** - Modern Fetch API for HTTP requests
 - **🔐 Cryptography** - Random bytes, SHA-256, UUID generation
+- **🎲 Random** - Random number generation with 14 statistical distributions
 - **⏱️ Time Operations** - Timestamps and sleep
 - **🛤️ Path Utilities** - Cross-platform path manipulation
 - **🧪 Test Framework** - Built-in testing utilities
@@ -37,13 +38,13 @@ const processFile = East.function(
 );
 
 // Compile with Node.js platform and execute
-const compiled = processFile.toIR().compile(NodePlatform);
+const compiled = East.compile(processFile.toIR(), NodePlatform);
 compiled("/path/to/input.txt");
 ```
 
 ## Platform Functions
 
-East Node provides seven platform modules:
+East Node provides eight platform modules:
 
 | Module | Functions | Description |
 |--------|-----------|-------------|
@@ -54,17 +55,18 @@ East Node provides seven platform modules:
 | **Time** | `now`, `sleep` | Time and delay operations |
 | **Path** | `join`, `resolve`, `dirname`, `basename`, `extname` | Path manipulation |
 | **Format** | `csv_parse`, `csv_serialize`, `xml_parse`, `xml_serialize` | CSV and XML parsing/serialization |
+| **Random** | `uniform`, `normal`, `range`, `exponential`, `bernoulli`, etc. | Random number generation with 14 distributions |
 
 **Complete platform:**
 ```typescript
 import { NodePlatform } from "@elaraai/east-node";
-const compiled = myFunction.toIR().compileAsync(NodePlatform);
+const compiled = East.compile(myFunction.toIR(), NodePlatform);
 ```
 
 **Individual modules:**
 ```typescript
-import { Console, ConsoleImpl, FileSystem, FileSystemImpl } from "@elaraai/east-node";
-const compiled = myFunction.toIR().compile([...ConsoleImpl, ...FileSystemImpl]);
+import { Console, FileSystem } from "@elaraai/east-node";
+const compiled = East.compile(myFunction.toIR(), [...Console.Implementation, ...FileSystem.Implementation]);
 ```
 
 ## Documentation

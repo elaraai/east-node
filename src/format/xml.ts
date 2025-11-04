@@ -149,9 +149,12 @@ export const xml_serialize: PlatformFunctionDef<
     typeof BlobType
 > = East.platform("xml_serialize", [XmlNode, XmlSerializeConfig], BlobType);
 
-// Implementation
-
-export const XmlImpl: PlatformFunction[] = [
+/**
+ * Node.js implementation of XML platform functions.
+ *
+ * Pass this array to {@link East.compile} to enable XML operations.
+ */
+const XmlImpl: PlatformFunction[] = [
     xml_parse.implement((blob: Uint8Array, config: ValueTypeOf<typeof XmlParseConfig>) => {
         try {
             return parseXml(blob, config);
@@ -176,6 +179,101 @@ export const XmlImpl: PlatformFunction[] = [
         }
     }),
 ];
+
+/**
+ * Grouped XML platform functions.
+ *
+ * Provides XML parsing and serialization operations for East programs.
+ *
+ * @example
+ * ```ts
+ * import { East, BlobType } from "@elaraai/east";
+ * import { XML, XmlParseConfig, XmlNode } from "@elaraai/east-node";
+ *
+ * const parseXML = East.function([BlobType], XmlNode, ($, xmlBlob) => {
+ *     const config = $.const(East.value({
+ *         preserveWhitespace: false,
+ *         decodeEntities: true,
+ *     }, XmlParseConfig));
+ *
+ *     return XML.parse(xmlBlob, config);
+ * });
+ *
+ * const compiled = East.compile(parseXML.toIR(), XML.Implementation);
+ * const xmlData = new TextEncoder().encode("<book id='123'><title>East Guide</title></book>");
+ * compiled(xmlData);  // Returns parsed XML tree
+ * ```
+ */
+export const XML = {
+    /**
+     * Parses XML data from a binary blob into a recursive tree structure.
+     *
+     * Converts XML-formatted binary data into an XmlNode recursive structure.
+     * Supports XML declarations, namespaces, CDATA, entity decoding, and comments.
+     *
+     * @param blob - The XML data as a binary blob (UTF-8 encoded)
+     * @param config - Parsing configuration
+     * @returns An XmlNode representing the root element
+     * @throws {EastError} When XML is malformed
+     *
+     * @example
+     * ```ts
+     * const parseXML = East.function([BlobType], XmlNode, ($, xmlBlob) => {
+     *     const config = $.const(East.value({
+     *         preserveWhitespace: false,
+     *         decodeEntities: true,
+     *     }, XmlParseConfig));
+     *
+     *     return XML.parse(xmlBlob, config);
+     * });
+     *
+     * const compiled = East.compile(parseXML.toIR(), XML.Implementation);
+     * const xmlData = new TextEncoder().encode("<book><title>East</title></book>");
+     * compiled(xmlData);  // Returns: { tag: "book", attributes: Map{}, children: [...] }
+     * ```
+     */
+    parse: xml_parse,
+
+    /**
+     * Serializes a recursive XML tree structure into XML-formatted binary data.
+     *
+     * Converts an XmlNode recursive structure into XML-formatted binary data.
+     * Supports indentation, XML declarations, entity encoding, and self-closing tags.
+     *
+     * @param node - The XmlNode root element to serialize
+     * @param config - Serialization configuration
+     * @returns A binary blob containing the XML-formatted data
+     *
+     * @example
+     * ```ts
+     * const serializeXML = East.function([XmlNode], BlobType, ($, doc) => {
+     *     const config = $.const(East.value({
+     *         indent: variant('some', "  "),
+     *         includeXmlDeclaration: true,
+     *         encodeEntities: true,
+     *         selfClosingTags: true,
+     *     }, XmlSerializeConfig));
+     *
+     *     return XML.serialize(doc, config);
+     * });
+     *
+     * const compiled = East.compile(serializeXML.toIR(), XML.Implementation);
+     * const xmlNode = { tag: "book", attributes: new Map(), children: [] };
+     * compiled(xmlNode);  // Returns blob: "<?xml version=\"1.0\"?>\n<book/>"
+     * ```
+     */
+    serialize: xml_serialize,
+
+    /**
+     * Node.js implementation of XML platform functions.
+     *
+     * Pass this to {@link East.compile} to enable XML operations.
+     */
+    Implementation: XmlImpl,
+} as const;
+
+// Export for backwards compatibility
+export { XmlImpl };
 
 // Helper Functions
 

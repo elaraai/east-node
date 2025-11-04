@@ -55,68 +55,11 @@ export const time_now: PlatformFunctionDef<[], typeof IntegerType> = East.platfo
 export const time_sleep: PlatformFunctionDef<[typeof IntegerType], typeof NullType> = East.platform("time_sleep", [IntegerType], NullType);
 
 /**
- * Grouped time platform functions.
- *
- * Provides time and sleep operations for East programs.
- *
- * @example
- * ```ts
- * import { East, NullType } from "@elaraai/east";
- * import { Time, TimeImpl } from "@elaraai/east-node";
- *
- * const timedTask = East.function([], NullType, $ => {
- *     const start = $.let(Time.now());
- *     $(Time.sleep(1000n)); // Sleep for 1 second
- *     const end = $.let(Time.now());
- * });
- * ```
- */
-export const Time = {
-    /**
-     * Gets the current Unix timestamp in milliseconds.
-     *
-     * Returns the number of milliseconds elapsed since the Unix epoch
-     * (January 1, 1970 00:00:00 UTC). Useful for timestamping and measuring durations.
-     *
-     * @returns The current time as milliseconds since epoch
-     *
-     * @example
-     * ```ts
-     * const getTimestamp = East.function([], IntegerType, $ => {
-     *     return Time.now();
-     * });
-     * ```
-     */
-    now: time_now,
-
-    /**
-     * Sleeps for the specified number of milliseconds.
-     *
-     * Pauses execution asynchronously for the given duration. Non-blocking sleep
-     * that allows other operations to run during the wait period.
-     *
-     * @param ms - The number of milliseconds to sleep (must be non-negative)
-     * @returns Null after sleeping completes
-     * @throws {EastError} When sleep fails
-     *
-     * @example
-     * ```ts
-     * const delayedTask = East.function([], NullType, $ => {
-     *     $(Console.log("Starting..."));
-     *     $(Time.sleep(1000n));
-     *     $(Console.log("Done!"));
-     * });
-     * ```
-     */
-    sleep: time_sleep,
-} as const;
-
-/**
  * Node.js implementation of time platform functions.
  *
- * Pass this array to compile to enable time operations.
+ * Pass this array to {@link East.compileAsync} to enable time operations.
  */
-export const TimeImpl: PlatformFunction[] = [
+const TimeImpl: PlatformFunction[] = [
     time_now.implement(() => {
         try {
             return BigInt(Date.now());
@@ -138,3 +81,79 @@ export const TimeImpl: PlatformFunction[] = [
         }
     }),
 ];
+
+/**
+ * Grouped time platform functions.
+ *
+ * Provides time and sleep operations for East programs.
+ *
+ * @example
+ * ```ts
+ * import { East, NullType } from "@elaraai/east";
+ * import { Time } from "@elaraai/east-node";
+ *
+ * const timedTask = East.function([], NullType, $ => {
+ *     const start = $.let(Time.now());
+ *     $(Time.sleep(1000n)); // Sleep for 1 second
+ *     const end = $.let(Time.now());
+ * });
+ *
+ * const compiled = await East.compileAsync(timedTask.toIR(), Time.Implementation);
+ * await compiled();
+ * ```
+ */
+export const Time = {
+    /**
+     * Gets the current Unix timestamp in milliseconds.
+     *
+     * Returns the number of milliseconds elapsed since the Unix epoch
+     * (January 1, 1970 00:00:00 UTC). Useful for timestamping and measuring durations.
+     *
+     * @returns The current time as milliseconds since epoch
+     *
+     * @example
+     * ```ts
+     * const getTimestamp = East.function([], IntegerType, $ => {
+     *     return Time.now();
+     * });
+     *
+     * const compiled = await East.compileAsync(getTimestamp.toIR(), Time.Implementation);
+     * await compiled();  // Returns: 1735689600000n (example timestamp)
+     * ```
+     */
+    now: time_now,
+
+    /**
+     * Sleeps for the specified number of milliseconds.
+     *
+     * Pauses execution asynchronously for the given duration. Non-blocking sleep
+     * that allows other operations to run during the wait period.
+     *
+     * @param ms - The number of milliseconds to sleep (must be non-negative)
+     * @returns Null after sleeping completes
+     * @throws {EastError} When sleep fails
+     *
+     * @example
+     * ```ts
+     * const delayedTask = East.function([], NullType, $ => {
+     *     $(Console.log("Starting..."));
+     *     $(Time.sleep(1000n));
+     *     $(Console.log("Done!"));
+     * });
+     *
+     * const compiled = await East.compileAsync(delayedTask.toIR(), Time.Implementation);
+     * await compiled();  // Waits 1 second between log messages
+     * ```
+     */
+    sleep: time_sleep,
+
+    /**
+     * Node.js implementation of time platform functions.
+     *
+     * Pass this to {@link East.compileAsync} to enable time operations.
+     */
+    Implementation: TimeImpl,
+} as const;
+
+// Export for backwards compatibility
+export { TimeImpl };
