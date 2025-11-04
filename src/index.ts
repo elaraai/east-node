@@ -91,3 +91,6 @@ export const NodePlatformSync = [
     // TimeImpl excluded (has async sleep)
     // FetchImpl excluded (all async)
 ];
+
+// Re-export all exports as a nested EastNode namespace (matching East.East pattern)
+export * as EastNode from './index.js';

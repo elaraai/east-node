@@ -270,6 +270,26 @@ export const XML = {
      * Pass this to {@link East.compile} to enable XML operations.
      */
     Implementation: XmlImpl,
+
+    /**
+     * Type definitions for XML operations.
+     */
+    Types: {
+        /**
+         * XML parsing configuration type.
+         */
+        ParseConfig: XmlParseConfig,
+
+        /**
+         * XML serialization configuration type.
+         */
+        SerializeConfig: XmlSerializeConfig,
+
+        /**
+         * XML node recursive type (element with tag, attributes, and children).
+         */
+        Node: XmlNode,
+    },
 } as const;
 
 // Export for backwards compatibility

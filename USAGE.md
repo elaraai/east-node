@@ -47,6 +47,30 @@ const compiled2 = East.compile(processFile.toIR(), [...Console.Implementation, .
 
 ---
 
+## Accessing Types
+
+All module types are now accessible via a nested `Types` property for better organization:
+
+```typescript
+import { Fetch, Format } from "@elaraai/east-node";
+
+// Access Fetch types
+const method = Fetch.Types.Method;
+const config = Fetch.Types.RequestConfig;
+const response = Fetch.Types.Response;
+
+// Access Format types
+const csvConfig = Format.CSV.Types.ParseConfig;
+const csvData = Format.CSV.Types.Data;
+const xmlNode = Format.XML.Types.Node;
+```
+
+**Pattern:**
+- `Module.Types.TypeName` - Access types through the module namespace
+- Legacy flat exports (e.g., `FetchMethod`, `CsvParseConfig`) are still available for backwards compatibility
+
+---
+
 ## Platform Functions
 
 ### Console I/O
@@ -120,10 +144,17 @@ import { Fetch, FetchRequestConfig, FetchMethod } from "@elaraai/east-node";
 | `request(config: Expr<FetchRequestConfig>): Expr<FetchResponse>` | Custom HTTP request | `Fetch.request(config)` |
 
 **Types:**
+
+Access types via `Fetch.Types`:
 ```typescript
-FetchMethod = VariantType({ GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS })
-FetchRequestConfig = StructType({ url, method, headers, body })
-FetchResponse = StructType({ status, statusText, headers, body, ok })
+Fetch.Types.Method           // VariantType({ GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS })
+Fetch.Types.RequestConfig    // StructType({ url, method, headers, body })
+Fetch.Types.Response         // StructType({ status, statusText, headers, body, ok })
+```
+
+Legacy exports (also available):
+```typescript
+FetchMethod, FetchRequestConfig, FetchResponse
 ```
 
 **Example:**
@@ -233,11 +264,18 @@ import { Format, csv_parse, csv_serialize, xml_parse, xml_serialize } from "@ela
 | `csv_serialize(data: Expr<CsvDataType>, config: Expr<CsvSerializeConfig>): BlobExpr` | Serialize to CSV binary | `csv_serialize(rows, config)` |
 
 **Types:**
+
+Access CSV types via `Format.CSV.Types`:
 ```typescript
-CsvParseConfig = StructType({ delimiter, quoteChar, escapeChar, newline, hasHeader, nullString, skipEmptyLines, trimFields })
-CsvSerializeConfig = StructType({ delimiter, quoteChar, escapeChar, newline, nullString })
-CsvRowType = DictType(StringType, OptionType(StringType))
-CsvDataType = ArrayType(CsvRowType)
+Format.CSV.Types.ParseConfig      // StructType({ delimiter, quoteChar, escapeChar, newline, hasHeader, ... })
+Format.CSV.Types.SerializeConfig  // StructType({ delimiter, quoteChar, escapeChar, newline, ... })
+Format.CSV.Types.Row              // DictType(StringType, OptionType(StringType))
+Format.CSV.Types.Data             // ArrayType(CsvRowType)
+```
+
+Legacy exports (also available):
+```typescript
+CsvParseConfig, CsvSerializeConfig, CsvRowType, CsvDataType
 ```
 
 #### XML Functions
@@ -248,11 +286,17 @@ CsvDataType = ArrayType(CsvRowType)
 | `xml_serialize(node: Expr<XmlNode>, config: Expr<XmlSerializeConfig>): BlobExpr` | Serialize to XML binary | `xml_serialize(tree, config)` |
 
 **Types:**
+
+Access XML types via `Format.XML.Types`:
 ```typescript
-XmlParseConfig = StructType({ preserveWhitespace, decodeEntities })
-XmlSerializeConfig = StructType({ indent, newline })
-XmlChild = VariantType({ TEXT: StringType, ELEMENT: XmlNode })
-XmlNode = RecursiveType(StructType({ tag, attributes, children: ArrayType(XmlChild) }))
+Format.XML.Types.ParseConfig      // StructType({ preserveWhitespace, decodeEntities })
+Format.XML.Types.SerializeConfig  // StructType({ indent, newline })
+Format.XML.Types.Node             // RecursiveType(StructType({ tag, attributes, children }))
+```
+
+Legacy exports (also available):
+```typescript
+XmlParseConfig, XmlSerializeConfig, XmlNode, XmlChild
 ```
 
 **Example:**

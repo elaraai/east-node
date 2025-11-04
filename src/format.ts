@@ -81,6 +81,21 @@ export const Format = {
      * Pass this to {@link East.compile} to enable all format operations (CSV and XML).
      */
     Implementation: FormatImpl,
+
+    /**
+     * Type definitions for format operations.
+     */
+    Types: {
+        /**
+         * CSV type definitions.
+         */
+        CSV: typeof CSV.Types,
+
+        /**
+         * XML type definitions.
+         */
+        XML: typeof XML.Types,
+    },
 } as const;
 
 // Export for backwards compatibility

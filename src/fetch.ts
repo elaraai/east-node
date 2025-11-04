@@ -325,6 +325,26 @@ export const Fetch = {
      * Pass this to {@link East.compileAsync} to enable fetch operations.
      */
     Implementation: FetchImpl,
+
+    /**
+     * Type definitions for fetch operations.
+     */
+    Types: {
+        /**
+         * HTTP method variant type (GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS).
+         */
+        Method: FetchMethod,
+
+        /**
+         * HTTP request configuration structure.
+         */
+        RequestConfig: FetchRequestConfig,
+
+        /**
+         * HTTP response structure.
+         */
+        Response: FetchResponse,
+    },
 } as const;
 
 // Export for backwards compatibility

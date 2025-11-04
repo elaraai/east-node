@@ -276,6 +276,31 @@ export const CSV = {
      * Pass this to {@link East.compile} to enable CSV operations.
      */
     Implementation: CsvImpl,
+
+    /**
+     * Type definitions for CSV operations.
+     */
+    Types: {
+        /**
+         * CSV parsing configuration type.
+         */
+        ParseConfig: CsvParseConfig,
+
+        /**
+         * CSV serialization configuration type.
+         */
+        SerializeConfig: CsvSerializeConfig,
+
+        /**
+         * CSV row type (dictionary mapping column names to optional string values).
+         */
+        Row: CsvRowType,
+
+        /**
+         * CSV data type (array of row dictionaries).
+         */
+        Data: CsvDataType,
+    },
 } as const;
 
 // Export for backwards compatibility

@@ -26,6 +26,7 @@
     "test": "npm run build && npm run lint && node --enable-source-maps --test 'dist/**/*.spec.js'",
     "test:coverage": "npm run build && npm run lint && node --enable-source-maps --test --experimental-test-coverage 'dist/**/*.spec.js'",
     "test:export": "npm run build && npm run lint && EXPORT_TEST_IR=1 npm test 2>&1 | grep 'Exported test IR'",
+    "extract-examples": "tsx scripts/extract-typedoc-examples.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "version:patch": "npm version patch -m 'chore: bump version to %s'",
