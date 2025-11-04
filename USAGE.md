@@ -331,7 +331,7 @@ const iqScore = compiled2();   // e.g., 103.7
 
 **Import:**
 ```typescript
-import { describeEast, assertEast } from "@elaraai/east-node";
+import { describeEast, Test } from "@elaraai/east-node";
 ```
 
 **Test Framework:**
@@ -339,7 +339,7 @@ import { describeEast, assertEast } from "@elaraai/east-node";
 await describeEast("Test Suite Name", (test) => {
     test("test case description", $ => {
         const result = $.let(someExpression);
-        $(assertEast.equal(result, expectedValue));
+        $(Test.equal(result, expectedValue));
     });
 });
 ```
@@ -359,7 +359,7 @@ await describeEast("File Operations", (test) => {
         const testData = "Hello, World!";
         $(FileSystem.writeFile("test.txt", testData));
         const result = $.let(FileSystem.readFile("test.txt"));
-        $(assertEast.equal(result, testData));
+        $(Test.equal(result, testData));
         $(FileSystem.deleteFile("test.txt"));
     });
 });

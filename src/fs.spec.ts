@@ -3,7 +3,7 @@
  * Licensed under AGPL-3.0. See LICENSE file for details.
  */
 import { East } from "@elaraai/east";
-import { describeEast, assertEast } from "./test.js";
+import { describeEast, Test } from "./test.js";
 import { FileSystem, FileSystemImpl } from "./fs.js";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -19,7 +19,7 @@ await describeEast("FileSystem platform functions", (test) => {
         $(FileSystem.writeFile(path, content));
         const read = $.let(FileSystem.readFile(path));
 
-        $(assertEast.equal(read, "Hello, World!"));
+        $(Test.equal(read, "Hello, World!"));
     });
 
     test("appendFile appends content", $ => {
@@ -29,7 +29,7 @@ await describeEast("FileSystem platform functions", (test) => {
         $(FileSystem.appendFile(path, "Line 2\n"));
 
         const content = $.let(FileSystem.readFile(path));
-        $(assertEast.equal(content, "Line 1\nLine 2\n"));
+        $(Test.equal(content, "Line 1\nLine 2\n"));
     });
 
     test("exists returns true for existing files", $ => {
@@ -38,14 +38,14 @@ await describeEast("FileSystem platform functions", (test) => {
         $(FileSystem.writeFile(path, "content"));
         const exists = $.let(FileSystem.exists(path));
 
-        $(assertEast.equal(exists, true));
+        $(Test.equal(exists, true));
     });
 
     test("exists returns false for non-existing files", $ => {
         const path = $.let(East.value(join(testDir, "does-not-exist.txt")));
         const exists = $.let(FileSystem.exists(path));
 
-        $(assertEast.equal(exists, false));
+        $(Test.equal(exists, false));
     });
 
     test("isFile returns true for files", $ => {
@@ -54,7 +54,7 @@ await describeEast("FileSystem platform functions", (test) => {
         $(FileSystem.writeFile(path, "content"));
         const isFile = $.let(FileSystem.isFile(path));
 
-        $(assertEast.equal(isFile, true));
+        $(Test.equal(isFile, true));
     });
 
     test("isDirectory returns true for directories", $ => {
@@ -63,7 +63,7 @@ await describeEast("FileSystem platform functions", (test) => {
         $(FileSystem.createDirectory(path));
         const isDir = $.let(FileSystem.isDirectory(path));
 
-        $(assertEast.equal(isDir, true));
+        $(Test.equal(isDir, true));
     });
 
     test("createDirectory creates nested directories", $ => {
@@ -72,7 +72,7 @@ await describeEast("FileSystem platform functions", (test) => {
         $(FileSystem.createDirectory(path));
         const exists = $.let(FileSystem.exists(path));
 
-        $(assertEast.equal(exists, true));
+        $(Test.equal(exists, true));
     });
 
     test("readDirectory lists directory contents", $ => {
@@ -85,7 +85,7 @@ await describeEast("FileSystem platform functions", (test) => {
         const entries = $.let(FileSystem.readDirectory(dir));
         const count = $.let(entries.size());
 
-        $(assertEast.equal(count, 2n));
+        $(Test.equal(count, 2n));
     });
 
     test("deleteFile removes a file", $ => {
@@ -95,7 +95,7 @@ await describeEast("FileSystem platform functions", (test) => {
         $(FileSystem.deleteFile(path));
 
         const exists = $.let(FileSystem.exists(path));
-        $(assertEast.equal(exists, false));
+        $(Test.equal(exists, false));
     });
 
     test("writeFileBytes and readFileBytes work with binary data", $ => {
@@ -105,9 +105,9 @@ await describeEast("FileSystem platform functions", (test) => {
         $(FileSystem.writeFileBytes(path, data));
         const read = $.let(FileSystem.readFileBytes(path));
 
-        $(assertEast.equal(read, data));
+        $(Test.equal(read, data));
     });
-}, FileSystemImpl);
+}, { platformFns: FileSystemImpl });
 
 // Cleanup test directory after tests
 rmSync(testDir, { recursive: true, force: true });

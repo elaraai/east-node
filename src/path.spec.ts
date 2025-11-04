@@ -3,7 +3,7 @@
  * Licensed under AGPL-3.0. See LICENSE file for details.
  */
 import { East } from "@elaraai/east";
-import { describeEast, assertEast } from "./test.js";
+import { describeEast, Test } from "./test.js";
 import { Path, PathImpl } from "./path.js";
 
 await describeEast("Path platform functions", (test) => {
@@ -11,28 +11,28 @@ await describeEast("Path platform functions", (test) => {
         const segments = $.let(["foo", "bar", "baz.txt"]);
         const result = $.let(Path.join(segments));
 
-        $(assertEast.equal(result.contains("/"), true));
+        $(Test.equal(result.contains("/"), true));
     });
 
     test("dirname returns directory portion", $ => {
         const path = $.let(East.value("/foo/bar/file.txt"));
         const result = $.let(Path.dirname(path));
 
-        $(assertEast.equal(result, "/foo/bar"));
+        $(Test.equal(result, "/foo/bar"));
     });
 
     test("basename returns file name", $ => {
         const path = $.let(East.value("/foo/bar/file.txt"));
         const result = $.let(Path.basename(path));
 
-        $(assertEast.equal(result, "file.txt"));
+        $(Test.equal(result, "file.txt"));
     });
 
     test("extname returns file extension", $ => {
         const path = $.let(East.value("file.txt"));
         const result = $.let(Path.extname(path));
 
-        $(assertEast.equal(result, ".txt"));
+        $(Test.equal(result, ".txt"));
     });
 
     test("resolve returns absolute path", $ => {
@@ -41,6 +41,6 @@ await describeEast("Path platform functions", (test) => {
         const len = $.let(result.length());
 
         // Absolute paths are longer than relative
-        $(assertEast.greater(len, 8n));
+        $(Test.greater(len, 8n));
     });
-}, PathImpl);
+}, { platformFns: PathImpl });

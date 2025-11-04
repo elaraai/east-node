@@ -2,17 +2,17 @@
   "name": "@elaraai/east-node",
   "version": "0.0.1-beta.0",
   "description": "East Node - Node.js platform integration for East language",
-  "main": "dist/src/index.js",
-  "types": "dist/src/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/src/index.d.ts",
-      "default": "./dist/src/index.js"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     }
   },
   "files": [
-    "dist/src",
-    "!dist/src/**/*.spec.*",
+    "dist",
+    "!dist/**/*.spec.*",
     "README.md",
     "LICENSE.md",
     "CONTRIBUTING.md",

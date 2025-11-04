@@ -5,27 +5,92 @@
 import assert from "node:assert/strict";
 import { test, describe } from "node:test";
 import { East, Expr, get_location, NullType, StringType, BlockBuilder, type SubtypeExprOrValue, type ExprType, type EastType } from "@elaraai/east";
-import type { PlatformFunction } from "@elaraai/east/internal";
+import type { PlatformFunction, PlatformFunctionDef } from "@elaraai/east/internal";
 
 const { str } = East;
 
 /**
- * Platform function that indicates a test assertion passed.
+ * Signals that a test assertion passed.
  *
- * This is used by East test code to signal successful assertions.
- * When running in Node.js, this does nothing. Other platforms may log or track passes.
+ * This platform function is used internally by East test assertions to indicate
+ * successful validation. When executed in Node.js, it performs no action (the test
+ * continues normally). Other platform implementations may log or track passes.
+ *
+ * This function is primarily used within the {@link Test} assertion helpers rather
+ * than being called directly in test code.
+ *
+ * @returns `null` - Has no meaningful return value
+ *
+ * @example
+ * ```ts
+ * import { East, NullType } from "@elaraai/east";
+ * import { Test } from "@elaraai/east-node";
+ *
+ * // Used internally by Test assertions
+ * const myTest = East.function([], NullType, $ => {
+ *     // Test.equal internally calls testPass when the assertion succeeds
+ *     $(Test.equal(East.value(42n), 42n));
+ * });
+ *
+ * const compiled = East.compile(myTest.toIR(), Test.Implementation);
+ * compiled();  // Test passes silently
+ * ```
+ *
+ * @remarks
+ * - Does not throw or produce output in Node.js implementation
+ * - Used by all {@link Test} assertion methods to signal success
+ * - Can be called directly for custom assertion logic
  */
-const testPass = East.platform("testPass", [], NullType);
+export const testPass: PlatformFunctionDef<[], typeof NullType> = East.platform("testPass", [], NullType);
 
 /**
- * Platform function that indicates a test assertion failed.
+ * Signals that a test assertion failed with a message.
  *
- * This is used by East test code to signal failed assertions.
- * When running in Node.js, this throws an assertion error.
+ * This platform function is used internally by East test assertions to indicate
+ * validation failures. When executed in Node.js, it throws an assertion error with
+ * the provided message, causing the test to fail.
  *
- * @param message - The error message describing the assertion failure
+ * This function is primarily used within the {@link Test} assertion helpers rather
+ * than being called directly, though it can be used for custom failure conditions.
+ *
+ * @param message - The error message describing why the assertion failed
+ * @returns `null` - Never actually returns (throws in implementation)
+ *
+ * @throws {AssertionError} Always throws with the provided message (Node.js implementation)
+ *
+ * @example
+ * ```ts
+ * import { East, StringType, NullType } from "@elaraai/east";
+ * import { Test } from "@elaraai/east-node";
+ *
+ * // Used internally by Test assertions
+ * const myTest = East.function([], NullType, $ => {
+ *     // Test.equal internally calls testFail when the assertion fails
+ *     $(Test.equal(East.value(42n), 99n));
+ *     // Throws: "Expected 42 to equal 99 (...)"
+ * });
+ * ```
+ *
+ * @example
+ * ```ts
+ * // Direct usage for custom validation
+ * const validatePositive = East.function([IntegerType], NullType, ($, n) => {
+ *     return n.greater(0n).ifElse(
+ *         _ => Test.pass(),
+ *         _ => Test.fail("Number must be positive")
+ *     );
+ * });
+ *
+ * const compiled = East.compile(validatePositive.toIR(), Test.Implementation);
+ * compiled(-5n);  // Throws: "Number must be positive"
+ * ```
+ *
+ * @remarks
+ * - Always throws in Node.js implementation (test fails immediately)
+ * - Used by all {@link Test} assertion methods to signal failure
+ * - Accepts location information in message for debugging
  */
-const testFail = East.platform("testFail", [StringType], NullType);
+const testFail: PlatformFunctionDef<[typeof StringType], typeof NullType> = East.platform("testFail", [StringType], NullType);
 
 export const NodeTestTypes: any[]  = [
     testPass,
@@ -71,42 +136,148 @@ export async function testEast(name: string, body: ($: BlockBuilder<NullType>) =
 
 
 /**
+ * Configuration options for East test suites.
+ */
+export interface DescribeEastOptions {
+    /**
+     * Platform functions to include in all tests and hooks.
+     */
+    platformFns?: PlatformFunction[];
+
+    /**
+     * Setup function run once before all tests.
+     * Use for opening database connections, initializing resources, etc.
+     */
+    beforeAll?: ($: BlockBuilder<NullType>) => void;
+
+    /**
+     * Cleanup function run once after all tests.
+     * Use for closing database connections, cleaning up resources, etc.
+     * Runs even if tests fail.
+     */
+    afterAll?: ($: BlockBuilder<NullType>) => void;
+
+    /**
+     * Setup function run before each test.
+     */
+    beforeEach?: ($: BlockBuilder<NullType>) => void;
+
+    /**
+     * Cleanup function run after each test.
+     * Runs even if the test fails.
+     */
+    afterEach?: ($: BlockBuilder<NullType>) => void;
+}
+
+/**
  * Wrapper around Node.js `describe` that also exports test IR for cross-platform testing.
  *
  * This function behaves exactly like Node.js `describe` - it runs all the tests normally.
  * Additionally, it creates a single East function that runs all tests in sequence,
  * making it easy to export the entire test suite for running in other East implementations.
  *
+ * Supports lifecycle hooks (beforeAll, afterAll, beforeEach, afterEach) as East functions
+ * to properly set up and tear down resources like database connections.
+ *
  * @param suiteName - The name of the test suite
  * @param builder - A function that receives a `test` function for defining tests
- * @param platformFns - Platform functions to include in all tests (defaults to empty array)
+ * @param options - Configuration options including platform functions and lifecycle hooks
  *
  * @example
  * ```ts
- * // Use with platform functions
+ * // Basic usage with platform functions
  * describeEast("Array tests", (test) => {
  *   test("addition", $ => {
- *     $(assert.equal(East.value(1n).add(1n), 2n));
+ *     $(Test.equal(East.value(1n).add(1n), 2n));
  *   });
- *   test("subtraction", $ => {
- *     $(assert.equal(East.value(2n).subtract(1n), 1n));
+ * }, { platformFns: [] });
+ * ```
+ *
+ * @example
+ * ```ts
+ * // With database cleanup hooks
+ * import { SQL } from "@elaraai/east-node-io";
+ *
+ * describeEast("Database tests", (test) => {
+ *   test("query users", $ => {
+ *     const conn = $.let(SQL.Postgres.connect(config));
+ *     const result = $.let(SQL.Postgres.query(conn, "SELECT * FROM users", []));
+ *     $(Test.equal(result.rows.length(), 2n));
  *   });
- * }, ConsoleImpl);
+ * }, {
+ *   platformFns: SQL.Postgres.Implementation,
+ *   afterEach: $ => {
+ *     // Close connections even if test fails
+ *     const conn = $.let(SQL.Postgres.connect(config));
+ *     $(SQL.Postgres.close(conn));
+ *   }
+ * });
  * ```
  */
 export async function describeEast(
     suiteName: string,
     builder: (test: (name: string, body: ($: BlockBuilder<NullType>) => void) => void) => void,
-    platformFns: PlatformFunction[] = []
+    options: DescribeEastOptions = {}
 ) {
+    const platformFns = options.platformFns ?? [];
+    const allPlatformFns = [...NodeTest, ...platformFns];
     const tests: Array<{ name: string, body: ($: BlockBuilder<NullType>) => void }> = [];
 
     // Collect all test names and bodies
     builder((name: string, body: ($: BlockBuilder<NullType>) => void) => tests.push({ name, body }));
+
+    const hasAsync = allPlatformFns.some((fn) => fn.type === 'async');
+
+    // Compile hook functions
+    const compileHook = (hookBody: ($: BlockBuilder<NullType>) => void) => {
+        const hookFn = East.function([], NullType, hookBody);
+        const ir = hookFn.toIR();
+        return hasAsync ? ir.compileAsync(allPlatformFns) : ir.compile(allPlatformFns);
+    };
+
+    const beforeAllCompiled = options.beforeAll ? compileHook(options.beforeAll) : null;
+    const afterAllCompiled = options.afterAll ? compileHook(options.afterAll) : null;
+    const beforeEachCompiled = options.beforeEach ? compileHook(options.beforeEach) : null;
+    const afterEachCompiled = options.afterEach ? compileHook(options.afterEach) : null;
+
+    // Helper to run a hook (handles both sync and async)
+    const runHook = async (hook: (() => void) | (() => Promise<void>) | null) => {
+        if (!hook) return;
+        await Promise.resolve(hook());
+    };
+
     // Run the describe block normally using Node.js describe
     await describe(suiteName, async () => {
-        for (const { name, body } of tests) {
-            await testEast(name, body, platformFns);
+        // Run beforeAll hook
+        await runHook(beforeAllCompiled);
+
+        try {
+            for (const { name, body } of tests) {
+                await test(name, async () => {
+                    // Run beforeEach hook
+                    await runHook(beforeEachCompiled);
+
+                    try {
+                        // Run the actual test
+                        const testFn = East.function([], NullType, body);
+                        const ir = testFn.toIR();
+
+                        if (hasAsync) {
+                            const compiled = ir.compileAsync(allPlatformFns);
+                            await compiled();
+                        } else {
+                            const compiled = ir.compile(allPlatformFns);
+                            compiled();
+                        }
+                    } finally {
+                        // Run afterEach hook even if test fails
+                        await runHook(afterEachCompiled);
+                    }
+                });
+            }
+        } finally {
+            // Run afterAll hook even if tests fail
+            await runHook(afterAllCompiled);
         }
     });
 }
@@ -124,7 +295,54 @@ export async function describeEast(
  * These functions generate East expressions that perform runtime assertions
  * using platform functions, enabling testing of East code.
  */
-export const assertEast = {
+export const Test = {
+    /**
+     * Platform function that signals a test assertion passed.
+     *
+     * Used internally by assertion methods to indicate successful validation.
+     * Does nothing in Node.js implementation - test continues normally.
+     *
+     * @returns An East expression that returns `null`
+     *
+     * @example
+     * ```ts
+     * import { East, NullType } from "@elaraai/east";
+     * import { Test } from "@elaraai/east-node";
+     *
+     * const customAssertion = East.function([], NullType, $ => {
+     *     return East.value(true).ifElse(
+     *         _ => Test.pass(),
+     *         _ => Test.fail("Condition was false")
+     *     );
+     * });
+     * ```
+     */
+    pass: testPass,
+
+    /**
+     * Platform function that signals a test assertion failed.
+     *
+     * Used internally by assertion methods to indicate validation failures.
+     * Throws an assertion error in Node.js implementation - test fails immediately.
+     *
+     * @param message - Error message describing the failure
+     * @returns An East expression that returns `null` (never actually returns - throws)
+     *
+     * @example
+     * ```ts
+     * import { East, StringType, NullType } from "@elaraai/east";
+     * import { Test } from "@elaraai/east-node";
+     *
+     * const validateRange = East.function([IntegerType], NullType, ($, value) => {
+     *     return value.between(0n, 100n).ifElse(
+     *         _ => Test.pass(),
+     *         _ => Test.fail("Value must be between 0 and 100")
+     *     );
+     * });
+     * ```
+     */
+    fail: testFail,
+
     /**
      * Asserts that two values are the same reference (meaning if one is mutated, the other reflects the change - and they are always equal).
      *

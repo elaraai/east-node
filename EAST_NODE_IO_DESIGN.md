@@ -1066,7 +1066,7 @@ Careful conversion between East types and native types:
 
 ### Testing
 
-- **Unit tests**: Use `describeEast` and `assertEast` following east-node patterns (Node.js test runner)
+- **Unit tests**: Use `describeEast` and `Test` following east-node patterns (Node.js test runner)
 - **Integration tests**: Use Docker containers for real databases
 - **Test files**: Co-located `.spec.ts` files alongside implementation
 - **CI/CD**: GitHub Actions with service containers
@@ -1378,9 +1378,9 @@ export async function globalTeardown() {
 /**
  * Shared test utilities for east-node-io
  */
-import { describeEast, assertEast } from './test.js';
+import { describeEast, Test } from './test.js';
 
-export { describeEast, assertEast };
+export { describeEast, Test };
 
 export const TEST_CONFIG = {
   postgres: {
@@ -1566,7 +1566,7 @@ src/
 │   ├── redis.spec.ts
 │   ├── mongodb.ts
 │   └── mongodb.spec.ts
-├── test.ts                     # Test utilities (describeEast, assertEast)
+├── test.ts                     # Test utilities (describeEast, Test)
 └── index.ts
 
 test/
@@ -1593,7 +1593,7 @@ test/
  * These tests use describeEast following east-node conventions.
  * Tests compile East functions and run them to validate platform function behavior.
  */
-import { describeEast, assertEast } from '../test.js';
+import { describeEast, Test } from '../test.js';
 import { SQL, PostgresImpl } from './postgres.js';
 
 await describeEast("PostgreSQL platform functions", (test) => {
@@ -1619,7 +1619,7 @@ await describeEast("PostgreSQL platform functions", (test) => {
         ));
 
         // Verify result structure
-        $(assertEast.greater(result.rows.length(), 0n));
+        $(Test.greater(result.rows.length(), 0n));
 
         // Close connection (returns void, so use $())
         $(SQL.Postgres.close(conn));
@@ -1634,11 +1634,11 @@ await describeEast("PostgreSQL platform functions", (test) => {
         const nullParam = $.let(East.variant("null", {}));
 
         // Verify correct tagging
-        $(assertEast.equal(stringParam.tag(), "string"));
-        $(assertEast.equal(intParam.tag(), "int"));
-        $(assertEast.equal(floatParam.tag(), "float"));
-        $(assertEast.equal(boolParam.tag(), "bool"));
-        $(assertEast.equal(nullParam.tag(), "null"));
+        $(Test.equal(stringParam.tag(), "string"));
+        $(Test.equal(intParam.tag(), "int"));
+        $(Test.equal(floatParam.tag(), "float"));
+        $(Test.equal(boolParam.tag(), "bool"));
+        $(Test.equal(nullParam.tag(), "null"));
     });
 
     test("connection handle is valid string", $ => {
@@ -1653,7 +1653,7 @@ await describeEast("PostgreSQL platform functions", (test) => {
         const handle = $.let(SQL.Postgres.connect(config));
 
         // Handle should be non-empty
-        $(assertEast.greater(handle.length(), 0n));
+        $(Test.greater(handle.length(), 0n));
 
         // Close returns void, use $()
         $(SQL.Postgres.close(handle));
@@ -1667,7 +1667,7 @@ await describeEast("PostgreSQL platform functions", (test) => {
 /**
  * Redis platform function tests
  */
-import { describeEast, assertEast } from '../test.js';
+import { describeEast, Test } from '../test.js';
 import { NoSQL, RedisImpl } from './redis.js';
 
 await describeEast("Redis platform functions", (test) => {
@@ -1690,7 +1690,7 @@ await describeEast("Redis platform functions", (test) => {
 
         // Verify it matches - match returns void, so each branch uses $()
         $(value.match({
-            some: (v) => assertEast.equal(v, "test-value"),
+            some: (v) => Test.equal(v, "test-value"),
             none: () => testFail("Expected value to exist"),
         }));
 
@@ -1711,7 +1711,7 @@ await describeEast("Redis platform functions", (test) => {
 
         // Value should exist immediately
         const value = $.let(NoSQL.Redis.get(conn, "test:ttl"));
-        $(assertEast.equal(value.isSome(), true));
+        $(Test.equal(value.isSome(), true));
 
         $(NoSQL.Redis.close(conn));
     });
@@ -1731,7 +1731,7 @@ await describeEast("Redis platform functions", (test) => {
         const deleted = $.let(NoSQL.Redis.del(conn, "test:delete"));
 
         // Should have deleted 1 key
-        $(assertEast.equal(deleted, 1n));
+        $(Test.equal(deleted, 1n));
 
         $(NoSQL.Redis.close(conn));
     });

@@ -3,7 +3,7 @@
  * Licensed under AGPL-3.0. See LICENSE file for details.
  */
 import { East, variant, OptionType, StringType, type ValueTypeOf } from "@elaraai/east";
-import { describeEast, assertEast } from "./test.js";
+import { describeEast, Test } from "./test.js";
 import { csv_parse, csv_serialize, CsvDataType, FormatImpl } from "./format.js";
 
 await describeEast("CSV Platform Functions", (test) => {
@@ -23,16 +23,16 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_parse(blob, config));
         const length = $.let(result.size());
-        $(assertEast.equal(length, 2n));
+        $(Test.equal(length, 2n));
 
         const row0 = $.let(result.get(0n));
         const name0 = $.let(row0.get("name"));
         const nameValue0 = $.let(name0.unwrap("some"));
-        $(assertEast.equal(nameValue0, "Alice"));
+        $(Test.equal(nameValue0, "Alice"));
 
         const age0 = $.let(row0.get("age"));
         const ageValue0 = $.let(age0.unwrap("some"));
-        $(assertEast.equal(ageValue0, "30"));
+        $(Test.equal(ageValue0, "30"));
     });
 
     test("parses CSV without header", $ => {
@@ -51,12 +51,12 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_parse(blob, config));
         const length = $.let(result.size());
-        $(assertEast.equal(length, 2n));
+        $(Test.equal(length, 2n));
 
         const row0 = $.let(result.get(0n));
         const col0 = $.let(row0.get("column_0"));
         const col0Value = $.let(col0.unwrap("some"));
-        $(assertEast.equal(col0Value, "Alice"));
+        $(Test.equal(col0Value, "Alice"));
     });
 
     test("handles quoted fields with delimiters", $ => {
@@ -77,7 +77,7 @@ await describeEast("CSV Platform Functions", (test) => {
         const row0 = $.let(result.get(0n));
         const desc0 = $.let(row0.get("description"));
         const descValue0 = $.let(desc0.unwrap("some"));
-        $(assertEast.equal(descValue0, "Hello, World"));
+        $(Test.equal(descValue0, "Hello, World"));
     });
 
     test("handles quoted fields with quotes (double-quote escape)", $ => {
@@ -98,7 +98,7 @@ await describeEast("CSV Platform Functions", (test) => {
         const row0 = $.let(result.get(0n));
         const quote0 = $.let(row0.get("quote"));
         const quoteValue0 = $.let(quote0.unwrap("some"));
-        $(assertEast.equal(quoteValue0, 'She said "hello"'));
+        $(Test.equal(quoteValue0, 'She said "hello"'));
     });
 
     test("handles null values", $ => {
@@ -118,11 +118,11 @@ await describeEast("CSV Platform Functions", (test) => {
         const result = $.let(csv_parse(blob, config));
         const row0 = $.let(result.get(0n));
         const city0 = $.let(row0.get("city"));
-        $(assertEast.equal(city0, variant('none', null)));
+        $(Test.equal(city0, variant('none', null)));
 
         const row1 = $.let(result.get(1n));
         const age1 = $.let(row1.get("age"));
-        $(assertEast.equal(age1, variant('none', null)));
+        $(Test.equal(age1, variant('none', null)));
     });
 
     test("serializes simple data with header", $ => {
@@ -150,7 +150,7 @@ await describeEast("CSV Platform Functions", (test) => {
         const result = $.let(csv_serialize(data, config));
         const text = $.let(result.decodeUtf8());
         // Note: Dict keys are sorted alphabetically, so columns will be "age,name" not "name,age"
-        $(assertEast.equal(text, "age,name\n30,Alice\n25,Bob"));
+        $(Test.equal(text, "age,name\n30,Alice\n25,Bob"));
     });
 
     test("quotes fields with delimiters when serializing", $ => {
@@ -174,7 +174,7 @@ await describeEast("CSV Platform Functions", (test) => {
         const result = $.let(csv_serialize(data, config));
         const text = $.let(result.decodeUtf8());
         // Note: Dict keys are sorted alphabetically, so columns will be "description,name" not "name,description"
-        $(assertEast.equal(text, 'description,name\n"Hello, World",Alice'));
+        $(Test.equal(text, 'description,name\n"Hello, World",Alice'));
     });
 
     test("round-trip: parse and serialize", $ => {
@@ -206,7 +206,7 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const serialized = $.let(csv_serialize(parsed, serializeConfig));
         const text = $.let(serialized.decodeUtf8());
-        $(assertEast.equal(text, originalCsv));
+        $(Test.equal(text, originalCsv));
     });
 
     // Error handling tests
@@ -224,7 +224,7 @@ await describeEast("CSV Platform Functions", (test) => {
             trimFields: false,
         }));
 
-        $(assertEast.throws(csv_parse(blob, config), /Unclosed quote in row 2, column 1/));
+        $(Test.throws(csv_parse(blob, config), /Unclosed quote in row 2, column 1/));
     });
 
     test("errors on too many fields in row", $ => {
@@ -241,7 +241,7 @@ await describeEast("CSV Platform Functions", (test) => {
             trimFields: false,
         }));
 
-        $(assertEast.throws(csv_parse(blob, config), /Too many fields in row 3.*expected 2 columns/));
+        $(Test.throws(csv_parse(blob, config), /Too many fields in row 3.*expected 2 columns/));
     });
 
     test("errors on too few fields in row", $ => {
@@ -258,7 +258,7 @@ await describeEast("CSV Platform Functions", (test) => {
             trimFields: false,
         }));
 
-        $(assertEast.throws(csv_parse(blob, config), /Too few fields in row 3.*expected 3 columns, got 2/));
+        $(Test.throws(csv_parse(blob, config), /Too few fields in row 3.*expected 3 columns, got 2/));
     });
 
     test("errors on invalid escape sequence", $ => {
@@ -275,7 +275,7 @@ await describeEast("CSV Platform Functions", (test) => {
             trimFields: false,
         }));
 
-        $(assertEast.throws(csv_parse(blob, config), /Invalid escape sequence in row 2, column 2/));
+        $(Test.throws(csv_parse(blob, config), /Invalid escape sequence in row 2, column 2/));
     });
 
     test("errors on text after closing quote", $ => {
@@ -292,7 +292,7 @@ await describeEast("CSV Platform Functions", (test) => {
             trimFields: false,
         }));
 
-        $(assertEast.throws(csv_parse(blob, config), /Expected delimiter or newline after closing quote in row 2, column 2/));
+        $(Test.throws(csv_parse(blob, config), /Expected delimiter or newline after closing quote in row 2, column 2/));
     });
 
     test("errors on invalid delimiter length", $ => {
@@ -310,7 +310,7 @@ await describeEast("CSV Platform Functions", (test) => {
             alwaysQuote: false,
         }));
 
-        $(assertEast.throws(csv_serialize(data, config), /delimiter must not be empty/));
+        $(Test.throws(csv_serialize(data, config), /delimiter must not be empty/));
     });
 
     test("errors on invalid quote char length", $ => {
@@ -328,7 +328,7 @@ await describeEast("CSV Platform Functions", (test) => {
             alwaysQuote: false,
         }));
 
-        $(assertEast.throws(csv_serialize(data, config), /quoteChar must have length 1/));
+        $(Test.throws(csv_serialize(data, config), /quoteChar must have length 1/));
     });
 
     // Configuration option tests
@@ -350,7 +350,7 @@ await describeEast("CSV Platform Functions", (test) => {
         const row0 = $.let(result.get(0n));
         const city0 = $.let(row0.get("city"));
         const cityValue0 = $.let(city0.unwrap("some"));
-        $(assertEast.equal(cityValue0, "NYC"));
+        $(Test.equal(cityValue0, "NYC"));
     });
 
     test("parses CSV with custom delimiter (semicolon)", $ => {
@@ -369,7 +369,7 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_parse(blob, config));
         const length = $.let(result.size());
-        $(assertEast.equal(length, 1n));
+        $(Test.equal(length, 1n));
     });
 
     test("parses CSV with custom quote char (single quote)", $ => {
@@ -390,7 +390,7 @@ await describeEast("CSV Platform Functions", (test) => {
         const row0 = $.let(result.get(0n));
         const value0 = $.let(row0.get("value"));
         const valueText = $.let(value0.unwrap("some"));
-        $(assertEast.equal(valueText, "Hello, World"));
+        $(Test.equal(valueText, "Hello, World"));
     });
 
     test("parses CSV with backslash escape char", $ => {
@@ -411,7 +411,7 @@ await describeEast("CSV Platform Functions", (test) => {
         const row0 = $.let(result.get(0n));
         const value0 = $.let(row0.get("value"));
         const valueText = $.let(value0.unwrap("some"));
-        $(assertEast.equal(valueText, 'test"quote'));
+        $(Test.equal(valueText, 'test"quote'));
     });
 
     test("parses CSV with explicit CRLF newline", $ => {
@@ -430,7 +430,7 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_parse(blob, config));
         const length = $.let(result.size());
-        $(assertEast.equal(length, 2n));
+        $(Test.equal(length, 2n));
     });
 
     test("skipEmptyLines ignores blank rows", $ => {
@@ -449,7 +449,7 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_parse(blob, config));
         const length = $.let(result.size());
-        $(assertEast.equal(length, 2n)); // Only Alice and Bob, empty lines skipped
+        $(Test.equal(length, 2n)); // Only Alice and Bob, empty lines skipped
     });
 
     test("trimFields removes whitespace", $ => {
@@ -470,7 +470,7 @@ await describeEast("CSV Platform Functions", (test) => {
         const row0 = $.let(result.get(0n));
         const name0 = $.let(row0.get("name"));
         const nameValue0 = $.let(name0.unwrap("some"));
-        $(assertEast.equal(nameValue0, "Alice")); // Trimmed, not "  Alice  "
+        $(Test.equal(nameValue0, "Alice")); // Trimmed, not "  Alice  "
     });
 
     test("serializes with custom delimiter", $ => {
@@ -490,7 +490,7 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_serialize(data, config));
         const text = $.let(result.decodeUtf8());
-        $(assertEast.equal(text, "age\tname\n30\tAlice"));
+        $(Test.equal(text, "age\tname\n30\tAlice"));
     });
 
     test("serializes with CRLF newline", $ => {
@@ -510,7 +510,7 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_serialize(data, config));
         const text = $.let(result.decodeUtf8());
-        $(assertEast.equal(text, "name\r\nAlice"));
+        $(Test.equal(text, "name\r\nAlice"));
     });
 
     test("serializes without header", $ => {
@@ -530,7 +530,7 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_serialize(data, config));
         const text = $.let(result.decodeUtf8());
-        $(assertEast.equal(text, "30,Alice")); // No header line
+        $(Test.equal(text, "30,Alice")); // No header line
     });
 
     test("serializes with alwaysQuote", $ => {
@@ -550,7 +550,7 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_serialize(data, config));
         const text = $.let(result.decodeUtf8());
-        $(assertEast.equal(text, '"age","name"\n"30","Alice"')); // All fields quoted
+        $(Test.equal(text, '"age","name"\n"30","Alice"')); // All fields quoted
     });
 
     // Edge case tests
@@ -570,7 +570,7 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_parse(blob, config));
         const length = $.let(result.size());
-        $(assertEast.equal(length, 0n)); // No data rows
+        $(Test.equal(length, 0n)); // No data rows
     });
 
     test("handles CSV with all null values", $ => {
@@ -590,10 +590,10 @@ await describeEast("CSV Platform Functions", (test) => {
         const result = $.let(csv_parse(blob, config));
         const row0 = $.let(result.get(0n));
         const name0 = $.let(row0.get("name"));
-        $(assertEast.equal(name0, variant('none', null)));
+        $(Test.equal(name0, variant('none', null)));
 
         const age0 = $.let(row0.get("age"));
-        $(assertEast.equal(age0, variant('none', null)));
+        $(Test.equal(age0, variant('none', null)));
     });
 
     test("distinguishes empty string from null", $ => {
@@ -615,11 +615,11 @@ await describeEast("CSV Platform Functions", (test) => {
         const row0 = $.let(result.get(0n));
         const value0 = $.let(row0.get("value"));
         const valueText0 = $.let(value0.unwrap("some"));
-        $(assertEast.equal(valueText0, "")); // Empty string, not null
+        $(Test.equal(valueText0, "")); // Empty string, not null
 
         const row1 = $.let(result.get(1n));
         const value1 = $.let(row1.get("value"));
-        $(assertEast.equal(value1, variant('none', null))); // NULL string becomes none
+        $(Test.equal(value1, variant('none', null))); // NULL string becomes none
     });
 
     test("serializes empty dataset", $ => {
@@ -637,7 +637,7 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_serialize(data, config));
         const text = $.let(result.decodeUtf8());
-        $(assertEast.equal(text, "")); // Empty output
+        $(Test.equal(text, "")); // Empty output
     });
 
     test("serializes with all none values", $ => {
@@ -660,7 +660,7 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_serialize(data, config));
         const text = $.let(result.decodeUtf8());
-        $(assertEast.equal(text, "age,name\nNULL,NULL"));
+        $(Test.equal(text, "age,name\nNULL,NULL"));
     });
 
     test("serializes mixed some and none values", $ => {
@@ -687,6 +687,6 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_serialize(data, config));
         const text = $.let(result.decodeUtf8());
-        $(assertEast.equal(text, "city,name\n,Alice\nLA,"));
+        $(Test.equal(text, "city,name\n,Alice\nLA,"));
     });
-}, FormatImpl);
+}, { platformFns: FormatImpl });

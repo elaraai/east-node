@@ -79,13 +79,13 @@ const compiled = East.compile(myFunction.toIR(), [...Console.Implementation, ...
 East Node includes a test framework for East code:
 
 ```typescript
-import { describeEast, assertEast } from "@elaraai/east-node";
+import { describeEast, Test } from "@elaraai/east-node";
 import { East } from "@elaraai/east";
 
 await describeEast("Math operations", (test) => {
     test("addition works", $ => {
         const result = $.let(East.value(1n).add(2n));
-        $(assertEast.equal(result, 3n));
+        $(Test.equal(result, 3n));
     });
 });
 ```

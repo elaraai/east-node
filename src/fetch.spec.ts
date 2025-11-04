@@ -3,7 +3,7 @@
  * Licensed under AGPL-3.0. See LICENSE file for details.
  */
 import { variant } from "@elaraai/east";
-import { describeEast, assertEast } from "./test.js";
+import { describeEast, Test } from "./test.js";
 import { Fetch, FetchRequestConfig, FetchImpl } from "./fetch.js";
 
 await describeEast("Fetch platform functions", (test) => {
@@ -14,7 +14,7 @@ await describeEast("Fetch platform functions", (test) => {
         const len = $.let(response.length());
 
         // Response should not be empty
-        $(assertEast.greater(len, 0n));
+        $(Test.greater(len, 0n));
     });
 
     test("post sends data to URL", $ => {
@@ -22,10 +22,10 @@ await describeEast("Fetch platform functions", (test) => {
         const len = $.let(response.length());
 
         // Response should not be empty
-        $(assertEast.greater(len, 0n));
+        $(Test.greater(len, 0n));
 
         // Response should contain our data
-        $(assertEast.equal(response.contains("test data"), true));
+        $(Test.equal(response.contains("test data"), true));
     });
 
     test("request performs GET request", $ => {
@@ -38,11 +38,11 @@ await describeEast("Fetch platform functions", (test) => {
 
         const response = $.let(Fetch.request(config));
 
-        $(assertEast.equal(response.ok, true));
-        $(assertEast.equal(response.status, 200n));
+        $(Test.equal(response.ok, true));
+        $(Test.equal(response.status, 200n));
 
         const bodyLen = $.let(response.body.length());
-        $(assertEast.greater(bodyLen, 0n));
+        $(Test.greater(bodyLen, 0n));
     });
 
     test("request handles POST with body", $ => {
@@ -56,8 +56,8 @@ await describeEast("Fetch platform functions", (test) => {
 
         const response = $.let(Fetch.request(config));
 
-        $(assertEast.equal(response.ok, true));
-        $(assertEast.equal(response.status, 200n));
+        $(Test.equal(response.ok, true));
+        $(Test.equal(response.status, 200n));
     });
 
     test("request returns response headers", $ => {
@@ -72,10 +72,10 @@ await describeEast("Fetch platform functions", (test) => {
 
         // Check that headers map is not empty
         const headersSize = $.let(response.headers.size());
-        $(assertEast.greater(headersSize, 0n));
+        $(Test.greater(headersSize, 0n));
 
         // Check that content-type header exists (Google always returns this)
         const hasContentType = $.let(response.headers.has("content-type"));
-        $(assertEast.equal(hasContentType, true));
+        $(Test.equal(hasContentType, true));
     });
-}, FetchImpl);
+}, { platformFns: FetchImpl });
