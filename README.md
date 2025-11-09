@@ -1,5 +1,10 @@
 # East Node
 
+> Node platform functions for the East language
+
+[![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE.md)
+[![Node Version](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen.svg)](https://nodejs.org)
+
 **East Node** provides Node.js platform integration for the [East language](https://github.com/elaraai/East). It enables East programs to interact with the Node.js runtime through platform functions for file system operations, console I/O, HTTP requests, cryptography, and more.
 
 ## Features
@@ -44,7 +49,7 @@ compiled("/path/to/input.txt");
 
 ## Platform Functions
 
-East Node provides eight platform modules:
+East Node provides seven platform modules:
 
 | Module | Functions | Description |
 |--------|-----------|-------------|
@@ -54,7 +59,6 @@ East Node provides eight platform modules:
 | **Crypto** | `randomBytes`, `hashSha256`, `uuid` | Cryptographic operations |
 | **Time** | `now`, `sleep` | Time and delay operations |
 | **Path** | `join`, `resolve`, `dirname`, `basename`, `extname` | Path manipulation |
-| **Format** | `csv_parse`, `csv_serialize`, `xml_parse`, `xml_serialize` | CSV and XML parsing/serialization |
 | **Random** | `uniform`, `normal`, `range`, `exponential`, `bernoulli`, etc. | Random number generation with 14 distributions |
 
 **Complete platform:**

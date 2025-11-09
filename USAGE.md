@@ -14,7 +14,6 @@ Usage guide for East Node.js platform functions.
   - [Cryptography](#cryptography)
   - [Time Operations](#time-operations)
   - [Path Manipulation](#path-manipulation)
-  - [Data Formats](#data-formats)
   - [Random Number Generation](#random-number-generation)
 - [Testing](#testing)
 - [Error Handling](#error-handling)
@@ -52,22 +51,17 @@ const compiled2 = East.compile(processFile.toIR(), [...Console.Implementation, .
 All module types are now accessible via a nested `Types` property for better organization:
 
 ```typescript
-import { Fetch, Format } from "@elaraai/east-node";
+import { Fetch } from "@elaraai/east-node";
 
 // Access Fetch types
 const method = Fetch.Types.Method;
 const config = Fetch.Types.RequestConfig;
 const response = Fetch.Types.Response;
-
-// Access Format types
-const csvConfig = Format.CSV.Types.ParseConfig;
-const csvData = Format.CSV.Types.Data;
-const xmlNode = Format.XML.Types.Node;
 ```
 
 **Pattern:**
 - `Module.Types.TypeName` - Access types through the module namespace
-- Legacy flat exports (e.g., `FetchMethod`, `CsvParseConfig`) are still available for backwards compatibility
+- Legacy flat exports (e.g., `FetchMethod`) are still available for backwards compatibility
 
 ---
 
@@ -243,77 +237,6 @@ const processPath = East.function([StringType], StringType, ($, filepath) => {
     const name = $.let(Path.basename(filepath));
     const ext = $.let(Path.extname(filepath));
     return East.str`Dir: ${dir}, Name: ${name}, Ext: ${ext}`;
-});
-```
-
----
-
-### Data Formats
-
-**Import:**
-```typescript
-import { Format, csv_parse, csv_serialize, xml_parse, xml_serialize } from "@elaraai/east-node";
-// Or individual: import { CsvParseConfig, CsvSerializeConfig, XmlNode, etc. } from "@elaraai/east-node";
-```
-
-#### CSV Functions
-
-| Signature | Description | Example |
-|-----------|-------------|---------|
-| `csv_parse(blob: BlobExpr, config: Expr<CsvParseConfig>): Expr<CsvDataType>` | Parse CSV from binary data | `csv_parse(data, config)` |
-| `csv_serialize(data: Expr<CsvDataType>, config: Expr<CsvSerializeConfig>): BlobExpr` | Serialize to CSV binary | `csv_serialize(rows, config)` |
-
-**Types:**
-
-Access CSV types via `Format.CSV.Types`:
-```typescript
-Format.CSV.Types.ParseConfig      // StructType({ delimiter, quoteChar, escapeChar, newline, hasHeader, ... })
-Format.CSV.Types.SerializeConfig  // StructType({ delimiter, quoteChar, escapeChar, newline, ... })
-Format.CSV.Types.Row              // DictType(StringType, OptionType(StringType))
-Format.CSV.Types.Data             // ArrayType(CsvRowType)
-```
-
-Legacy exports (also available):
-```typescript
-CsvParseConfig, CsvSerializeConfig, CsvRowType, CsvDataType
-```
-
-#### XML Functions
-
-| Signature | Description | Example |
-|-----------|-------------|---------|
-| `xml_parse(blob: BlobExpr, config: Expr<XmlParseConfig>): Expr<XmlNode>` | Parse XML from binary data | `xml_parse(data, config)` |
-| `xml_serialize(node: Expr<XmlNode>, config: Expr<XmlSerializeConfig>): BlobExpr` | Serialize to XML binary | `xml_serialize(tree, config)` |
-
-**Types:**
-
-Access XML types via `Format.XML.Types`:
-```typescript
-Format.XML.Types.ParseConfig      // StructType({ preserveWhitespace, decodeEntities })
-Format.XML.Types.SerializeConfig  // StructType({ indent, newline })
-Format.XML.Types.Node             // RecursiveType(StructType({ tag, attributes, children }))
-```
-
-Legacy exports (also available):
-```typescript
-XmlParseConfig, XmlSerializeConfig, XmlNode, XmlChild
-```
-
-**Example:**
-```typescript
-const parseCSV = East.function([BlobType], ArrayType(DictType(StringType, OptionType(StringType))), ($, csvData) => {
-    const config = East.value({
-        delimiter: variant("some", ","),
-        quoteChar: variant("some", "\""),
-        escapeChar: variant("some", "\""),
-        newline: variant("none", null),
-        hasHeader: true,
-        nullString: variant("some", ""),
-        skipEmptyLines: true,
-        trimFields: false,
-    }, CsvParseConfig);
-
-    return csv_parse(csvData, config);
 });
 ```
 

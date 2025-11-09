@@ -78,51 +78,43 @@ All **exported** platform function definitions must include comprehensive TypeDo
 
 ```typescript
 /**
- * Parses CSV data from a binary blob into structured row data.
+ * Reads the contents of a file as a UTF-8 encoded string.
  *
- * Converts CSV-formatted binary data into an array of row dictionaries,
- * where each dictionary maps column names to optional string values.
- * Supports configurable delimiters, quote characters, and header handling.
+ * Reads the entire file at the specified path and returns its contents
+ * as a UTF-8 decoded string. The path can be relative or absolute.
  *
- * This is a platform function for the East language, enabling CSV parsing
- * in East programs running on Node.js.
+ * This is a platform function for the East language, enabling file system
+ * operations in East programs running on Node.js.
  *
- * @param blob - The CSV data as a binary blob (UTF-8 encoded)
- * @param config - Parsing configuration (delimiter, quote chars, header options)
- * @returns An array of row dictionaries, each mapping column names to optional values
+ * @param path - The file path (relative or absolute)
+ * @returns The file contents as a UTF-8 string
  *
- * @throws {EastError} When CSV is malformed (unclosed quotes, mismatched columns, invalid config)
+ * @throws {EastError} When file does not exist (ENOENT), permission denied (EACCES), or path is a directory (EISDIR)
  *
  * @example
  * ```ts
- * import { csv_parse } from "@elaraai/east-node";
+ * import { East, StringType, NullType } from "@elaraai/east";
+ * import { FileSystem } from "@elaraai/east-node";
  *
- * const csvData = East.value("name,age\nAlice,30\nBob,25");
- * const blob = csvData.encodeUtf8();
- * const config = East.value({
- *   delimiter: variant('some', ','),
- *   hasHeader: true,
- *   skipEmptyLines: true,
- *   trimFields: false,
+ * const processFile = East.function([StringType], NullType, ($, path) => {
+ *     const content = $.let(FileSystem.readFile(path));
+ *     $(Console.log(content));
  * });
  *
- * const rows = csv_parse(blob, config);
- * // Returns: [
- * //   {"name": some("Alice"), "age": some("30")},
- * //   {"name": some("Bob"), "age": some("25")}
- * // ]
+ * const compiled = East.compile(processFile.toIR(), FileSystem.Implementation);
+ * compiled("data.txt");  // Reads and logs the contents of data.txt
  * ```
  *
  * @remarks
- * - Handles quoted fields with embedded delimiters and newlines
- * - Supports both quote-as-escape ("") and backslash-escape (\") modes
- * - Auto-detects newline format (CRLF, LF, or CR) when not specified
- * - Validates column counts when hasHeader is true
+ * - Reads the entire file into memory - not suitable for very large files
+ * - Assumes UTF-8 encoding - use readFileBytes() for binary data
+ * - Follows symbolic links
+ * - Blocks until the read operation completes
  */
-export const csv_parse: PlatformFunctionDef<
-    [typeof BlobType, typeof CsvParseConfig],
-    typeof CsvDataType
-> = East.platform("csv_parse", [BlobType, CsvParseConfig], CsvDataType);
+export const fs_read_file: PlatformFunctionDef<
+    [typeof StringType],
+    typeof StringType
+> = East.platform("fs_read_file", [StringType], StringType);
 ```
 
 **Key principles for platform function documentation:**
