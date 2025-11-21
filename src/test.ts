@@ -4,7 +4,7 @@
  */
 import assert from "node:assert/strict";
 import { test, describe } from "node:test";
-import { East, Expr, get_location, NullType, StringType, BlockBuilder, type SubtypeExprOrValue, type ExprType, type EastType } from "@elaraai/east";
+import { East, Expr, get_location, NullType, StringType, BlockBuilder, type SubtypeExprOrValue, type ExprType, type EastType, FunctionType, StructType, OptionType, variant, option } from "@elaraai/east";
 import type { PlatformFunction, PlatformFunctionDef } from "@elaraai/east/internal";
 
 const { str } = East;
@@ -92,47 +92,48 @@ export const testPass: PlatformFunctionDef<[], typeof NullType> = East.platform(
  */
 const testFail: PlatformFunctionDef<[typeof StringType], typeof NullType> = East.platform("testFail", [StringType], NullType);
 
-export const NodeTestTypes: any[]  = [
+
+export const test_: PlatformFunctionDef<[typeof StringType, FunctionType<[], typeof NullType>], typeof NullType> = East.platform("test", [StringType, FunctionType([], NullType, ["testPass", "testFail"]),], NullType);
+
+export const describe_: PlatformFunctionDef<[typeof StringType, FunctionType<[], typeof NullType>], typeof NullType> = East.platform("describe", [StringType, FunctionType([], NullType, ["test"]),], NullType);
+
+
+export const NodeTestTypes: any[] = [
     testPass,
-    testFail
+    testFail,
+    test_,
+    describe_,
 ];
 
 export const NodeTest: PlatformFunction[] = [
-        testPass.implement(() => {}), // Assertion passed - do nothing (test continues)
-        testFail.implement((message: string) => {
-            // Assertion failed - throw to fail the test
-            assert.fail(message);
-        }),
-    ];
-
-/**
- * Defines and runs an East test.
- *
- * Wraps the body in an East function, compiles it, and runs it as a Node.js test.
- * The test function can be exported as IR for cross-platform testing.
- *
- * @param name - The name of the test case
- * @param body - A function that builds the test logic using the block builder
- * @param platformFns - Additional platform functions to include (defaults to empty array)
- */
-export async function testEast(name: string, body: ($: BlockBuilder<NullType>) => void, platformFns: PlatformFunction[] = []) {
-     await test(name, async () => {
-        const testFn = East.function([], NullType, body);
-        const ir = testFn.toIR();
-        const allPlatformFns = [...NodeTest, ...platformFns];
-
-        // Check if any platform functions are async
-        const hasAsync = allPlatformFns.some((fn) => fn.type === 'async');
-
-        if (hasAsync) {
-            const compiled = ir.compileAsync(allPlatformFns);
-            await compiled();
-        } else {
-            const compiled = ir.compile(allPlatformFns);
-            compiled();
-        }
-    });
-}
+    testPass.implement(() => { }), // Assertion passed - do nothing (test continues)
+    testFail.implement((message: string) => {
+        // Assertion failed - throw to fail the test
+        assert.fail(message);
+    }),
+    test_.implement((name: string, body: () => null) => {
+        test(name, () => {
+            body();
+        });
+    }),
+    describe_.implement((
+        name: string,
+        body: () => null,
+        hooks: option<{
+            beforeAll: () => null,
+            afterAll: () => null,
+        }>
+    ) => {
+        describe(name, () => {
+            try {
+                if (hooks.type === 'some') hooks.value.beforeAll();
+                body();
+            } finally {
+                if (hooks.type === 'some') hooks.value.afterAll();
+            }
+        });
+    }),
+];
 
 
 /**
@@ -226,60 +227,29 @@ export async function describeEast(
     // Collect all test names and bodies
     builder((name: string, body: ($: BlockBuilder<NullType>) => void) => tests.push({ name, body }));
 
-    const hasAsync = allPlatformFns.some((fn) => fn.type === 'async');
+    // const hasAsync = allPlatformFns.some((fn) => fn.type === 'async');
 
-    // Compile hook functions
-    const compileHook = (hookBody: ($: BlockBuilder<NullType>) => void) => {
-        const hookFn = East.function([], NullType, hookBody);
-        const ir = hookFn.toIR();
-        return hasAsync ? ir.compileAsync(allPlatformFns) : ir.compile(allPlatformFns);
-    };
 
-    const beforeAllCompiled = options.beforeAll ? compileHook(options.beforeAll) : null;
-    const afterAllCompiled = options.afterAll ? compileHook(options.afterAll) : null;
-    const beforeEachCompiled = options.beforeEach ? compileHook(options.beforeEach) : null;
-    const afterEachCompiled = options.afterEach ? compileHook(options.afterEach) : null;
-
-    // Helper to run a hook (handles both sync and async)
-    const runHook = async (hook: (() => void) | (() => Promise<void>) | null) => {
-        if (!hook) return;
-        await Promise.resolve(hook());
-    };
-
-    // Run the describe block normally using Node.js describe
-    await describe(suiteName, async () => {
-        // Run beforeAll hook
-        await runHook(beforeAllCompiled);
-
-        try {
-            for (const { name, body } of tests) {
-                await test(name, async () => {
-                    // Run beforeEach hook
-                    await runHook(beforeEachCompiled);
-
-                    try {
-                        // Run the actual test
-                        const testFn = East.function([], NullType, body);
-                        const ir = testFn.toIR();
-
-                        if (hasAsync) {
-                            const compiled = ir.compileAsync(allPlatformFns);
-                            await compiled();
-                        } else {
-                            const compiled = ir.compile(allPlatformFns);
-                            compiled();
-                        }
-                    } finally {
-                        // Run afterEach hook even if test fails
-                        await runHook(afterEachCompiled);
-                    }
-                });
-            }
-        } finally {
-            // Run afterAll hook even if tests fail
-            await runHook(afterAllCompiled);
-        }
+    // Create a single East function that uses describe/test platform functions
+    const suiteFunction = East.function([], NullType, $ => {
+        $(describe_.call(
+            $,
+            suiteName,
+            East.function([], NullType, $ => {
+                if (options.beforeAll) $(test_.call($, "beforeAll", East.function([], NullType, options.beforeAll)));
+                for (const { name, body } of tests) {
+                    if (options.beforeEach) $(test_.call($, "beforeEach", East.function([], NullType, options.beforeEach)));
+                    $(test_.call($, name, East.function([], NullType, body)));
+                    if (options.afterEach) $(test_.call($, "afterEach", East.function([], NullType, options.afterEach)));
+                }
+                if (options.afterAll) $(test_.call($, "afterAll", East.function([], NullType, options.afterAll)));
+            }),
+        ));
     });
+
+    // Run the test suite using the Node.js platform implementation
+    const compiled = suiteFunction.toIR().compile(NodeTest);
+    compiled();
 }
 
 /**
@@ -423,7 +393,7 @@ export const Test = {
      * @param expected - The value that actual should be less than
      * @returns An East expression that performs the less-than check
      */
-    less<E extends EastType>(actual: Expr<E>, expected: SubtypeExprOrValue<NoInfer<E>>): ExprType<NullType>{
+    less<E extends EastType>(actual: Expr<E>, expected: SubtypeExprOrValue<NoInfer<E>>): ExprType<NullType> {
         const location = get_location(2);
         const expected_expr = Expr.from(expected, Expr.type(actual));
         return Expr.tryCatch(

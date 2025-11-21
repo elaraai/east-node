@@ -4,7 +4,7 @@
  */
 import { East, StringType, NullType } from "@elaraai/east";
 import type { PlatformFunction, PlatformFunctionDef } from "@elaraai/east/internal";
-import { EastError } from "@elaraai/east/internal";
+import { EastError, EastIR } from "@elaraai/east/internal";
 import { stdout } from "node:process";
 
 /**
@@ -216,3 +216,23 @@ export const Console = {
 
 // Export for backwards compatibility
 export { ConsoleImpl };
+
+/**
+East.package(
+    name: "console",
+    ....
+
+)
+
+
+
+import(..)
+
+
+
+ed3 import ./path_to_east_desdcribing_package...
+
+
+ed3 run console.log "Hello, World!"
+
+ */
