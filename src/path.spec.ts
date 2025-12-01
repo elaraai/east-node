@@ -6,7 +6,7 @@ import { East } from "@elaraai/east";
 import { describeEast, Test } from "./test.js";
 import { Path, PathImpl } from "./path.js";
 
-await describeEast("Path platform functions", (test) => {
+describeEast("Path platform functions", (test) => {
     test("join combines path segments", $ => {
         const segments = $.let(["foo", "bar", "baz.txt"]);
         const result = $.let(Path.join(segments));

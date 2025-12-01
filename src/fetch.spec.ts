@@ -6,7 +6,7 @@ import { variant } from "@elaraai/east";
 import { describeEast, Test } from "./test.js";
 import { Fetch, FetchRequestConfig, FetchImpl } from "./fetch.js";
 
-await describeEast("Fetch platform functions", (test) => {
+describeEast("Fetch platform functions", (test) => {
     // Note: These tests require network access
 
     test("get fetches data from URL", $ => {

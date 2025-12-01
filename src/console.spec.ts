@@ -6,7 +6,7 @@ import { East } from "@elaraai/east";
 import { describeEast, Test } from "./test.js";
 import { Console, ConsoleImpl } from "./console.js";
 
-await describeEast("Console platform functions", (test) => {
+describeEast("Console platform functions", (test) => {
     test("console_log writes message", $ => {
         // We can't easily test stdout, but we can verify it compiles and runs
         $(Console.log("Test message"));

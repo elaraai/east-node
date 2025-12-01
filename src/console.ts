@@ -4,7 +4,7 @@
  */
 import { East, StringType, NullType } from "@elaraai/east";
 import type { PlatformFunction, PlatformFunctionDef } from "@elaraai/east/internal";
-import { EastError, EastIR } from "@elaraai/east/internal";
+import { EastError } from "@elaraai/east/internal";
 import { stdout } from "node:process";
 
 /**

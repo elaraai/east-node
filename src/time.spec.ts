@@ -5,7 +5,7 @@
 import { describeEast, Test } from "./test.js";
 import { Time, TimeImpl } from "./time.js";
 
-await describeEast("Time platform functions", (test) => {
+describeEast("Time platform functions", (test) => {
     test("now returns a timestamp", $ => {
         const timestamp = $.let(Time.now());
 

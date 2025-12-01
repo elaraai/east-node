@@ -5,7 +5,7 @@
 import { describeEast, Test } from "./test.js";
 import { Crypto, CryptoImpl } from "./crypto.js";
 
-await describeEast("Crypto platform functions", (test) => {
+describeEast("Crypto platform functions", (test) => {
     test("randomBytes generates correct length", $ => {
         const bytes = $.let(Crypto.randomBytes(16n));
         const len = $.let(bytes.size());

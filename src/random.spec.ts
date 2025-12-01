@@ -5,7 +5,7 @@
 import { describeEast, Test } from "./test.js";
 import { Random } from "./random.js";
 
-await describeEast("Random platform functions", (test) => {
+describeEast("Random platform functions", (test) => {
     test("uniform returns number in [0, 1)", $ => {
         const value = $.let(Random.uniform());
         $(Test.greaterEqual(value, 0.0));

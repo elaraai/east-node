@@ -3,8 +3,8 @@
  * Licensed under AGPL-3.0. See LICENSE file for details.
  */
 import assert from "node:assert/strict";
-import { test, describe } from "node:test";
-import { East, Expr, get_location, NullType, StringType, BlockBuilder, type SubtypeExprOrValue, type ExprType, type EastType, FunctionType, StructType, OptionType, variant, option } from "@elaraai/east";
+import { test as testNode, describe as describeNode } from "node:test";
+import { East, Expr, get_location, NullType, StringType, BlockBuilder, type SubtypeExprOrValue, type ExprType, type EastType, FunctionType } from "@elaraai/east";
 import type { PlatformFunction, PlatformFunctionDef } from "@elaraai/east/internal";
 
 const { str } = East;
@@ -92,17 +92,16 @@ export const testPass: PlatformFunctionDef<[], typeof NullType> = East.platform(
  */
 const testFail: PlatformFunctionDef<[typeof StringType], typeof NullType> = East.platform("testFail", [StringType], NullType);
 
+const test: PlatformFunctionDef<[typeof StringType, FunctionType<[], typeof NullType>], typeof NullType> = East.platform("test", [StringType, FunctionType([], NullType, null),], NullType);
 
-export const test_: PlatformFunctionDef<[typeof StringType, FunctionType<[], typeof NullType>], typeof NullType> = East.platform("test", [StringType, FunctionType([], NullType, ["testPass", "testFail"]),], NullType);
-
-export const describe_: PlatformFunctionDef<[typeof StringType, FunctionType<[], typeof NullType>], typeof NullType> = East.platform("describe", [StringType, FunctionType([], NullType, ["test"]),], NullType);
+const describe: PlatformFunctionDef<[typeof StringType, FunctionType<[], typeof NullType>], typeof NullType> = East.platform("describe", [StringType, FunctionType([], NullType, null),], NullType);
 
 
 export const NodeTestTypes: any[] = [
     testPass,
     testFail,
-    test_,
-    describe_,
+    test,
+    describe,
 ];
 
 export const NodeTest: PlatformFunction[] = [
@@ -111,26 +110,17 @@ export const NodeTest: PlatformFunction[] = [
         // Assertion failed - throw to fail the test
         assert.fail(message);
     }),
-    test_.implement((name: string, body: () => null) => {
-        test(name, () => {
+    test.implement((name: string, body: () => null) => {
+        testNode(name, () => {
             body();
         });
     }),
-    describe_.implement((
+    describe.implement((
         name: string,
         body: () => null,
-        hooks: option<{
-            beforeAll: () => null,
-            afterAll: () => null,
-        }>
     ) => {
-        describe(name, () => {
-            try {
-                if (hooks.type === 'some') hooks.value.beforeAll();
-                body();
-            } finally {
-                if (hooks.type === 'some') hooks.value.afterAll();
-            }
+        describeNode(name, () => {
+            body();
         });
     }),
 ];
@@ -215,41 +205,41 @@ export interface DescribeEastOptions {
  * });
  * ```
  */
-export async function describeEast(
+export function describeEast(
     suiteName: string,
     builder: (test: (name: string, body: ($: BlockBuilder<NullType>) => void) => void) => void,
     options: DescribeEastOptions = {}
 ) {
     const platformFns = options.platformFns ?? [];
-    const allPlatformFns = [...NodeTest, ...platformFns];
     const tests: Array<{ name: string, body: ($: BlockBuilder<NullType>) => void }> = [];
 
     // Collect all test names and bodies
     builder((name: string, body: ($: BlockBuilder<NullType>) => void) => tests.push({ name, body }));
 
-    // const hasAsync = allPlatformFns.some((fn) => fn.type === 'async');
-
-
     // Create a single East function that uses describe/test platform functions
     const suiteFunction = East.function([], NullType, $ => {
-        $(describe_.call(
+        $(describe.call(
             $,
             suiteName,
             East.function([], NullType, $ => {
-                if (options.beforeAll) $(test_.call($, "beforeAll", East.function([], NullType, options.beforeAll)));
+                if (options.beforeAll) $(test.call($, "beforeAll", East.function([], NullType, options.beforeAll)));
                 for (const { name, body } of tests) {
-                    if (options.beforeEach) $(test_.call($, "beforeEach", East.function([], NullType, options.beforeEach)));
-                    $(test_.call($, name, East.function([], NullType, body)));
-                    if (options.afterEach) $(test_.call($, "afterEach", East.function([], NullType, options.afterEach)));
+                    if (options.beforeEach) $(test.call($, "beforeEach", East.function([], NullType, options.beforeEach)));
+                    $(test.call($, name, East.function([], NullType, body)));
+                    if (options.afterEach) $(test.call($, "afterEach", East.function([], NullType, options.afterEach)));
                 }
-                if (options.afterAll) $(test_.call($, "afterAll", East.function([], NullType, options.afterAll)));
+                if (options.afterAll) $(test.call($, "afterAll", East.function([], NullType, options.afterAll)));
             }),
         ));
     });
 
+    const funcs = [...NodeTest, ...platformFns]
+    if(funcs.some(f => f.type === 'async')) {
+        suiteFunction.toIR().compileAsync([...NodeTest, ...platformFns]);
+    } else {
+        suiteFunction.toIR().compile([...NodeTest, ...platformFns]);
+    }
     // Run the test suite using the Node.js platform implementation
-    const compiled = suiteFunction.toIR().compile(NodeTest);
-    compiled();
 }
 
 /**
