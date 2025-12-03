@@ -626,7 +626,7 @@ const RandomImpl: PlatformFunction[] = [
  * @example
  * ```ts
  * import { East, FloatType, IntegerType } from "@elaraai/east";
- * import { Random } from "@elaraai/east-node";
+ * import { Random } from "@elaraai/east-node-std";
  *
  * const rollDice = East.function([], IntegerType, $ => {
  *     return Random.range(1n, 6n);

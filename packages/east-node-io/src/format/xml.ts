@@ -188,7 +188,7 @@ const XmlImpl: PlatformFunction[] = [
  * @example
  * ```ts
  * import { East, BlobType } from "@elaraai/east";
- * import { XML, XmlParseConfig, XmlNode } from "@elaraai/east-node";
+ * import { XML, XmlParseConfig, XmlNode } from "@elaraai/east-node-std";
  *
  * const parseXML = East.function([BlobType], XmlNode, ($, xmlBlob) => {
  *     const config = $.const(East.value({

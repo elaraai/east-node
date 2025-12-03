@@ -22,14 +22,14 @@
 ## Installation
 
 ```bash
-npm install @elaraai/east-node @elaraai/east
+npm install @elaraai/east-node-std @elaraai/east
 ```
 
 ## Quick Start
 
 ```typescript
 import { East, NullType, StringType } from "@elaraai/east";
-import { NodePlatform, Console, FileSystem } from "@elaraai/east-node";
+import { NodePlatform, Console, FileSystem } from "@elaraai/east-node-std";
 
 // Define an East function using platform functions
 const processFile = East.function(
@@ -63,13 +63,13 @@ East Node provides seven platform modules:
 
 **Complete platform:**
 ```typescript
-import { NodePlatform } from "@elaraai/east-node";
+import { NodePlatform } from "@elaraai/east-node-std";
 const compiled = East.compile(myFunction.toIR(), NodePlatform);
 ```
 
 **Individual modules:**
 ```typescript
-import { Console, FileSystem } from "@elaraai/east-node";
+import { Console, FileSystem } from "@elaraai/east-node-std";
 const compiled = East.compile(myFunction.toIR(), [...Console.Implementation, ...FileSystem.Implementation]);
 ```
 
@@ -83,7 +83,7 @@ const compiled = East.compile(myFunction.toIR(), [...Console.Implementation, ...
 East Node includes a test framework for East code:
 
 ```typescript
-import { describeEast, Test } from "@elaraai/east-node";
+import { describeEast, Test } from "@elaraai/east-node-std";
 import { East } from "@elaraai/east";
 
 await describeEast("Math operations", (test) => {

@@ -3,7 +3,7 @@
  * Dual-licensed under AGPL-3.0 and commercial license. See LICENSE for details.
  */
 import { East, variant } from "@elaraai/east";
-import { describeEast, Test } from "@elaraai/east-node";
+import { describeEast, Test } from "@elaraai/east-node-std";
 import { xml_parse, xml_serialize, XmlNode, XmlImpl } from "./xml.js";
 
 await describeEast("XML Platform Functions", (test) => {

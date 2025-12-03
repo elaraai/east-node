@@ -4,7 +4,7 @@
  */
 
 import { East, variant } from "@elaraai/east";
-import { describeEast, Test } from "@elaraai/east-node";
+import { describeEast, Test } from "@elaraai/east-node-std";
 import { gzip_compress, gzip_decompress, GzipImpl } from "./gzip.js";
 
 await describeEast("Gzip Platform Functions", (test) => {

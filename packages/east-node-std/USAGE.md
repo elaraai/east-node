@@ -24,7 +24,7 @@ Usage guide for East Node.js platform functions.
 
 ```typescript
 import { East, StringType, NullType } from "@elaraai/east";
-import { NodePlatform, Console, FileSystem } from "@elaraai/east-node";
+import { NodePlatform, Console, FileSystem } from "@elaraai/east-node-std";
 
 // Define East function using platform functions
 const processFile = East.function(
@@ -51,7 +51,7 @@ const compiled2 = East.compile(processFile.toIR(), [...Console.Implementation, .
 All module types are now accessible via a nested `Types` property for better organization:
 
 ```typescript
-import { Fetch } from "@elaraai/east-node";
+import { Fetch } from "@elaraai/east-node-std";
 
 // Access Fetch types
 const method = Fetch.Types.Method;
@@ -71,7 +71,7 @@ const response = Fetch.Types.Response;
 
 **Import:**
 ```typescript
-import { Console } from "@elaraai/east-node";
+import { Console } from "@elaraai/east-node-std";
 ```
 
 **Functions:**
@@ -94,7 +94,7 @@ const greet = East.function([StringType], NullType, ($, name) => {
 
 **Import:**
 ```typescript
-import { FileSystem } from "@elaraai/east-node";
+import { FileSystem } from "@elaraai/east-node-std";
 ```
 
 **Functions:**
@@ -127,7 +127,7 @@ const copyFile = East.function([StringType, StringType], NullType, ($, src, dest
 
 **Import:**
 ```typescript
-import { Fetch, FetchRequestConfig, FetchMethod } from "@elaraai/east-node";
+import { Fetch, FetchRequestConfig, FetchMethod } from "@elaraai/east-node-std";
 ```
 
 **Functions:**
@@ -166,7 +166,7 @@ const fetchData = East.function([], StringType, $ => {
 
 **Import:**
 ```typescript
-import { Crypto } from "@elaraai/east-node";
+import { Crypto } from "@elaraai/east-node-std";
 ```
 
 **Functions:**
@@ -193,7 +193,7 @@ const generateToken = East.function([], StringType, $ => {
 
 **Import:**
 ```typescript
-import { Time } from "@elaraai/east-node";
+import { Time } from "@elaraai/east-node-std";
 ```
 
 **Functions:**
@@ -218,7 +218,7 @@ const measureTime = East.function([], IntegerType, $ => {
 
 **Import:**
 ```typescript
-import { Path } from "@elaraai/east-node";
+import { Path } from "@elaraai/east-node-std";
 ```
 
 **Functions:**
@@ -246,7 +246,7 @@ const processPath = East.function([StringType], StringType, ($, filepath) => {
 
 **Import:**
 ```typescript
-import { Random } from "@elaraai/east-node";
+import { Random } from "@elaraai/east-node-std";
 ```
 
 **Functions:**
@@ -270,7 +270,7 @@ import { Random } from "@elaraai/east-node";
 **Example:**
 ```typescript
 import { East, IntegerType, FloatType } from "@elaraai/east";
-import { Random } from "@elaraai/east-node";
+import { Random } from "@elaraai/east-node-std";
 
 // Roll a six-sided die
 const rollDice = East.function([], IntegerType, $ => {
@@ -298,7 +298,7 @@ const iqScore = compiled2();   // e.g., 103.7
 
 **Import:**
 ```typescript
-import { describeEast, Test } from "@elaraai/east-node";
+import { describeEast, Test } from "@elaraai/east-node-std";
 ```
 
 **Test Framework:**

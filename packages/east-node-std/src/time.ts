@@ -90,7 +90,7 @@ const TimeImpl: PlatformFunction[] = [
  * @example
  * ```ts
  * import { East, NullType } from "@elaraai/east";
- * import { Time } from "@elaraai/east-node";
+ * import { Time } from "@elaraai/east-node-std";
  *
  * const timedTask = East.function([], NullType, $ => {
  *     const start = $.let(Time.now());

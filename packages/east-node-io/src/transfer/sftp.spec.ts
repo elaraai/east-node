@@ -13,7 +13,7 @@
  * Run `npm run dev:services` to start Docker containers.
  */
 import { East, variant } from "@elaraai/east";
-import { describeEast, Test } from "@elaraai/east-node";
+import { describeEast, Test } from "@elaraai/east-node-std";
 import { sftp_connect, sftp_put, sftp_get, sftp_list, sftp_delete, sftp_close, sftp_close_all, SftpImpl } from "./sftp.js";
 
 // SFTP test configuration

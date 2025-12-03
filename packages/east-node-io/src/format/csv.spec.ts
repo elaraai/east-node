@@ -4,7 +4,7 @@
  */
 import { East, variant, StringType, type ValueTypeOf, DictType } from "@elaraai/east";
 import { LiteralValueType } from "@elaraai/east/internal";
-import { describeEast, Test } from "@elaraai/east-node";
+import { describeEast, Test } from "@elaraai/east-node-std";
 import { csv_parse, csv_serialize, CsvDataType, CsvColumnType, CsvImpl } from "./csv.js";
 
 await describeEast("CSV Platform Functions", (test) => {

@@ -126,7 +126,7 @@ const ConsoleImpl: PlatformFunction[] = [
  * @example
  * ```ts
  * import { East, NullType } from "@elaraai/east";
- * import { Console } from "@elaraai/east-node";
+ * import { Console } from "@elaraai/east-node-std";
  *
  * const greet = East.function([], NullType, $ => {
  *     $(Console.log("Hello, World!"));

@@ -80,7 +80,7 @@
     "node": ">=22.0.0"
   },
   "devDependencies": {
-    "@elaraai/east-node": "*",
+    "@elaraai/east-node-std": "*",
     "@types/adm-zip": "^0.5.7",
     "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^22.18.1",

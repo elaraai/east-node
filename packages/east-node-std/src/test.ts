@@ -24,7 +24,7 @@ const { str } = East;
  * @example
  * ```ts
  * import { East, NullType } from "@elaraai/east";
- * import { Test } from "@elaraai/east-node";
+ * import { Test } from "@elaraai/east-node-std";
  *
  * // Used internally by Test assertions
  * const myTest = East.function([], NullType, $ => {
@@ -61,7 +61,7 @@ export const testPass: PlatformFunctionDef<[], typeof NullType> = East.platform(
  * @example
  * ```ts
  * import { East, StringType, NullType } from "@elaraai/east";
- * import { Test } from "@elaraai/east-node";
+ * import { Test } from "@elaraai/east-node-std";
  *
  * // Used internally by Test assertions
  * const myTest = East.function([], NullType, $ => {
@@ -267,7 +267,7 @@ export const Test = {
      * @example
      * ```ts
      * import { East, NullType } from "@elaraai/east";
-     * import { Test } from "@elaraai/east-node";
+     * import { Test } from "@elaraai/east-node-std";
      *
      * const customAssertion = East.function([], NullType, $ => {
      *     return East.value(true).ifElse(
@@ -291,7 +291,7 @@ export const Test = {
      * @example
      * ```ts
      * import { East, StringType, NullType } from "@elaraai/east";
-     * import { Test } from "@elaraai/east-node";
+     * import { Test } from "@elaraai/east-node-std";
      *
      * const validateRange = East.function([IntegerType], NullType, ($, value) => {
      *     return value.between(0n, 100n).ifElse(

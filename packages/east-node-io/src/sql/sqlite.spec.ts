@@ -10,7 +10,7 @@
  * Tests compile East functions and run them to validate platform function behavior.
  */
 import { East, variant, type ValueTypeOf } from "@elaraai/east";
-import { describeEast, Test } from "@elaraai/east-node";
+import { describeEast, Test } from "@elaraai/east-node-std";
 import { sqlite_connect, sqlite_query, sqlite_close, sqlite_close_all, SqliteImpl } from "./sqlite.js";
 import { SqlRowType, SqlParameterType } from "./types.js";
 

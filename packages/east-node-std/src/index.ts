@@ -38,7 +38,7 @@ import { RandomImpl } from "./random.js";
  * @example
  * ```ts
  * import { East, NullType } from "@elaraai/east";
- * import { NodePlatform, Console, FileSystem } from "@elaraai/east-node";
+ * import { NodePlatform, Console, FileSystem } from "@elaraai/east-node-std";
  *
  * const fn = East.function([], NullType, $ => {
  *     const content = $.let(FileSystem.readFile("data.txt"));
@@ -68,7 +68,7 @@ export const NodePlatform = [
  * @example
  * ```ts
  * import { East, NullType } from "@elaraai/east";
- * import { NodePlatformSync, Console } from "@elaraai/east-node";
+ * import { NodePlatformSync, Console } from "@elaraai/east-node-std";
  *
  * const fn = East.function([], NullType, $ => {
  *     $(Console.log("Hello, World!"));

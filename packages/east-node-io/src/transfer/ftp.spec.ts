@@ -13,7 +13,7 @@
  * Run `npm run dev:services` to start Docker containers.
  */
 import { East } from "@elaraai/east";
-import { describeEast, Test } from "@elaraai/east-node";
+import { describeEast, Test } from "@elaraai/east-node-std";
 import { ftp_connect, ftp_put, ftp_get, ftp_list, ftp_delete, ftp_close, ftp_close_all, FtpImpl } from "./ftp.js";
 
 // FTP test configuration

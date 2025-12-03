@@ -410,7 +410,7 @@ const FileSystemImpl: PlatformFunction[] = [
  * @example
  * ```ts
  * import { East, NullType } from "@elaraai/east";
- * import { FileSystem } from "@elaraai/east-node";
+ * import { FileSystem } from "@elaraai/east-node-std";
  *
  * const processFile = East.function([], NullType, $ => {
  *     const content = $.let(FileSystem.readFile("input.txt"));

@@ -4,7 +4,7 @@
  */
 
 import { East } from "@elaraai/east";
-import { describeEast, Test } from "@elaraai/east-node";
+import { describeEast, Test } from "@elaraai/east-node-std";
 import { tar_create, tar_extract, TarImpl } from "./tar.js";
 
 await describeEast("TAR Platform Functions", (test) => {

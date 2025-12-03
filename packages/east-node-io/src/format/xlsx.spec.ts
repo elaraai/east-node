@@ -9,7 +9,7 @@
  * These tests use describeEast following east-node conventions.
  * Tests compile East functions and run them to validate platform function behavior.
  */
-import { describeEast, Test } from "@elaraai/east-node";
+import { describeEast, Test } from "@elaraai/east-node-std";
 import { East, variant } from "@elaraai/east";
 import { xlsx_read, xlsx_write, xlsx_info, XlsxImpl } from "./xlsx.js";
 import { XlsxSheetType } from "./types.js";

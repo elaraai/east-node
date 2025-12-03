@@ -158,7 +158,7 @@ const CryptoImpl: PlatformFunction[] = [
  * @example
  * ```ts
  * import { East, StringType } from "@elaraai/east";
- * import { Crypto } from "@elaraai/east-node";
+ * import { Crypto } from "@elaraai/east-node-std";
  *
  * const generateId = East.function([], StringType, $ => {
  *     return Crypto.uuid();

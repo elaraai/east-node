@@ -187,7 +187,7 @@ const PathImpl: PlatformFunction[] = [
  * @example
  * ```ts
  * import { East, StringType } from "@elaraai/east";
- * import { Path } from "@elaraai/east-node";
+ * import { Path } from "@elaraai/east-node-std";
  *
  * const buildPath = East.function([], StringType, $ => {
  *     const segments = East.value(["dir", "subdir", "file.txt"]);

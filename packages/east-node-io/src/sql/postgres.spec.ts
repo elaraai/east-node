@@ -11,7 +11,7 @@
  *
  * Requires Docker PostgreSQL service running on localhost:5432
  */
-import { describeEast, Test } from "@elaraai/east-node";
+import { describeEast, Test } from "@elaraai/east-node-std";
 import { East, variant, type ValueTypeOf } from "@elaraai/east";
 import { postgres_connect, postgres_query, postgres_close, postgres_close_all, PostgresImpl } from "./postgres.js";
 import { SqlRowType, SqlParameterType } from "./types.js";

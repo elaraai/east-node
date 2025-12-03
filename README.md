@@ -11,7 +11,7 @@ This monorepo contains Node.js platform packages for the [East language](https:/
 
 | Package | Description |
 |---------|-------------|
-| [@elaraai/east-node](./packages/east-node) | Core Node.js platform functions (filesystem, console, fetch, crypto, etc.) |
+| [@elaraai/east-node-std](./packages/east-node-std) | Core Node.js platform functions (filesystem, console, fetch, crypto, etc.) |
 | [@elaraai/east-node-io](./packages/east-node-io) | I/O platform functions (SQL, database connectors, etc.) |
 
 ## Development

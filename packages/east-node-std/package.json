@@ -1,5 +1,5 @@
 {
-  "name": "@elaraai/east-node",
+  "name": "@elaraai/east-node-std",
   "version": "0.0.1-beta.0",
   "description": "East Node - Node.js platform integration for East language",
   "main": "dist/index.js",
@@ -54,7 +54,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/elaraai/east-node.git",
-    "directory": "packages/east-node"
+    "directory": "packages/east-node-std"
   },
   "keywords": [
     "east",

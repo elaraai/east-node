@@ -1,26 +1,50 @@
-name: Publish to npm
+name: Publish
 
 on:
-  push:
-    tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
-      - "v[0-9]+.[0-9]+.[0-9]+-*"
+  workflow_dispatch:
+    inputs:
+      publish_east_node_std:
+        description: 'Publish @elaraai/east-node-std'
+        required: true
+        default: true
+        type: boolean
+      publish_east_node_io:
+        description: 'Publish @elaraai/east-node-io'
+        required: true
+        default: true
+        type: boolean
+      npm_tag:
+        description: 'npm tag (latest or beta)'
+        required: true
+        default: 'latest'
+        type: choice
+        options:
+          - latest
+          - beta
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write  # Required for npm trusted publishers (OIDC)
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: 22.x
+          cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
+
+      - name: Upgrade npm for trusted publishing
+        run: npm install -g npm@latest
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
+      - name: Build all packages
         run: npm run build
 
       - name: Run tests
@@ -29,16 +53,22 @@ jobs:
       - name: Run linter
         run: npm run lint
 
-      - name: Determine npm tag
-        id: npm-tag
-        run: |
-          if [[ "${GITHUB_REF}" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "tag=latest" >> $GITHUB_OUTPUT
-          else
-            echo "tag=beta" >> $GITHUB_OUTPUT
-          fi
+      # Publish npm packages in dependency order (using OIDC trusted publishers)
+      # 1. east-node-std (core platform functions)
+      - name: Publish @elaraai/east-node-std
+        if: ${{ inputs.publish_east_node_std }}
+        run: npm publish --access public --provenance --tag ${{ inputs.npm_tag }}
+        working-directory: packages/east-node-std
 
-      - name: Publish to npm
-        run: npm publish --access public --tag ${{ steps.npm-tag.outputs.tag }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # 2. east-node-io (depends on east-node-std)
+      - name: Update east-node-io workspace dependency
+        if: ${{ inputs.publish_east_node_io }}
+        run: |
+          EAST_NODE_STD_VERSION=$(node -p "require('./packages/east-node-std/package.json').version")
+          cd packages/east-node-io
+          npm pkg set "devDependencies.@elaraai/east-node-std=^${EAST_NODE_STD_VERSION}"
+
+      - name: Publish @elaraai/east-node-io
+        if: ${{ inputs.publish_east_node_io }}
+        run: npm publish --access public --provenance --tag ${{ inputs.npm_tag }}
+        working-directory: packages/east-node-io

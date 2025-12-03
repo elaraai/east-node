@@ -13,7 +13,7 @@
  * Run `npm run dev:services` to start Docker containers.
  */
 import { East, variant } from "@elaraai/east";
-import { describeEast, Test } from "@elaraai/east-node";
+import { describeEast, Test } from "@elaraai/east-node-std";
 import { redis_connect, redis_get, redis_set, redis_setex, redis_del, redis_close, redis_close_all, RedisImpl } from "./redis.js";
 
 // Redis test configuration

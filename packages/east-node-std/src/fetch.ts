@@ -232,7 +232,7 @@ const FetchImpl: PlatformFunction[] = [
  * @example
  * ```ts
  * import { East, StringType } from "@elaraai/east";
- * import { Fetch } from "@elaraai/east-node";
+ * import { Fetch } from "@elaraai/east-node-std";
  *
  * const getData = East.function([], StringType, $ => {
  *     const response = $.let(Fetch.get("https://api.example.com/data"));

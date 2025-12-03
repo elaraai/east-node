@@ -60,7 +60,7 @@ All **exported** platform function definitions MUST include comprehensive TypeDo
  * @example
  * ```ts
  * import { East, StringType, NullType } from "@elaraai/east";
- * import { FileSystem } from "@elaraai/east-node";
+ * import { FileSystem } from "@elaraai/east-node-std";
  *
  * const processFile = East.function([StringType], NullType, ($, path) => {
  *     const content = $.let(FileSystem.readFile(path));
@@ -118,7 +118,7 @@ Each property in the exported object MUST have complete TypeDoc documentation.
  * @example
  * ```ts
  * import { East, StringType } from "@elaraai/east";
- * import { Crypto } from "@elaraai/east-node";
+ * import { Crypto } from "@elaraai/east-node-std";
  *
  * const generateId = East.function([], StringType, $ => {
  *     return $.return(Crypto.uuid());
@@ -132,7 +132,7 @@ Each property in the exported object MUST have complete TypeDoc documentation.
  * @example
  * ```ts
  * // For async implementations (like Fetch), use East.compileAsync()
- * import { Fetch } from "@elaraai/east-node";
+ * import { Fetch } from "@elaraai/east-node-std";
  *
  * const fetchData = East.function([StringType], StringType, ($, url) => {
  *     return $.return(Fetch.get(url));
