@@ -8,7 +8,9 @@ import type { PlatformFunction, PlatformFunctionDef } from "@elaraai/east/intern
 import { EastError } from "@elaraai/east/internal";
 
 // Import vendored random library
+import type RNG from "./random/rng.js";
 import CryptoRNG from "./random/crypto-rng.js";
+import XorShift128RNG from "./random/xorshift128.js";
 import uniformDist from "./random/distributions/uniform.js";
 import uniformIntDist from "./random/distributions/uniform-int.js";
 import normalDist from "./random/distributions/normal.js";
@@ -23,7 +25,15 @@ import irwinHallDist from "./random/distributions/irwin-hall.js";
 import batesDist from "./random/distributions/bates.js";
 
 // Global RNG instance (uses cryptographically secure random by default)
-let globalRNG = new CryptoRNG();
+let globalRNG: RNG = new CryptoRNG();
+
+/**
+ * Reset global RNG to cryptographically secure mode.
+ * Primarily for testing to avoid test pollution.
+ */
+export function resetToCryptoRNG(): void {
+    globalRNG = new CryptoRNG();
+}
 
 // Platform Function Definitions
 
@@ -439,7 +449,7 @@ export const random_bates: PlatformFunctionDef<[typeof IntegerType], typeof Floa
  * This is a platform function for the East language, enabling reproducible randomness
  * in East programs running on Node.js.
  *
- * @param seed - Seed value (integer or string)
+ * @param seed - Seed value (integer)
  * @returns null
  *
  * @example
@@ -451,10 +461,11 @@ export const random_bates: PlatformFunctionDef<[typeof IntegerType], typeof Floa
  * ```
  *
  * @remarks
- * - IMPORTANT: Seeding disables cryptographic security (uses deterministic PRNG)
+ * - IMPORTANT: Seeding switches from cryptographically secure random to a deterministic
+ *   PRNG (xorshift128+). This is essential for reproducible simulations but should not
+ *   be used when cryptographic security is required.
  * - Same seed produces same sequence of random numbers
  * - Useful for testing and reproducible simulations
- * - Not implemented yet (will be added in future version)
  */
 export const random_seed: PlatformFunctionDef<[typeof IntegerType], typeof NullType> =
     East.platform("random_seed", [IntegerType], NullType);
@@ -599,12 +610,10 @@ const RandomImpl: PlatformFunction[] = [
         }
     }),
 
-    random_seed.implement((_seed: bigint) => {
-        // TODO: Implement seeding with a seedable PRNG
-        // For now, this is a no-op (crypto RNG doesn't support seeding)
-        throw new EastError("Random seeding not yet implemented", {
-            location: { filename: "random_seed", line: 0n, column: 0n },
-        });
+    random_seed.implement((seed: bigint) => {
+        // Switch to seedable PRNG (xorshift128+) and set the seed
+        // IMPORTANT: This disables cryptographic security for reproducible simulations
+        globalRNG = new XorShift128RNG(seed);
     }),
 ];
 
@@ -964,8 +973,8 @@ export const Random = {
      * ```
      *
      * @remarks
-     * IMPORTANT: Seeding disables cryptographic security (uses deterministic PRNG).
-     * Not implemented yet - will throw an error if called.
+     * IMPORTANT: Seeding switches from cryptographically secure random to a deterministic
+     * PRNG (xorshift128+). Essential for reproducible simulations.
      */
     seed: random_seed,
 

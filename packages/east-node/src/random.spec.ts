@@ -2,9 +2,85 @@
  * Copyright (c) 2025 Elara AI Pty Ltd
  * Dual-licensed under AGPL-3.0 and commercial license. See LICENSE for details.
  */
+import { describe, test, beforeEach } from "node:test";
+import assert from "node:assert/strict";
 import { describeEast, Test } from "./test.js";
-import { Random } from "./random.js";
+import { Random, resetToCryptoRNG } from "./random.js";
+import XorShift128RNG from "./random/xorshift128.js";
 
+// Reset RNG before each test to avoid test pollution
+beforeEach(() => {
+    resetToCryptoRNG();
+});
+
+// Direct unit tests for XorShift128 RNG
+describe("XorShift128 RNG", () => {
+    test("produces values in [0, 1)", () => {
+        const rng = new XorShift128RNG(12345);
+        for (let i = 0; i < 100; i++) {
+            const value = rng.next();
+            assert.ok(value >= 0 && value < 1, `Value ${value} not in [0, 1)`);
+        }
+    });
+
+    test("same seed produces same sequence", () => {
+        const rng1 = new XorShift128RNG(42);
+        const rng2 = new XorShift128RNG(42);
+
+        const seq1 = Array.from({ length: 10 }, () => rng1.next());
+        const seq2 = Array.from({ length: 10 }, () => rng2.next());
+
+        assert.deepEqual(seq1, seq2);
+    });
+
+    test("different seeds produce different sequences", () => {
+        const rng1 = new XorShift128RNG(42);
+        const rng2 = new XorShift128RNG(123);
+
+        const seq1 = Array.from({ length: 10 }, () => rng1.next());
+        const seq2 = Array.from({ length: 10 }, () => rng2.next());
+
+        assert.notDeepEqual(seq1, seq2);
+    });
+
+    test("re-seeding produces reproducible sequence", () => {
+        const rng = new XorShift128RNG(42);
+        const seq1 = Array.from({ length: 10 }, () => rng.next());
+
+        rng.seed(42);
+        const seq2 = Array.from({ length: 10 }, () => rng.next());
+
+        assert.deepEqual(seq1, seq2);
+    });
+
+    test("clone creates independent copy", () => {
+        const rng1 = new XorShift128RNG(42);
+        rng1.next(); // Advance state
+        rng1.next();
+
+        const rng2 = rng1.clone() as XorShift128RNG;
+
+        // Both should produce same values from here
+        const seq1 = Array.from({ length: 5 }, () => rng1.next());
+        const seq2 = Array.from({ length: 5 }, () => rng2.next());
+
+        assert.deepEqual(seq1, seq2);
+    });
+
+    test("string seed works", () => {
+        const rng1 = new XorShift128RNG();
+        rng1.seed("my-simulation-seed");
+        const seq1 = Array.from({ length: 10 }, () => rng1.next());
+
+        const rng2 = new XorShift128RNG();
+        rng2.seed("my-simulation-seed");
+        const seq2 = Array.from({ length: 10 }, () => rng2.next());
+
+        assert.deepEqual(seq1, seq2);
+    });
+});
+
+// Platform function tests
 describeEast("Random platform functions", (test) => {
     test("uniform returns number in [0, 1)", $ => {
         const value = $.let(Random.uniform());
@@ -135,5 +211,30 @@ describeEast("Random platform functions", (test) => {
         const value = $.let(Random.bates(1n));
         $(Test.greaterEqual(value, 0.0));
         $(Test.lessEqual(value, 1.0));
+    });
+
+    test("seed enables reproducible uniform values", $ => {
+        // Seed, generate value, reseed with same, generate again - should match
+        $(Random.seed(42n));
+        const v1 = $.let(Random.uniform());
+        $(Random.seed(42n));
+        const v2 = $.let(Random.uniform());
+        $(Test.equal(v1, v2));
+    });
+
+    test("seed enables reproducible range values", $ => {
+        $(Random.seed(12345n));
+        const v1 = $.let(Random.range(1n, 100n));
+        $(Random.seed(12345n));
+        const v2 = $.let(Random.range(1n, 100n));
+        $(Test.equal(v1, v2));
+    });
+
+    test("different seeds produce different values", $ => {
+        $(Random.seed(42n));
+        const v1 = $.let(Random.uniform());
+        $(Random.seed(999n));
+        const v2 = $.let(Random.uniform());
+        $(Test.notEqual(v1, v2));
     });
 }, { platformFns: Random.Implementation });

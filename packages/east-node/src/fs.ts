@@ -267,7 +267,7 @@ export const fs_read_directory: PlatformFunctionDef<[typeof StringType], ReturnT
  * });
  * ```
  */
-export const fs_read_file_bytes: PlatformFunctionDef<[typeof StringType], typeof BlobType> = East.platform("fs_read_file_bytes", [StringType], BlobType);
+export const fs_read_file_bytes: PlatformFunctionDef<[StringType], BlobType> = East.platform("fs_read_file_bytes", [StringType], BlobType);
 
 /**
  * Writes binary data to a file (overwrites existing content).
