@@ -9,7 +9,23 @@
   "scripts": {
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present"
+    "lint": "npm run lint --workspaces --if-present",
+    "version:std:prerelease": "npm version prerelease --preid=beta --workspace=@elaraai/east-node-std --no-git-tag-version",
+    "version:std:patch": "npm version patch --workspace=@elaraai/east-node-std --no-git-tag-version",
+    "version:std:minor": "npm version minor --workspace=@elaraai/east-node-std --no-git-tag-version",
+    "version:std:major": "npm version major --workspace=@elaraai/east-node-std --no-git-tag-version",
+    "version:io:prerelease": "npm version prerelease --preid=beta --workspace=@elaraai/east-node-io --no-git-tag-version",
+    "version:io:patch": "npm version patch --workspace=@elaraai/east-node-io --no-git-tag-version",
+    "version:io:minor": "npm version minor --workspace=@elaraai/east-node-io --no-git-tag-version",
+    "version:io:major": "npm version major --workspace=@elaraai/east-node-io --no-git-tag-version",
+    "version:monorepo:prerelease": "npm version prerelease --preid=beta --no-git-tag-version",
+    "version:monorepo:patch": "npm version patch --no-git-tag-version",
+    "version:monorepo:minor": "npm version minor --no-git-tag-version",
+    "version:monorepo:major": "npm version major --no-git-tag-version",
+    "version:all:prerelease": "npm run version:monorepo:prerelease && npm run version:std:prerelease && npm run version:io:prerelease",
+    "version:all:patch": "npm run version:monorepo:patch && npm run version:std:patch && npm run version:io:patch",
+    "version:all:minor": "npm run version:monorepo:minor && npm run version:std:minor && npm run version:io:minor",
+    "version:all:major": "npm run version:monorepo:major && npm run version:std:major && npm run version:io:major"
   },
   "repository": {
     "type": "git",

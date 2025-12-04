@@ -1,4 +1,4 @@
-.PHONY: all install build test test-integration lint extract-examples services services-up services-down services-logs services-status clean set-east-version help
+.PHONY: all install build test test-integration lint extract-examples services services-up services-down services-logs services-status clean set-east-version version-prerelease version-patch version-minor version-major help
 
 # Default target
 all: build
@@ -66,6 +66,19 @@ endif
 	@find packages -name "package.json" -exec sed -i 's/"@elaraai\/east": "[^"]*"/"@elaraai\/east": "^$(VERSION)"/g' {} \;
 	@echo "Done. Run 'npm install' to update dependencies."
 
+# Bump all package versions
+version-prerelease:
+	. ${NVM_DIR}/nvm.sh && nvm use && npm run version:all:prerelease
+
+version-patch:
+	. ${NVM_DIR}/nvm.sh && nvm use && npm run version:all:patch
+
+version-minor:
+	. ${NVM_DIR}/nvm.sh && nvm use && npm run version:all:minor
+
+version-major:
+	. ${NVM_DIR}/nvm.sh && nvm use && npm run version:all:major
+
 # Help target
 help:
 	@echo "Available targets:"
@@ -82,4 +95,8 @@ help:
 	@echo "  services-status    - Check service status"
 	@echo "  clean              - Clean build artifacts"
 	@echo "  set-east-version   - Update @elaraai/east version (VERSION=x.y.z)"
+	@echo "  version-prerelease - Bump all packages to next prerelease version"
+	@echo "  version-patch      - Bump all packages patch version"
+	@echo "  version-minor      - Bump all packages minor version"
+	@echo "  version-major      - Bump all packages major version"
 	@echo "  help               - Show this help message"
