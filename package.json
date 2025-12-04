@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "npm run build --workspaces --if-present",
+    "build": "npm run build -w @elaraai/east-node-std && npm run build -w @elaraai/east-node-io",
     "test": "npm run test --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "version:std:prerelease": "npm version prerelease --preid=beta --workspace=@elaraai/east-node-std --no-git-tag-version",

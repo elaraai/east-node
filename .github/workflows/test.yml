@@ -32,8 +32,18 @@ jobs:
     - name: Run linter
       run: npm run lint
 
+    - name: Start test services (Docker)
+      run: docker compose -f packages/east-node-io/docker-compose.yml up -d
+
+    - name: Wait for services to be healthy
+      run: |
+        echo "Waiting for services to be healthy..."
+        sleep 15
+        docker compose -f packages/east-node-io/docker-compose.yml ps
+
     - name: Run tests
       run: npm test
 
-    - name: Run tests with coverage
-      run: npm run test:coverage
+    - name: Stop test services
+      if: always()
+      run: docker compose -f packages/east-node-io/docker-compose.yml down -v
