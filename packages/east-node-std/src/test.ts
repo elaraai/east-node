@@ -161,17 +161,19 @@ export function describeEast(
             }
 
             for (const { name, body } of tests) {
-                // beforeEach hook
-                if (options?.beforeEach) {
-                    options.beforeEach($);
-                }
+                $(test.call($, name, East.asyncFunction([], NullType, $test => {
+                    // beforeEach hook (inside test body)
+                    if (options?.beforeEach) {
+                        options.beforeEach($test);
+                    }
 
-                $(test.call($, name, East.asyncFunction([], NullType, body)));
-
-                // afterEach hook
-                if (options?.afterEach) {
-                    options.afterEach($);
-                }
+                    // Wrap test body in try-finally so afterEach runs even on failure
+                    if (options?.afterEach) {
+                        $test.try(body).finally(options.afterEach);
+                    } else {
+                        body($test);
+                    }
+                })));
             }
 
             // afterAll hook
@@ -200,7 +202,7 @@ export function describeEast(
     }
 
     // Run the test suite using the Node.js platform implementation
-    const compiled = suiteFunction.toIR().compile([ ...(options?.platformFns ?? []), ...testPlatformImpl ]);
+    const compiled = suiteFunction.toIR().compile([...(options?.platformFns ?? []), ...testPlatformImpl]);
     return compiled();
 }
 

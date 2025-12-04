@@ -41,17 +41,29 @@ jobs:
       - name: Upgrade npm for trusted publishing
         run: npm install -g npm@latest
 
+      - name: Cache Docker images
+        uses: ScribeMD/docker-cache@0.5.0
+        with:
+          key: docker-${{ runner.os }}-${{ hashFiles('packages/east-node-io/docker-compose.yml') }}
+
       - name: Install dependencies
         run: npm ci
 
       - name: Build all packages
         run: npm run build
 
+      - name: Run linter
+        run: npm run lint
+
+      - name: Start test services
+        run: docker compose -f packages/east-node-io/docker-compose.yml up -d --wait
+
       - name: Run tests
         run: npm test
 
-      - name: Run linter
-        run: npm run lint
+      - name: Stop test services
+        if: always()
+        run: docker compose -f packages/east-node-io/docker-compose.yml down -v
 
       # Publish npm packages in dependency order (using OIDC trusted publishers)
       # 1. east-node-std (core platform functions)
