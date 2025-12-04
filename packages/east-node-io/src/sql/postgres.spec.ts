@@ -11,7 +11,7 @@
  *
  * Requires Docker PostgreSQL service running on localhost:5432
  */
-import { describeEast, Test } from "@elaraai/east-node-std";
+import { describeEast, Assert } from "@elaraai/east-node-std";
 import { East, variant, type ValueTypeOf } from "@elaraai/east";
 import { postgres_connect, postgres_query, postgres_close, postgres_close_all, PostgresImpl } from "./postgres.js";
 import { SqlRowType, SqlParameterType } from "./types.js";
@@ -31,7 +31,7 @@ await describeEast("PostgreSQL platform functions", (test) => {
         const handle = $.let(postgres_connect(config));
 
         // Handle should be non-empty string
-        $(Test.greater(handle.length(), East.value(0n)));
+        $(Assert.greater(handle.length(), East.value(0n)));
 
         // Close returns void, use $()
         $(postgres_close(handle));
@@ -63,11 +63,11 @@ await describeEast("PostgreSQL platform functions", (test) => {
                 const expectedRow = $.let(new Map<string, ValueTypeOf<typeof SqlParameterType>>([
                     ["value", variant('Integer', 1n)],  // PostgreSQL int4 returns Integer with column metadata
                 ]), SqlRowType);
-                $(Test.equal(selectResult.rows, East.value([expectedRow])));
+                $(Assert.equal(selectResult.rows, East.value([expectedRow])));
             },
-            insert: ($, _) => $(Test.fail("Expected select, got insert")),
-            update: ($, _) => $(Test.fail("Expected select, got update")),
-            delete: ($, _) => $(Test.fail("Expected select, got delete")),
+            insert: ($, _) => $(Assert.fail("Expected select, got insert")),
+            update: ($, _) => $(Assert.fail("Expected select, got update")),
+            delete: ($, _) => $(Assert.fail("Expected select, got delete")),
         });
 
         $(postgres_close(conn));
@@ -102,13 +102,13 @@ await describeEast("PostgreSQL platform functions", (test) => {
 
         // Verify result is insert variant using $.match
         $.match(result, {
-            select: ($, _) => $(Test.fail("Expected insert, got select")),
+            select: ($, _) => $(Assert.fail("Expected insert, got select")),
             insert: ($, insertResult) => {
                 // Verify rowsAffected
-                $(Test.equal(insertResult.rowsAffected, East.value(1n)));
+                $(Assert.equal(insertResult.rowsAffected, East.value(1n)));
             },
-            update: ($, _) => $(Test.fail("Expected insert, got update")),
-            delete: ($, _) => $(Test.fail("Expected insert, got delete")),
+            update: ($, _) => $(Assert.fail("Expected insert, got update")),
+            delete: ($, _) => $(Assert.fail("Expected insert, got delete")),
         });
 
         $(postgres_close(conn));
@@ -149,12 +149,12 @@ await describeEast("PostgreSQL platform functions", (test) => {
 
         // Verify result is update variant using $.match
         $.match(result, {
-            select: ($, _) => $(Test.fail("Expected update, got select")),
-            insert: ($, _) => $(Test.fail("Expected update, got insert")),
+            select: ($, _) => $(Assert.fail("Expected update, got select")),
+            insert: ($, _) => $(Assert.fail("Expected update, got insert")),
             update: ($, updateResult) => {
-                $(Test.equal(updateResult.rowsAffected, East.value(1n)));
+                $(Assert.equal(updateResult.rowsAffected, East.value(1n)));
             },
-            delete: ($, _) => $(Test.fail("Expected update, got delete")),
+            delete: ($, _) => $(Assert.fail("Expected update, got delete")),
         });
 
         $(postgres_close(conn));
@@ -195,11 +195,11 @@ await describeEast("PostgreSQL platform functions", (test) => {
 
         // Verify result is delete variant using $.match
         $.match(result, {
-            select: ($, _) => $(Test.fail("Expected delete, got select")),
-            insert: ($, _) => $(Test.fail("Expected delete, got insert")),
-            update: ($, _) => $(Test.fail("Expected delete, got update")),
+            select: ($, _) => $(Assert.fail("Expected delete, got select")),
+            insert: ($, _) => $(Assert.fail("Expected delete, got insert")),
+            update: ($, _) => $(Assert.fail("Expected delete, got update")),
             delete: ($, deleteResult) => {
-                $(Test.equal(deleteResult.rowsAffected, East.value(1n)));
+                $(Assert.equal(deleteResult.rowsAffected, East.value(1n)));
             },
         });
 
@@ -247,11 +247,11 @@ await describeEast("PostgreSQL platform functions", (test) => {
                     ["id", variant("Integer", 42n)],  // PostgreSQL int4 returns Integer with column metadata
                     ["name", variant("String", "test")],
                 ]), SqlRowType);
-                $(Test.equal(selectResult.rows, East.value([expectedRow])));
+                $(Assert.equal(selectResult.rows, East.value([expectedRow])));
             },
-            insert: ($, _) => $(Test.fail("Expected select, got insert")),
-            update: ($, _) => $(Test.fail("Expected select, got update")),
-            delete: ($, _) => $(Test.fail("Expected select, got delete")),
+            insert: ($, _) => $(Assert.fail("Expected select, got insert")),
+            update: ($, _) => $(Assert.fail("Expected select, got update")),
+            delete: ($, _) => $(Assert.fail("Expected select, got delete")),
         });
 
         $(postgres_close(conn));
@@ -300,11 +300,11 @@ await describeEast("PostgreSQL platform functions", (test) => {
                     ["id", variant("Integer", 1n)],  // PostgreSQL int4 returns Integer with column metadata
                     ["created_at", variant("DateTime", new Date("2025-01-15T10:30:00Z"))],
                 ]), SqlRowType);
-                $(Test.equal(selectResult.rows, East.value([expectedRow])));
+                $(Assert.equal(selectResult.rows, East.value([expectedRow])));
             },
-            insert: ($, _) => $(Test.fail("Expected select, got insert")),
-            update: ($, _) => $(Test.fail("Expected select, got update")),
-            delete: ($, _) => $(Test.fail("Expected select, got delete")),
+            insert: ($, _) => $(Assert.fail("Expected select, got insert")),
+            update: ($, _) => $(Assert.fail("Expected select, got update")),
+            delete: ($, _) => $(Assert.fail("Expected select, got delete")),
         });
 
         $(postgres_close(conn));
@@ -369,11 +369,11 @@ await describeEast("PostgreSQL platform functions", (test) => {
                     ["blob", variant("Blob", new Uint8Array([1, 2, 3]))],
                     ["dt", variant("DateTime", new Date("2025-01-15T10:30:00Z"))],
                 ]), SqlRowType);
-                $(Test.equal(selectResult.rows, East.value([expectedRow])));
+                $(Assert.equal(selectResult.rows, East.value([expectedRow])));
             },
-            insert: ($, _) => $(Test.fail("Expected select, got insert")),
-            update: ($, _) => $(Test.fail("Expected select, got update")),
-            delete: ($, _) => $(Test.fail("Expected select, got delete")),
+            insert: ($, _) => $(Assert.fail("Expected select, got insert")),
+            update: ($, _) => $(Assert.fail("Expected select, got update")),
+            delete: ($, _) => $(Assert.fail("Expected select, got delete")),
         });
 
         $(postgres_close(conn));

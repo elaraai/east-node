@@ -14,7 +14,7 @@
 
 import { match, BlobType, BooleanType, DateTimeType, East, FloatType, IntegerType, isValueOf, NullType, SortedMap, variant } from "@elaraai/east";
 import type { ValueTypeOf } from "@elaraai/east";
-import type { PlatformFunctionDef, PlatformFunction } from "@elaraai/east/internal";
+import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 import Database from 'better-sqlite3';
 import { createHandle, getConnection, closeHandle, closeAllHandles } from '../connection/index.js';
@@ -99,10 +99,7 @@ type SqliteColumnType =
  * - Use path ":memory:" for in-memory database
  * - All queries are synchronous but wrapped in async for consistency
  */
-export const sqlite_connect: PlatformFunctionDef<
-    [typeof SqliteConfigType],
-    typeof ConnectionHandleType
-> = East.platform("sqlite_connect", [SqliteConfigType], ConnectionHandleType);
+export const sqlite_connect = East.asyncPlatform("sqlite_connect", [SqliteConfigType], ConnectionHandleType);
 
 /**
  * Executes a SQL query with parameterized values.
@@ -155,10 +152,7 @@ export const sqlite_connect: PlatformFunctionDef<
  * - NULL values map to {tag: "null", value: {}}
  * - All queries are synchronous but wrapped in async for consistency
  */
-export const sqlite_query: PlatformFunctionDef<
-    [typeof ConnectionHandleType, typeof StringType, typeof SqlParametersType],
-    typeof SqlResultType
-> = East.platform("sqlite_query", [ConnectionHandleType, StringType, SqlParametersType], SqlResultType);
+export const sqlite_query = East.asyncPlatform("sqlite_query", [ConnectionHandleType, StringType, SqlParametersType], SqlResultType);
 
 /**
  * Closes a SQLite database connection.
@@ -191,10 +185,7 @@ export const sqlite_query: PlatformFunctionDef<
  * await compiled();
  * ```
  */
-export const sqlite_close: PlatformFunctionDef<
-    [typeof ConnectionHandleType],
-    typeof NullType
-> = East.platform("sqlite_close", [ConnectionHandleType], NullType);
+export const sqlite_close = East.asyncPlatform("sqlite_close", [ConnectionHandleType], NullType);
 
 /**
  * Closes all SQLite connections.
@@ -221,7 +212,7 @@ export const sqlite_close: PlatformFunctionDef<
  *
  * @internal
  */
-export const sqlite_close_all: PlatformFunctionDef<[], typeof NullType> = East.platform("sqlite_close_all", [], NullType);
+export const sqlite_close_all = East.asyncPlatform("sqlite_close_all", [], NullType);
 
 /**
  * Converts East SQL parameter to native JavaScript value.
@@ -311,7 +302,7 @@ function convertNativeToParam(value: any, columnType: SqliteColumnType | null): 
  * Pass this to East.compileAsync() to enable SQLite functionality.
  */
 export const SqliteImpl: PlatformFunction[] = [
-    sqlite_connect.implementAsync(async (config: ValueTypeOf<typeof SqliteConfigType>): Promise<string> => {
+    sqlite_connect.implement(async (config: ValueTypeOf<typeof SqliteConfigType>): Promise<string> => {
         try {
             const path = config.path || ':memory:';
             const readOnly = config.readOnly?.type === 'some' ? config.readOnly.value : false;
@@ -337,7 +328,7 @@ export const SqliteImpl: PlatformFunction[] = [
         }
     }),
 
-    sqlite_query.implementAsync(async (
+    sqlite_query.implement(async (
         handle: ValueTypeOf<typeof ConnectionHandleType>,
         sql: ValueTypeOf<typeof StringType>,
         params: ValueTypeOf<typeof SqlParametersType>
@@ -425,7 +416,7 @@ export const SqliteImpl: PlatformFunction[] = [
         }
     }),
 
-    sqlite_close.implementAsync(async (handle: ValueTypeOf<typeof ConnectionHandleType>) => {
+    sqlite_close.implement(async (handle: ValueTypeOf<typeof ConnectionHandleType>) => {
         try {
             const db = await Promise.resolve(getConnection<Database.Database>(handle));
             db.close();
@@ -439,7 +430,7 @@ export const SqliteImpl: PlatformFunction[] = [
         }
     }),
 
-    sqlite_close_all.implementAsync(async () => {
+    sqlite_close_all.implement(async () => {
         await closeAllHandles();
         return null;
     }),

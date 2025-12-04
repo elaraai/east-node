@@ -9,7 +9,7 @@
  * These tests use describeEast following east-node conventions.
  * Tests compile East functions and run them to validate platform function behavior.
  */
-import { describeEast, Test } from "@elaraai/east-node-std";
+import { describeEast, Assert } from "@elaraai/east-node-std";
 import { East, variant } from "@elaraai/east";
 import { xlsx_read, xlsx_write, xlsx_info, XlsxImpl } from "./xlsx.js";
 import { XlsxSheetType } from "./types.js";
@@ -32,7 +32,7 @@ await describeEast("XLSX platform functions", (test) => {
         const xlsxBlob = $.let(xlsx_write(data, writeOptions));
 
         // Verify blob is non-empty
-        $(Test.greater(xlsxBlob.size(), East.value(0n)));
+        $(Assert.greater(xlsxBlob.size(), East.value(0n)));
 
         // Read it back
         const readOptions = $.let({
@@ -42,7 +42,7 @@ await describeEast("XLSX platform functions", (test) => {
         const sheet = $.let(xlsx_read(xlsxBlob, readOptions));
 
         // Verify row count
-        $(Test.equal(sheet.size(), East.value(4n)));
+        $(Assert.equal(sheet.size(), East.value(4n)));
     });
 
     test("read and slice rows in East code", $ => {
@@ -69,7 +69,7 @@ await describeEast("XLSX platform functions", (test) => {
         const dataRows = $.let(sheet.slice(1n, 3n));
 
         // Should have 2 rows after skipping header
-        $(Test.equal(dataRows.size(), East.value(2n)));
+        $(Assert.equal(dataRows.size(), East.value(2n)));
     });
 
     test("get XLSX file info", $ => {
@@ -88,15 +88,15 @@ await describeEast("XLSX platform functions", (test) => {
         const info = $.let(xlsx_info(xlsxBlob));
 
         // Should have 1 sheet
-        $(Test.equal(info.sheets.size(), East.value(1n)));
+        $(Assert.equal(info.sheets.size(), East.value(1n)));
 
         // Check first sheet name
         const firstSheet = $.let(info.sheets.get(0n));
-        $(Test.equal(firstSheet.name, East.value("TestSheet")));
+        $(Assert.equal(firstSheet.name, East.value("TestSheet")));
 
         // Check row and column counts
-        $(Test.equal(firstSheet.rowCount, East.value(2n)));
-        $(Test.equal(firstSheet.columnCount, East.value(3n)));
+        $(Assert.equal(firstSheet.rowCount, East.value(2n)));
+        $(Assert.equal(firstSheet.columnCount, East.value(3n)));
     });
 
     test("handle null cells", $ => {
@@ -118,7 +118,7 @@ await describeEast("XLSX platform functions", (test) => {
         const sheet = $.let(xlsx_read(xlsxBlob, readOptions));
 
         // Should have 2 rows
-        $(Test.equal(sheet.size(), East.value(2n)));
+        $(Assert.equal(sheet.size(), East.value(2n)));
     });
 
     test("write with custom sheet name", $ => {
@@ -136,7 +136,7 @@ await describeEast("XLSX platform functions", (test) => {
         const info = $.let(xlsx_info(xlsxBlob));
         const firstSheet = $.let(info.sheets.get(0n));
 
-        $(Test.equal(firstSheet.name, East.value("CustomSheet")));
+        $(Assert.equal(firstSheet.name, East.value("CustomSheet")));
     });
 
     test("read specific sheet by name", $ => {
@@ -158,7 +158,7 @@ await describeEast("XLSX platform functions", (test) => {
 
         const sheet = $.let(xlsx_read(xlsxBlob, readOptions));
 
-        $(Test.equal(sheet.size(), East.value(2n)));
+        $(Assert.equal(sheet.size(), East.value(2n)));
     });
 
     test("handle Boolean values", $ => {
@@ -181,12 +181,12 @@ await describeEast("XLSX platform functions", (test) => {
         const sheet = $.let(xlsx_read(xlsxBlob, readOptions));
 
         // Check row count
-        $(Test.equal(sheet.size(), East.value(3n)));
+        $(Assert.equal(sheet.size(), East.value(3n)));
 
         // Check boolean values are preserved
         const row1 = $.let(sheet.get(1n));
         const boolCell = $.let(row1.get(0n));
-        $(Test.equal(boolCell, variant('Boolean', true)));
+        $(Assert.equal(boolCell, variant('Boolean', true)));
     });
 
     test("handle Integer values", $ => {
@@ -209,12 +209,12 @@ await describeEast("XLSX platform functions", (test) => {
         const sheet = $.let(xlsx_read(xlsxBlob, readOptions));
 
         // Check row count
-        $(Test.equal(sheet.size(), East.value(3n)));
+        $(Assert.equal(sheet.size(), East.value(3n)));
 
         // Check integer values are converted to Float (Excel stores all numbers as floats)
         const row1 = $.let(sheet.get(1n));
         const intCell = $.let(row1.get(0n));
-        $(Test.equal(intCell, variant('Float', 42)));
+        $(Assert.equal(intCell, variant('Float', 42)));
     });
 
     test("handle DateTime values", $ => {
@@ -237,12 +237,12 @@ await describeEast("XLSX platform functions", (test) => {
         const sheet = $.let(xlsx_read(xlsxBlob, readOptions));
 
         // Check row count
-        $(Test.equal(sheet.size(), East.value(2n)));
+        $(Assert.equal(sheet.size(), East.value(2n)));
 
         // Check DateTime is preserved
         const row1 = $.let(sheet.get(1n));
         const dateCell = $.let(row1.get(0n));
-        $(Test.equal(dateCell, variant('DateTime', testDate)));
+        $(Assert.equal(dateCell, variant('DateTime', testDate)));
     });
 
     test("handle mixed types in columns", $ => {
@@ -266,21 +266,21 @@ await describeEast("XLSX platform functions", (test) => {
         const sheet = $.let(xlsx_read(xlsxBlob, readOptions));
 
         // Check row count
-        $(Test.equal(sheet.size(), East.value(4n)));
+        $(Assert.equal(sheet.size(), East.value(4n)));
 
         // Check first data row has correct types
         const row1 = $.let(sheet.get(1n));
-        $(Test.equal(row1.get(0n), variant('String', "Alice")));
-        $(Test.equal(row1.get(1n), variant('Float', 30.5)));
-        $(Test.equal(row1.get(2n), variant('Boolean', true)));
-        $(Test.equal(row1.get(3n), variant('Float', 95))); // Integer becomes Float
+        $(Assert.equal(row1.get(0n), variant('String', "Alice")));
+        $(Assert.equal(row1.get(1n), variant('Float', 30.5)));
+        $(Assert.equal(row1.get(2n), variant('Boolean', true)));
+        $(Assert.equal(row1.get(3n), variant('Float', 95))); // Integer becomes Float
 
         // Check null handling
         const row2 = $.let(sheet.get(2n));
-        $(Test.equal(row2.get(3n), variant('Null', null)));
+        $(Assert.equal(row2.get(3n), variant('Null', null)));
 
         const row3 = $.let(sheet.get(3n));
-        $(Test.equal(row3.get(0n), variant('Null', null)));
+        $(Assert.equal(row3.get(0n), variant('Null', null)));
     });
 
     test("handle empty strings", $ => {
@@ -305,10 +305,10 @@ await describeEast("XLSX platform functions", (test) => {
 
         // Check empty strings are preserved
         const row2 = $.let(sheet.get(2n));
-        $(Test.equal(row2.get(1n), variant('String', "")));
+        $(Assert.equal(row2.get(1n), variant('String', "")));
 
         const row3 = $.let(sheet.get(3n));
-        $(Test.equal(row3.get(0n), variant('String', "")));
+        $(Assert.equal(row3.get(0n), variant('String', "")));
     });
 
     // Error handling tests
@@ -328,7 +328,7 @@ await describeEast("XLSX platform functions", (test) => {
             sheetName: variant('some', "NonExistent"),
         });
 
-        $(Test.throws(xlsx_read(xlsxBlob, readOptions), /Sheet "NonExistent" not found in workbook/));
+        $(Assert.throws(xlsx_read(xlsxBlob, readOptions), /Sheet "NonExistent" not found in workbook/));
     });
 
     // Large dataset test with mixed types and null values
@@ -373,13 +373,13 @@ await describeEast("XLSX platform functions", (test) => {
 
         const sheet = $.let(xlsx_read(xlsxBlob, readOptions));
 
-        $(Test.equal(sheet, data));
+        $(Assert.equal(sheet, data));
 
         // Round-trip: write again and read back
         const xlsxBlob2 = $.let(xlsx_write(sheet, writeOptions));
         const sheet2 = $.let(xlsx_read(xlsxBlob2, readOptions));
 
-        $(Test.equal(sheet2, data));
+        $(Assert.equal(sheet2, data));
     });
 }, {
     platformFns: XlsxImpl,

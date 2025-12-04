@@ -4,7 +4,7 @@
  */
 
 import { East, variant } from "@elaraai/east";
-import { describeEast, Test } from "@elaraai/east-node-std";
+import { describeEast, Assert } from "@elaraai/east-node-std";
 import { gzip_compress, gzip_decompress, GzipImpl } from "./gzip.js";
 
 await describeEast("Gzip Platform Functions", (test) => {
@@ -24,11 +24,11 @@ await describeEast("Gzip Platform Functions", (test) => {
 
         // Verify decompressed data matches original
         const result = $.let(decompressed.decodeUtf8());
-        $(Test.equal(result, originalText));
+        $(Assert.equal(result, originalText));
     });
 
     test("uses default compression level when none specified", $ => {
-        const data = $.let(East.value("Test data").encodeUtf8());
+        const data = $.let(East.value("Assert data").encodeUtf8());
 
         const options = $.let({
             level: variant('none', null),
@@ -38,11 +38,11 @@ await describeEast("Gzip Platform Functions", (test) => {
         const decompressed = $.let(gzip_decompress(compressed));
         const result = $.let(decompressed.decodeUtf8());
 
-        $(Test.equal(result, "Test data"));
+        $(Assert.equal(result, "Assert data"));
     });
 
     test("handles maximum compression level", $ => {
-        const data = $.let(East.value("Test data with maximum compression").encodeUtf8());
+        const data = $.let(East.value("Assert data with maximum compression").encodeUtf8());
 
         const options = $.let({
             level: variant('some', 9n),
@@ -52,7 +52,7 @@ await describeEast("Gzip Platform Functions", (test) => {
         const decompressed = $.let(gzip_decompress(compressed));
         const result = $.let(decompressed.decodeUtf8());
 
-        $(Test.equal(result, "Test data with maximum compression"));
+        $(Assert.equal(result, "Assert data with maximum compression"));
     });
 
     test("handles minimum compression level (no compression)", $ => {
@@ -66,7 +66,7 @@ await describeEast("Gzip Platform Functions", (test) => {
         const decompressed = $.let(gzip_decompress(compressed));
         const result = $.let(decompressed.decodeUtf8());
 
-        $(Test.equal(result, "No compression test"));
+        $(Assert.equal(result, "No compression test"));
     });
 
     test("handles empty data", $ => {
@@ -80,7 +80,7 @@ await describeEast("Gzip Platform Functions", (test) => {
         const decompressed = $.let(gzip_decompress(compressed));
         const result = $.let(decompressed.decodeUtf8());
 
-        $(Test.equal(result, ""));
+        $(Assert.equal(result, ""));
     });
 
     test("handles large data", $ => {
@@ -94,11 +94,11 @@ await describeEast("Gzip Platform Functions", (test) => {
         const compressed = $.let(gzip_compress(data, options));
 
         // Compressed data should be much smaller for repetitive content
-        $(Test.less(compressed.size(), data.size()));
+        $(Assert.less(compressed.size(), data.size()));
 
         const decompressed = $.let(gzip_decompress(compressed));
         const result = $.let(decompressed.decodeUtf8());
 
-        $(Test.equal(result, largeText));
+        $(Assert.equal(result, largeText));
     });
 }, { platformFns: GzipImpl });

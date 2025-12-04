@@ -14,7 +14,7 @@
 
 import { East, BlobType, ArrayType, NullType } from "@elaraai/east";
 import type { ValueTypeOf } from "@elaraai/east";
-import type { PlatformFunctionDef, PlatformFunction } from "@elaraai/east/internal";
+import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 import { Client as FtpClient, type FileInfo } from "basic-ftp";
 import { Readable } from "node:stream";
@@ -67,10 +67,7 @@ import { FtpConfigType, ConnectionHandleType, StringType, FileInfoType } from ".
  * - Connection is maintained until explicitly closed
  * - All operations are asynchronous (use East.compileAsync)
  */
-export const ftp_connect: PlatformFunctionDef<
-    [typeof FtpConfigType],
-    typeof ConnectionHandleType
-> = East.platform("ftp_connect", [FtpConfigType], ConnectionHandleType);
+export const ftp_connect = East.asyncPlatform("ftp_connect", [FtpConfigType], ConnectionHandleType);
 
 /**
  * Uploads a file to an FTP server.
@@ -120,10 +117,7 @@ export const ftp_connect: PlatformFunctionDef<
  * - Overwrites existing files
  * - Binary mode transfer
  */
-export const ftp_put: PlatformFunctionDef<
-    [typeof ConnectionHandleType, typeof StringType, typeof BlobType],
-    typeof NullType
-> = East.platform("ftp_put", [ConnectionHandleType, StringType, BlobType], NullType);
+export const ftp_put = East.asyncPlatform("ftp_put", [ConnectionHandleType, StringType, BlobType], NullType);
 
 /**
  * Downloads a file from an FTP server.
@@ -171,10 +165,7 @@ export const ftp_put: PlatformFunctionDef<
  * - Binary mode transfer
  * - Entire file is loaded into memory
  */
-export const ftp_get: PlatformFunctionDef<
-    [typeof ConnectionHandleType, typeof StringType],
-    typeof BlobType
-> = East.platform("ftp_get", [ConnectionHandleType, StringType], BlobType);
+export const ftp_get = East.asyncPlatform("ftp_get", [ConnectionHandleType, StringType], BlobType);
 
 /**
  * Lists files in an FTP directory.
@@ -222,10 +213,7 @@ export const ftp_get: PlatformFunctionDef<
  * - Returns both files and directories
  * - Use isDirectory field to distinguish between files and directories
  */
-export const ftp_list: PlatformFunctionDef<
-    [typeof ConnectionHandleType, typeof StringType],
-    ReturnType<typeof ArrayType<typeof FileInfoType>>
-> = East.platform("ftp_list", [ConnectionHandleType, StringType], ArrayType(FileInfoType));
+export const ftp_list = East.asyncPlatform("ftp_list", [ConnectionHandleType, StringType], ArrayType(FileInfoType));
 
 /**
  * Deletes a file from an FTP server.
@@ -273,10 +261,7 @@ export const ftp_list: PlatformFunctionDef<
  * - Only deletes files, not directories
  * - Throws error if file doesn't exist
  */
-export const ftp_delete: PlatformFunctionDef<
-    [typeof ConnectionHandleType, typeof StringType],
-    typeof NullType
-> = East.platform("ftp_delete", [ConnectionHandleType, StringType], NullType);
+export const ftp_delete = East.asyncPlatform("ftp_delete", [ConnectionHandleType, StringType], NullType);
 
 /**
  * Closes an FTP connection.
@@ -312,10 +297,7 @@ export const ftp_delete: PlatformFunctionDef<
  * await compiled();
  * ```
  */
-export const ftp_close: PlatformFunctionDef<
-    [typeof ConnectionHandleType],
-    typeof NullType
-> = East.platform("ftp_close", [ConnectionHandleType], NullType);
+export const ftp_close = East.platform("ftp_close", [ConnectionHandleType], NullType);
 
 /**
  * Closes all FTP connections.
@@ -342,7 +324,7 @@ export const ftp_close: PlatformFunctionDef<
  *
  * @internal
  */
-export const ftp_close_all: PlatformFunctionDef<[], typeof NullType> = East.platform("ftp_close_all", [], NullType);
+export const ftp_close_all = East.asyncPlatform("ftp_close_all", [], NullType);
 
 /**
  * Node.js implementation of FTP platform functions.
@@ -351,7 +333,7 @@ export const ftp_close_all: PlatformFunctionDef<[], typeof NullType> = East.plat
  * Pass this to East.compileAsync() to enable FTP functionality.
  */
 export const FtpImpl: PlatformFunction[] = [
-    ftp_connect.implementAsync(async (config: ValueTypeOf<typeof FtpConfigType>): Promise<string> => {
+    ftp_connect.implement(async (config: ValueTypeOf<typeof FtpConfigType>): Promise<string> => {
         try {
             const client = new FtpClient();
             client.ftp.verbose = false;
@@ -375,7 +357,7 @@ export const FtpImpl: PlatformFunction[] = [
         }
     }),
 
-    ftp_put.implementAsync(async (
+    ftp_put.implement(async (
         handle: ValueTypeOf<typeof ConnectionHandleType>,
         remotePath: ValueTypeOf<typeof StringType>,
         data: ValueTypeOf<typeof BlobType>
@@ -396,7 +378,7 @@ export const FtpImpl: PlatformFunction[] = [
         }
     }),
 
-    ftp_get.implementAsync(async (
+    ftp_get.implement(async (
         handle: ValueTypeOf<typeof ConnectionHandleType>,
         remotePath: ValueTypeOf<typeof StringType>
     ): Promise<Uint8Array> => {
@@ -425,7 +407,7 @@ export const FtpImpl: PlatformFunction[] = [
         }
     }),
 
-    ftp_list.implementAsync(async (
+    ftp_list.implement(async (
         handle: ValueTypeOf<typeof ConnectionHandleType>,
         remotePath: ValueTypeOf<typeof StringType>
     ): Promise<ValueTypeOf<ReturnType<typeof ArrayType>>> => {
@@ -450,7 +432,7 @@ export const FtpImpl: PlatformFunction[] = [
         }
     }),
 
-    ftp_delete.implementAsync(async (
+    ftp_delete.implement(async (
         handle: ValueTypeOf<typeof ConnectionHandleType>,
         remotePath: ValueTypeOf<typeof StringType>
     ): Promise<null> => {
@@ -466,6 +448,7 @@ export const FtpImpl: PlatformFunction[] = [
         }
     }),
 
+    // note: this one doesn't produce a Promise
     ftp_close.implement((handle: ValueTypeOf<typeof ConnectionHandleType>) => {
         try {
             const client = getConnection<FtpClient>(handle);
@@ -480,7 +463,7 @@ export const FtpImpl: PlatformFunction[] = [
         }
     }),
 
-    ftp_close_all.implementAsync(async () => {
+    ftp_close_all.implement(async () => {
         await closeAllHandles();
         return null;
     }),

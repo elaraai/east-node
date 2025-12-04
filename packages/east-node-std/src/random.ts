@@ -4,7 +4,7 @@
  */
 
 import { East, FloatType, IntegerType, NullType } from "@elaraai/east";
-import type { PlatformFunction, PlatformFunctionDef } from "@elaraai/east/internal";
+import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 
 // Import vendored random library
@@ -60,8 +60,7 @@ export function resetToCryptoRNG(): void {
  * - Uniform distribution across the range
  * - Never returns exactly 1.0
  */
-export const random_uniform: PlatformFunctionDef<[], typeof FloatType> =
-    East.platform("random_uniform", [], FloatType);
+export const random_uniform = East.platform("random_uniform", [], FloatType);
 
 /**
  * Generates a random float from a standard normal distribution (mean=0, standard deviation=1).
@@ -90,8 +89,7 @@ export const random_uniform: PlatformFunctionDef<[], typeof FloatType> =
  * - Can return any real number (unbounded range)
  * - Use `.multiply(stddev).add(mean)` to scale/shift distribution
  */
-export const random_normal: PlatformFunctionDef<[], typeof FloatType> =
-    East.platform("random_normal", [], FloatType);
+export const random_normal = East.platform("random_normal", [], FloatType);
 
 /**
  * Generates a random integer in the range [min, max] (both endpoints inclusive).
@@ -120,8 +118,7 @@ export const random_normal: PlatformFunctionDef<[], typeof FloatType> =
  * - Uniform distribution across the range
  * - Uses floor method to avoid modulo bias
  */
-export const random_range: PlatformFunctionDef<[typeof IntegerType, typeof IntegerType], typeof IntegerType> =
-    East.platform("random_range", [IntegerType, IntegerType], IntegerType);
+export const random_range = East.platform("random_range", [IntegerType, IntegerType], IntegerType);
 
 /**
  * Generates a random float from an exponential distribution.
@@ -152,8 +149,7 @@ export const random_range: PlatformFunctionDef<[typeof IntegerType, typeof Integ
  * - Mean = 1/λ, Variance = 1/λ²
  * - Memoryless property: P(X > s + t | X > s) = P(X > t)
  */
-export const random_exponential: PlatformFunctionDef<[typeof FloatType], typeof FloatType> =
-    East.platform("random_exponential", [FloatType], FloatType);
+export const random_exponential = East.platform("random_exponential", [FloatType], FloatType);
 
 /**
  * Generates a random float from a Weibull distribution.
@@ -184,8 +180,7 @@ export const random_exponential: PlatformFunctionDef<[typeof FloatType], typeof 
  * - Shape = 1: constant failure rate (exponential)
  * - Shape > 1: increasing failure rate
  */
-export const random_weibull: PlatformFunctionDef<[typeof FloatType], typeof FloatType> =
-    East.platform("random_weibull", [FloatType], FloatType);
+export const random_weibull = East.platform("random_weibull", [FloatType], FloatType);
 
 /**
  * Generates a binary random outcome (0 or 1).
@@ -214,8 +209,7 @@ export const random_weibull: PlatformFunctionDef<[typeof FloatType], typeof Floa
  * - Mean = p, Variance = p(1-p)
  * - Special case of binomial with n=1
  */
-export const random_bernoulli: PlatformFunctionDef<[typeof FloatType], typeof IntegerType> =
-    East.platform("random_bernoulli", [FloatType], IntegerType);
+export const random_bernoulli = East.platform("random_bernoulli", [FloatType], IntegerType);
 
 /**
  * Generates the number of successes in n independent Bernoulli trials.
@@ -245,8 +239,7 @@ export const random_bernoulli: PlatformFunctionDef<[typeof FloatType], typeof In
  * - Returns value in range [0, n]
  * - Sum of n independent Bernoulli(p) trials
  */
-export const random_binomial: PlatformFunctionDef<[typeof IntegerType, typeof FloatType], typeof IntegerType> =
-    East.platform("random_binomial", [IntegerType, FloatType], IntegerType);
+export const random_binomial = East.platform("random_binomial", [IntegerType, FloatType], IntegerType);
 
 /**
  * Generates the number of trials until the first success.
@@ -277,8 +270,7 @@ export const random_binomial: PlatformFunctionDef<[typeof IntegerType, typeof Fl
  * - Memoryless property like exponential distribution
  * - Uses inverse transform sampling
  */
-export const random_geometric: PlatformFunctionDef<[typeof FloatType], typeof IntegerType> =
-    East.platform("random_geometric", [FloatType], IntegerType);
+export const random_geometric = East.platform("random_geometric", [FloatType], IntegerType);
 
 /**
  * Generates the number of events in a fixed interval from a Poisson process.
@@ -309,8 +301,7 @@ export const random_geometric: PlatformFunctionDef<[typeof FloatType], typeof In
  * - Uses inversion method for λ < 10, generative method for λ ≥ 10
  * - Approximates binomial when n is large and p is small
  */
-export const random_poisson: PlatformFunctionDef<[typeof FloatType], typeof IntegerType> =
-    East.platform("random_poisson", [FloatType], IntegerType);
+export const random_poisson = East.platform("random_poisson", [FloatType], IntegerType);
 
 /**
  * Generates a random float from a Pareto distribution (power law).
@@ -341,8 +332,7 @@ export const random_poisson: PlatformFunctionDef<[typeof FloatType], typeof Inte
  * - Heavier tail as α decreases
  * - Models "80/20 rule" and power law phenomena
  */
-export const random_pareto: PlatformFunctionDef<[typeof FloatType], typeof FloatType> =
-    East.platform("random_pareto", [FloatType], FloatType);
+export const random_pareto = East.platform("random_pareto", [FloatType], FloatType);
 
 /**
  * Generates a random float whose logarithm is normally distributed.
@@ -372,8 +362,7 @@ export const random_pareto: PlatformFunctionDef<[typeof FloatType], typeof Float
  * - Median = exp(μ), Mean = exp(μ + σ²/2)
  * - Right-skewed distribution
  */
-export const random_log_normal: PlatformFunctionDef<[typeof FloatType, typeof FloatType], typeof FloatType> =
-    East.platform("random_log_normal", [FloatType, FloatType], FloatType);
+export const random_log_normal = East.platform("random_log_normal", [FloatType, FloatType], FloatType);
 
 /**
  * Generates the sum of n independent uniform random variables.
@@ -404,8 +393,7 @@ export const random_log_normal: PlatformFunctionDef<[typeof FloatType, typeof Fl
  * - Approximates N(n/2, n/12) for large n
  * - Related to Bates distribution (divided by n)
  */
-export const random_irwin_hall: PlatformFunctionDef<[typeof IntegerType], typeof FloatType> =
-    East.platform("random_irwin_hall", [IntegerType], FloatType);
+export const random_irwin_hall = East.platform("random_irwin_hall", [IntegerType], FloatType);
 
 /**
  * Generates the average of n independent uniform random variables.
@@ -436,8 +424,7 @@ export const random_irwin_hall: PlatformFunctionDef<[typeof IntegerType], typeof
  * - Approximates N(0.5, 1/(12n)) for large n
  * - More concentrated around 0.5 as n increases
  */
-export const random_bates: PlatformFunctionDef<[typeof IntegerType], typeof FloatType> =
-    East.platform("random_bates", [IntegerType], FloatType);
+export const random_bates = East.platform("random_bates", [IntegerType], FloatType);
 
 /**
  * Seeds the global random number generator.
@@ -467,8 +454,7 @@ export const random_bates: PlatformFunctionDef<[typeof IntegerType], typeof Floa
  * - Same seed produces same sequence of random numbers
  * - Useful for testing and reproducible simulations
  */
-export const random_seed: PlatformFunctionDef<[typeof IntegerType], typeof NullType> =
-    East.platform("random_seed", [IntegerType], NullType);
+export const random_seed = East.platform("random_seed", [IntegerType], NullType);
 
 
 // Platform Function Implementations

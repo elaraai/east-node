@@ -3,7 +3,7 @@
  * Dual-licensed under AGPL-3.0 and commercial license. See LICENSE for details.
  */
 import { East, variant } from "@elaraai/east";
-import { describeEast, Test } from "@elaraai/east-node-std";
+import { describeEast, Assert } from "@elaraai/east-node-std";
 import { xml_parse, xml_serialize, XmlNode, XmlImpl } from "./xml.js";
 
 await describeEast("XML Platform Functions", (test) => {
@@ -19,17 +19,17 @@ await describeEast("XML Platform Functions", (test) => {
 
         // Access tag through struct fields
         const tag = $.let(result.tag);
-        $(Test.equal(tag, "book"));
+        $(Assert.equal(tag, "book"));
 
         // Access children array
         const children = $.let(result.children);
         const length = $.let(children.size());
-        $(Test.equal(length, 1n));
+        $(Assert.equal(length, 1n));
 
         // First child is a TEXT variant
         const child0 = $.let(children.get(0n));
         const textValue = $.let(child0.unwrap("TEXT"));
-        $(Test.equal(textValue, "East Guide"));
+        $(Assert.equal(textValue, "East Guide"));
     });
 
     test("parses XML with attributes", $ => {
@@ -44,10 +44,10 @@ await describeEast("XML Platform Functions", (test) => {
         const attrs = $.let(result.attributes);
 
         const id = $.let(attrs.get("id"));
-        $(Test.equal(id, "123"));
+        $(Assert.equal(id, "123"));
 
         const lang = $.let(attrs.get("lang"));
-        $(Test.equal(lang, "en"));
+        $(Assert.equal(lang, "en"));
     });
 
     test("parses nested XML elements", $ => {
@@ -61,18 +61,18 @@ await describeEast("XML Platform Functions", (test) => {
         const result = $.let(xml_parse(blob, config));
         const children = $.let(result.children);
         const length = $.let(children.size());
-        $(Test.equal(length, 2n));
+        $(Assert.equal(length, 2n));
 
         // First child is an ELEMENT variant
         const child0 = $.let(children.get(0n));
         const titleElement = $.let(child0.unwrap("ELEMENT"));
         const titleTag = $.let(titleElement.tag);
-        $(Test.equal(titleTag, "title"));
+        $(Assert.equal(titleTag, "title"));
 
         const titleChildren = $.let(titleElement.children);
         const titleText = $.let(titleChildren.get(0n));
         const titleValue = $.let(titleText.unwrap("TEXT"));
-        $(Test.equal(titleValue, "East"));
+        $(Assert.equal(titleValue, "East"));
     });
 
     test("parses XML with entities", $ => {
@@ -87,7 +87,7 @@ await describeEast("XML Platform Functions", (test) => {
         const children = $.let(result.children);
         const child0 = $.let(children.get(0n));
         const text = $.let(child0.unwrap("TEXT"));
-        $(Test.equal(text, '<html> & "quote"'));
+        $(Assert.equal(text, '<html> & "quote"'));
     });
 
     test("parses self-closing tag", $ => {
@@ -100,11 +100,11 @@ await describeEast("XML Platform Functions", (test) => {
 
         const result = $.let(xml_parse(blob, config));
         const tag = $.let(result.tag);
-        $(Test.equal(tag, "br"));
+        $(Assert.equal(tag, "br"));
 
         const children = $.let(result.children);
         const length = $.let(children.size());
-        $(Test.equal(length, 0n));
+        $(Assert.equal(length, 0n));
     });
 
     test("serializes simple XML", $ => {
@@ -123,7 +123,7 @@ await describeEast("XML Platform Functions", (test) => {
 
         const result = $.let(xml_serialize(node, config));
         const text = $.let(result.decodeUtf8());
-        $(Test.equal(text, "<book>East Guide</book>"));
+        $(Assert.equal(text, "<book>East Guide</book>"));
     });
 
     test("serializes XML with attributes", $ => {
@@ -142,7 +142,7 @@ await describeEast("XML Platform Functions", (test) => {
 
         const result = $.let(xml_serialize(node, config));
         const text = $.let(result.decodeUtf8());
-        $(Test.equal(text, '<book id="123">Content</book>'));
+        $(Assert.equal(text, '<book id="123">Content</book>'));
     });
 
     test("serializes nested XML", $ => {
@@ -167,7 +167,7 @@ await describeEast("XML Platform Functions", (test) => {
 
         const result = $.let(xml_serialize(node, config));
         const text = $.let(result.decodeUtf8());
-        $(Test.equal(text, "<book><title>East</title></book>"));
+        $(Assert.equal(text, "<book><title>East</title></book>"));
     });
 
     test("serializes with entities", $ => {
@@ -186,7 +186,7 @@ await describeEast("XML Platform Functions", (test) => {
 
         const result = $.let(xml_serialize(node, config));
         const text = $.let(result.decodeUtf8());
-        $(Test.equal(text, "<text>&lt;html&gt; &amp; &quot;quote&quot;</text>"));
+        $(Assert.equal(text, "<text>&lt;html&gt; &amp; &quot;quote&quot;</text>"));
     });
 
     test("serializes self-closing tag", $ => {
@@ -205,7 +205,7 @@ await describeEast("XML Platform Functions", (test) => {
 
         const result = $.let(xml_serialize(node, config));
         const text = $.let(result.decodeUtf8());
-        $(Test.equal(text, "<br/>"));
+        $(Assert.equal(text, "<br/>"));
     });
 
     test("round-trip: parse and serialize", $ => {
@@ -228,7 +228,7 @@ await describeEast("XML Platform Functions", (test) => {
 
         const serialized = $.let(xml_serialize(parsed, serializeConfig));
         const text = $.let(serialized.decodeUtf8());
-        $(Test.equal(text, originalXml));
+        $(Assert.equal(text, originalXml));
     });
 
     // Edge Case Tests
@@ -243,7 +243,7 @@ await describeEast("XML Platform Functions", (test) => {
 
         const result = $.let(xml_parse(blob, config));
         const tag = $.let(result.tag);
-        $(Test.equal(tag, "root"));
+        $(Assert.equal(tag, "root"));
     });
 
     test("handles namespaces as regular attributes", $ => {
@@ -257,13 +257,13 @@ await describeEast("XML Platform Functions", (test) => {
         const result = $.let(xml_parse(blob, config));
         const attrs = $.let(result.attributes);
         const xmlns = $.let(attrs.get("xmlns:foo"));
-        $(Test.equal(xmlns, "http://example.com"));
+        $(Assert.equal(xmlns, "http://example.com"));
 
         const children = $.let(result.children);
         const child0 = $.let(children.get(0n));
         const element = $.let(child0.unwrap("ELEMENT"));
         const childTag = $.let(element.tag);
-        $(Test.equal(childTag, "foo:element"));
+        $(Assert.equal(childTag, "foo:element"));
     });
 
     test("handles numeric entities (decimal)", $ => {
@@ -278,7 +278,7 @@ await describeEast("XML Platform Functions", (test) => {
         const children = $.let(result.children);
         const child0 = $.let(children.get(0n));
         const text = $.let(child0.unwrap("TEXT"));
-        $(Test.equal(text, "ABC"));
+        $(Assert.equal(text, "ABC"));
     });
 
     test("handles numeric entities (hexadecimal)", $ => {
@@ -293,7 +293,7 @@ await describeEast("XML Platform Functions", (test) => {
         const children = $.let(result.children);
         const child0 = $.let(children.get(0n));
         const text = $.let(child0.unwrap("TEXT"));
-        $(Test.equal(text, "ABC"));
+        $(Assert.equal(text, "ABC"));
     });
 
     test("skips comments", $ => {
@@ -307,7 +307,7 @@ await describeEast("XML Platform Functions", (test) => {
         const result = $.let(xml_parse(blob, config));
         const children = $.let(result.children);
         const length = $.let(children.size());
-        $(Test.equal(length, 1n)); // Only child element, comment ignored
+        $(Assert.equal(length, 1n)); // Only child element, comment ignored
     });
 
     test("skips processing instructions", $ => {
@@ -320,7 +320,7 @@ await describeEast("XML Platform Functions", (test) => {
 
         const result = $.let(xml_parse(blob, config));
         const tag = $.let(result.tag);
-        $(Test.equal(tag, "root"));
+        $(Assert.equal(tag, "root"));
     });
 
     test("preserves whitespace when configured", $ => {
@@ -335,7 +335,7 @@ await describeEast("XML Platform Functions", (test) => {
         const children = $.let(result.children);
         const child0 = $.let(children.get(0n));
         const text = $.let(child0.unwrap("TEXT"));
-        $(Test.equal(text, "  space  "));
+        $(Assert.equal(text, "  space  "));
     });
 
     test("trims whitespace by default", $ => {
@@ -350,7 +350,7 @@ await describeEast("XML Platform Functions", (test) => {
         const children = $.let(result.children);
         const child0 = $.let(children.get(0n));
         const text = $.let(child0.unwrap("TEXT"));
-        $(Test.equal(text, "space"));
+        $(Assert.equal(text, "space"));
     });
 
     test("handles multiple attributes", $ => {
@@ -366,9 +366,9 @@ await describeEast("XML Platform Functions", (test) => {
         const a = $.let(attrs.get("a"));
         const b = $.let(attrs.get("b"));
         const c = $.let(attrs.get("c"));
-        $(Test.equal(a, "1"));
-        $(Test.equal(b, "2"));
-        $(Test.equal(c, "3"));
+        $(Assert.equal(a, "1"));
+        $(Assert.equal(b, "2"));
+        $(Assert.equal(c, "3"));
     });
 
     test("serializes empty elements with closing tags when selfClosingTags=false", $ => {
@@ -387,7 +387,7 @@ await describeEast("XML Platform Functions", (test) => {
 
         const result = $.let(xml_serialize(node, config));
         const text = $.let(result.decodeUtf8());
-        $(Test.equal(text, "<br></br>"));
+        $(Assert.equal(text, "<br></br>"));
     });
 
     test("handles UTF-8 BOM", $ => {
@@ -405,7 +405,7 @@ await describeEast("XML Platform Functions", (test) => {
 
         const result = $.let(xml_parse(blob, config));
         const tag = $.let(result.tag);
-        $(Test.equal(tag, "root"));
+        $(Assert.equal(tag, "root"));
     });
 
     test("handles entities in attribute values", $ => {
@@ -419,7 +419,7 @@ await describeEast("XML Platform Functions", (test) => {
         const result = $.let(xml_parse(blob, config));
         const attrs = $.let(result.attributes);
         const attr = $.let(attrs.get("attr"));
-        $(Test.equal(attr, "<value>"));
+        $(Assert.equal(attr, "<value>"));
     });
 
     test("handles mixed content (text and elements interleaved)", $ => {
@@ -433,20 +433,20 @@ await describeEast("XML Platform Functions", (test) => {
         const result = $.let(xml_parse(blob, config));
         const children = $.let(result.children);
         const length = $.let(children.size());
-        $(Test.equal(length, 3n));
+        $(Assert.equal(length, 3n));
 
         const text1 = $.let(children.get(0n));
         const textValue1 = $.let(text1.unwrap("TEXT"));
-        $(Test.equal(textValue1, "Some"));
+        $(Assert.equal(textValue1, "Some"));
 
         const elem = $.let(children.get(1n));
         const boldElement = $.let(elem.unwrap("ELEMENT"));
         const boldTag = $.let(boldElement.tag);
-        $(Test.equal(boldTag, "b"));
+        $(Assert.equal(boldTag, "b"));
 
         const text2 = $.let(children.get(2n));
         const textValue2 = $.let(text2.unwrap("TEXT"));
-        $(Test.equal(textValue2, "text."));
+        $(Assert.equal(textValue2, "text."));
     });
 
     test("handles deep nesting", $ => {
@@ -471,7 +471,7 @@ await describeEast("XML Platform Functions", (test) => {
         const children5 = $.let(e.children);
         const text = $.let(children5.get(0n).unwrap("TEXT"));
 
-        $(Test.equal(text, "deep"));
+        $(Assert.equal(text, "deep"));
     });
 
     test("includes XML declaration when configured", $ => {
@@ -492,7 +492,7 @@ await describeEast("XML Platform Functions", (test) => {
         const text = $.let(result.decodeUtf8());
         const expectedStart = $.let(East.value('<?xml version="1.0" encoding="UTF-8"?>'));
         const hasDeclaration = $.let(text.startsWith(expectedStart));
-        $(Test.equal(hasDeclaration, true));
+        $(Assert.equal(hasDeclaration, true));
     });
 
     test("handles indentation with spaces", $ => {
@@ -519,7 +519,7 @@ await describeEast("XML Platform Functions", (test) => {
         const text = $.let(result.decodeUtf8());
         const expectedSubstring = $.let(East.value("\n  <child>"));
         const hasIndent = $.let(text.contains(expectedSubstring));
-        $(Test.equal(hasIndent, true));
+        $(Assert.equal(hasIndent, true));
     });
 
     // Error Handling Tests
@@ -532,7 +532,7 @@ await describeEast("XML Platform Functions", (test) => {
             decodeEntities: true,
         }));
 
-        $(Test.throws(xml_parse(blob, config), /Mismatched closing tag/));
+        $(Assert.throws(xml_parse(blob, config), /Mismatched closing tag/));
     });
 
     test("throws error on empty document", $ => {
@@ -543,7 +543,7 @@ await describeEast("XML Platform Functions", (test) => {
             decodeEntities: true,
         }));
 
-        $(Test.throws(xml_parse(blob, config), /Empty XML document/));
+        $(Assert.throws(xml_parse(blob, config), /Empty XML document/));
     });
 
     test("throws error on unclosed quote in attribute", $ => {
@@ -554,7 +554,7 @@ await describeEast("XML Platform Functions", (test) => {
             decodeEntities: true,
         }));
 
-        $(Test.throws(xml_parse(blob, config), /Unclosed attribute value/));
+        $(Assert.throws(xml_parse(blob, config), /Unclosed attribute value/));
     });
 
     // Special Characters in Attributes
@@ -570,7 +570,7 @@ await describeEast("XML Platform Functions", (test) => {
         const result = $.let(xml_parse(blob, config));
         const attrs = $.let(result.attributes);
         const attr = $.let(attrs.get("attr"));
-        $(Test.equal(attr, "line1\nline2"));
+        $(Assert.equal(attr, "line1\nline2"));
     });
 
     test("handles tabs in attribute values", $ => {
@@ -584,7 +584,7 @@ await describeEast("XML Platform Functions", (test) => {
         const result = $.let(xml_parse(blob, config));
         const attrs = $.let(result.attributes);
         const attr = $.let(attrs.get("attr"));
-        $(Test.equal(attr, "col1\tcol2"));
+        $(Assert.equal(attr, "col1\tcol2"));
     });
 
     test("serializes special characters in attribute values", $ => {
@@ -606,7 +606,7 @@ await describeEast("XML Platform Functions", (test) => {
         // Should preserve the newline character
         const expectedSubstring = $.let(East.value("line1\nline2"));
         const hasNewline = $.let(text.contains(expectedSubstring));
-        $(Test.equal(hasNewline, true));
+        $(Assert.equal(hasNewline, true));
     });
 
     // CDATA Tests
@@ -624,6 +624,6 @@ await describeEast("XML Platform Functions", (test) => {
         const child0 = $.let(children.get(0n));
         const text = $.let(child0.unwrap("TEXT"));
         // CDATA content should be preserved as-is without entity decoding
-        $(Test.equal(text, "<html>content & stuff</html>"));
+        $(Assert.equal(text, "<html>content & stuff</html>"));
     });
 }, { platformFns: XmlImpl });

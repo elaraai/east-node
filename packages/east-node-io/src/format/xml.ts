@@ -3,7 +3,7 @@
  * Dual-licensed under AGPL-3.0 and commercial license. See LICENSE for details.
  */
 import { East, BlobType, RecursiveType, StructType, StringType, DictType, ArrayType, VariantType, BooleanType, OptionType, variant, type ValueTypeOf } from "@elaraai/east";
-import type { PlatformFunction, PlatformFunctionDef } from "@elaraai/east/internal";
+import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 
 // XML Type Definitions
@@ -98,10 +98,7 @@ export const XmlSerializeConfig = StructType({
  * - Skips UTF-8 BOM (0xEF 0xBB 0xBF) if present at start
  * - Tracks line and column numbers for precise error reporting
  */
-export const xml_parse: PlatformFunctionDef<
-    [typeof BlobType, typeof XmlParseConfig],
-    typeof XmlNode
-> = East.platform("xml_parse", [BlobType, XmlParseConfig], XmlNode);
+export const xml_parse = East.platform("xml_parse", [BlobType, XmlParseConfig], XmlNode);
 
 /**
  * Serializes a recursive XML tree structure into XML-formatted binary data.
@@ -144,10 +141,7 @@ export const xml_parse: PlatformFunctionDef<
  * - Indentation is applied recursively to nested elements
  * - XML declaration includes `version="1.0"` and `encoding="UTF-8"` when enabled
  */
-export const xml_serialize: PlatformFunctionDef<
-    [typeof XmlNode, typeof XmlSerializeConfig],
-    typeof BlobType
-> = East.platform("xml_serialize", [XmlNode, XmlSerializeConfig], BlobType);
+export const xml_serialize = East.platform("xml_serialize", [XmlNode, XmlSerializeConfig], BlobType);
 
 /**
  * Node.js implementation of XML platform functions.

@@ -13,7 +13,7 @@
  * Run `npm run dev:services` to start Docker containers.
  */
 import { East } from "@elaraai/east";
-import { describeEast, Test } from "@elaraai/east-node-std";
+import { describeEast, Assert, Console, NodePlatform } from "@elaraai/east-node-std";
 import { ftp_connect, ftp_put, ftp_get, ftp_list, ftp_delete, ftp_close, ftp_close_all, FtpImpl } from "./ftp.js";
 
 // FTP test configuration
@@ -27,20 +27,20 @@ const TEST_CONFIG = {
 
 await describeEast("FTP platform functions", (test) => {
     test("connect and close FTP connection", $ => {
-        console.log("connect and close FTP connection");
+        $(Console.log("connect and close FTP connection"));
 
         const config = $.let(TEST_CONFIG);
         const handle = $.let(ftp_connect(config));
 
         // Handle should be non-empty string
-        $(Test.greater(handle.length(), East.value(0n)));
+        $(Assert.greater(handle.length(), East.value(0n)));
 
         // Close connection
         $(ftp_close(handle));
     });
 
     test("put uploads file successfully", $ => {
-        console.log("put uploads file successfully");
+        $(Console.log("put uploads file successfully"));
 
         const config = $.let(TEST_CONFIG);
         const testData = $.let(new Uint8Array([1, 2, 3, 4, 5]));
@@ -51,7 +51,7 @@ await describeEast("FTP platform functions", (test) => {
     });
 
     test("get downloads uploaded file", $ => {
-        console.log("get downloads uploaded file");
+        $(Console.log("get downloads uploaded file"));
 
         const config = $.let(TEST_CONFIG);
         const testData = $.let(new Uint8Array([10, 20, 30, 40, 50]));
@@ -65,13 +65,13 @@ await describeEast("FTP platform functions", (test) => {
         const downloaded = $.let(ftp_get(conn, "test-download.bin"));
 
         // Verify data matches
-        $(Test.equal(downloaded, testData));
+        $(Assert.equal(downloaded, testData));
 
         $(ftp_close(conn));
     });
 
     test("delete removes uploaded file", $ => {
-        console.log("delete removes uploaded file");
+        $(Console.log("delete removes uploaded file"));
 
         const config = $.let(TEST_CONFIG);
         const testData = $.let(new Uint8Array([100, 101, 102]));
@@ -88,7 +88,7 @@ await describeEast("FTP platform functions", (test) => {
     });
 
     test("list returns uploaded files", $ => {
-        console.log("list returns uploaded files");
+        $(Console.log("list returns uploaded files"));
 
         const config = $.let(TEST_CONFIG);
         const testData = $.let(new Uint8Array([1, 2, 3]));
@@ -103,7 +103,7 @@ await describeEast("FTP platform functions", (test) => {
         const files = $.let(ftp_list(conn, "/"));
 
         // Should have at least 2 files
-        $(Test.greaterEqual(files.size(), East.value(2n)));
+        $(Assert.greaterEqual(files.size(), East.value(2n)));
 
         // Clean up
         $(ftp_delete(conn, "list-test-1.bin"));
@@ -113,7 +113,7 @@ await describeEast("FTP platform functions", (test) => {
     });
 
     test("put and get work with text data", $ => {
-        console.log("put and get work with text data");
+        $(Console.log("put and get work with text data"));
 
         const config = $.let(TEST_CONFIG);
         const textContent = $.let("Hello, FTP World!");
@@ -133,7 +133,7 @@ await describeEast("FTP platform functions", (test) => {
         const decodedText = $.let(downloaded.decodeUtf8());
 
         // Verify text matches
-        $(Test.equal(decodedText, textContent));
+        $(Assert.equal(decodedText, textContent));
 
         // Clean up
         $(ftp_delete(conn, "test-text.txt"));
@@ -142,7 +142,7 @@ await describeEast("FTP platform functions", (test) => {
     });
 
     test("list returns file metadata", $ => {
-        console.log("list returns file metadata");
+        $(Console.log("list returns file metadata"));
 
         const config = $.let(TEST_CONFIG);
         const testData = $.let(new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])); // 10 bytes
@@ -163,15 +163,15 @@ await describeEast("FTP platform functions", (test) => {
             some: ($, idx) => {
                 const file = $.let(files.get(idx));
                 // Verify size is 10 bytes
-                $(Test.equal(file.size, East.value(10n)));
+                $(Assert.equal(file.size, East.value(10n)));
 
                 // Verify name matches
-                $(Test.equal(file.name, East.value("metadata-test.bin")));
+                $(Assert.equal(file.name, East.value("metadata-test.bin")));
 
                 // Verify it's a file (not a directory)
-                $(Test.equal(file.isDirectory, East.value(false)));
+                $(Assert.equal(file.isDirectory, East.value(false)));
             },
-            none: ($) => $(Test.fail("Expected to find file in listing")),
+            none: ($) => $(Assert.fail("Expected to find file in listing")),
         });
 
         // Clean up
@@ -181,7 +181,7 @@ await describeEast("FTP platform functions", (test) => {
     });
 
     test("put overwrites existing files", $ => {
-        console.log("put overwrites existing files");
+        $(Console.log("put overwrites existing files"));
 
         const config = $.let(TEST_CONFIG);
         const data1 = $.let(new Uint8Array([1, 2, 3]));
@@ -197,7 +197,7 @@ await describeEast("FTP platform functions", (test) => {
 
         // Download and verify it's the second version
         const downloaded = $.let(ftp_get(conn, "overwrite-test.bin"));
-        $(Test.equal(downloaded, data2));
+        $(Assert.equal(downloaded, data2));
 
         // Clean up
         $(ftp_delete(conn, "overwrite-test.bin"));
@@ -205,7 +205,7 @@ await describeEast("FTP platform functions", (test) => {
         $(ftp_close(conn));
     });
 }, {
-    platformFns: FtpImpl,
+    platformFns: [ ...FtpImpl, ...NodePlatform],
     afterEach: $ => {
         // Close all connections after each test (even on failure)
         $(ftp_close_all());

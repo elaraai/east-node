@@ -14,7 +14,7 @@
  */
 import { East, variant } from "@elaraai/east";
 import type { ValueTypeOf } from "@elaraai/east";
-import { Console, describeEast, Test } from "@elaraai/east-node-std";
+import { Console, describeEast, Assert } from "@elaraai/east-node-std";
 import { mongodb_connect, mongodb_find_one, mongodb_find_many, mongodb_insert_one, mongodb_update_one, mongodb_delete_one, mongodb_delete_many, mongodb_close, mongodb_close_all, MongoDBImpl, BsonDocumentType } from "./mongodb.js";
 import { BsonValueType } from "./types.js";
 
@@ -33,7 +33,7 @@ await describeEast("MongoDB platform functions", (test) => {
         const handle = $.let(mongodb_connect(config));
 
         // Handle should be non-empty string
-        $(Test.greater(handle.length(), East.value(0n)));
+        $(Assert.greater(handle.length(), East.value(0n)));
 
         // Close connection
         $(mongodb_close(handle));
@@ -82,14 +82,14 @@ await describeEast("MongoDB platform functions", (test) => {
         // Verify document was found with all fields
         $.match(result, {
             some: ($, foundDoc) => {
-                $(Test.equal(foundDoc, East.value(new Map<string, ValueTypeOf<typeof BsonValueType>>([
+                $(Assert.equal(foundDoc, East.value(new Map<string, ValueTypeOf<typeof BsonValueType>>([
                     ["_id", variant('String', insertedId)],
                     ["email", variant('String', "bob@example.com")],
                     ["score", variant('Integer', 42n)],
                     ["username", variant('String', "bob123")],
                 ]), BsonDocumentType)));
             },
-            none: ($) => $(Test.fail("Expected to find document")),
+            none: ($) => $(Assert.fail("Expected to find document")),
         });
 
         $(mongodb_close(conn));
@@ -109,7 +109,7 @@ await describeEast("MongoDB platform functions", (test) => {
 
         // Verify None
         $.match(result, {
-            some: ($) => $(Test.fail("Expected None for non-existent document")),
+            some: ($) => $(Assert.fail("Expected None for non-existent document")),
         });
 
         $(mongodb_close(conn));
@@ -147,7 +147,7 @@ await describeEast("MongoDB platform functions", (test) => {
         const results = $.let(mongodb_find_many(conn, query, options));
 
         // Should have at least 2 documents
-        $(Test.greaterEqual(results.size(), East.value(2n)));
+        $(Assert.greaterEqual(results.size(), East.value(2n)));
 
         $(mongodb_close(conn));
     });
@@ -190,7 +190,7 @@ await describeEast("MongoDB platform functions", (test) => {
         const results = $.let(mongodb_find_many(conn, query, options));
 
         // Should have exactly 2 documents
-        $(Test.equal(results.size(), East.value(2n)));
+        $(Assert.equal(results.size(), East.value(2n)));
 
         $(mongodb_close(conn));
     });
@@ -222,20 +222,20 @@ await describeEast("MongoDB platform functions", (test) => {
         const modified = $.let(mongodb_update_one(conn, query, update));
 
         // Should have modified 1 document
-        $(Test.equal(modified, East.value(1n)));
+        $(Assert.equal(modified, East.value(1n)));
 
         // Verify update
         const result = $.let(mongodb_find_one(conn, query));
 
         $.match(result, {
             some: ($, foundDoc) => {
-                $(Test.equal(foundDoc, East.value(new Map<string, ValueTypeOf<typeof BsonValueType>>([
+                $(Assert.equal(foundDoc, East.value(new Map<string, ValueTypeOf<typeof BsonValueType>>([
                     ["_id", variant('String', insertedId)],
                     ["counter", variant('Integer', 20n)],
                     ["update_test", variant('String', "original")],
                 ]), BsonDocumentType)));
             },
-            none: ($) => $(Test.fail("Expected to find updated document")),
+            none: ($) => $(Assert.fail("Expected to find updated document")),
         });
 
         $(mongodb_close(conn));
@@ -260,7 +260,7 @@ await describeEast("MongoDB platform functions", (test) => {
         const modified = $.let(mongodb_update_one(conn, query, update));
 
         // Should have modified 0 documents
-        $(Test.equal(modified, East.value(0n)));
+        $(Assert.equal(modified, East.value(0n)));
 
         $(mongodb_close(conn));
     });
@@ -286,13 +286,13 @@ await describeEast("MongoDB platform functions", (test) => {
         const deleted = $.let(mongodb_delete_one(conn, query));
 
         // Should have deleted 1 document
-        $(Test.equal(deleted, East.value(1n)));
+        $(Assert.equal(deleted, East.value(1n)));
 
         // Verify deletion
         const result = $.let(mongodb_find_one(conn, query));
 
         $.match(result, {
-            some: ($) => $(Test.fail("Expected None after deletion")),
+            some: ($) => $(Assert.fail("Expected None after deletion")),
         });
 
         $(mongodb_close(conn));
@@ -311,7 +311,7 @@ await describeEast("MongoDB platform functions", (test) => {
         const deleted = $.let(mongodb_delete_one(conn, query));
 
         // Should have deleted 0 documents
-        $(Test.equal(deleted, East.value(0n)));
+        $(Assert.equal(deleted, East.value(0n)));
 
         $(mongodb_close(conn));
     });
@@ -342,7 +342,7 @@ await describeEast("MongoDB platform functions", (test) => {
         // Verify nested object
         $.match(result, {
             some: ($, foundDoc) => {
-                $(Test.equal(foundDoc, East.value(new Map<string, ValueTypeOf<typeof BsonValueType>>([
+                $(Assert.equal(foundDoc, East.value(new Map<string, ValueTypeOf<typeof BsonValueType>>([
                     ["_id", variant('String', insertedId)],
                     ["metadata", variant('Object', new Map<string, ValueTypeOf<typeof BsonValueType>>([
                         ["created_by", variant('String', "admin")],
@@ -351,7 +351,7 @@ await describeEast("MongoDB platform functions", (test) => {
                     ["nested_test", variant('String', "parent")],
                 ]), BsonDocumentType)));
             },
-            none: ($) => $(Test.fail("Expected to find document")),
+            none: ($) => $(Assert.fail("Expected to find document")),
         });
 
         $(mongodb_close(conn));

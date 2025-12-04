@@ -4,7 +4,7 @@
  */
 
 import { East } from "@elaraai/east";
-import { describeEast, Test } from "@elaraai/east-node-std";
+import { describeEast, Assert } from "@elaraai/east-node-std";
 import { tar_create, tar_extract, TarImpl } from "./tar.js";
 
 await describeEast("TAR Platform Functions", (test) => {
@@ -24,11 +24,11 @@ await describeEast("TAR Platform Functions", (test) => {
         const files = $.let(tar_extract(tarBlob));
 
         // Verify file was extracted
-        $(Test.equal(files.size(), 1n));
+        $(Assert.equal(files.size(), 1n));
 
         const extractedData = $.let(files.get("file1.txt"));
         const extractedText = $.let(extractedData.decodeUtf8());
-        $(Test.equal(extractedText, fileContent));
+        $(Assert.equal(extractedText, fileContent));
     });
 
     test("creates and extracts a TAR archive with multiple files", $ => {
@@ -50,15 +50,15 @@ await describeEast("TAR Platform Functions", (test) => {
         const tarBlob = $.let(tar_create(entries));
         const files = $.let(tar_extract(tarBlob));
 
-        $(Test.equal(files.size(), 3n));
+        $(Assert.equal(files.size(), 3n));
 
         const file1 = $.let(files.get("file1.txt").decodeUtf8());
         const file2 = $.let(files.get("file2.txt").decodeUtf8());
         const file3 = $.let(files.get("file3.txt").decodeUtf8());
 
-        $(Test.equal(file1, "Content of file 1"));
-        $(Test.equal(file2, "Content of file 2"));
-        $(Test.equal(file3, "Content of file 3"));
+        $(Assert.equal(file1, "Content of file 1"));
+        $(Assert.equal(file2, "Content of file 2"));
+        $(Assert.equal(file3, "Content of file 3"));
     });
 
     test("handles files with directory paths", $ => {
@@ -76,13 +76,13 @@ await describeEast("TAR Platform Functions", (test) => {
         const tarBlob = $.let(tar_create(entries));
         const files = $.let(tar_extract(tarBlob));
 
-        $(Test.equal(files.size(), 2n));
+        $(Assert.equal(files.size(), 2n));
 
         const file1 = $.let(files.get("dir1/file1.txt").decodeUtf8());
         const file2 = $.let(files.get("dir2/subdir/file2.txt").decodeUtf8());
 
-        $(Test.equal(file1, "File in dir1"));
-        $(Test.equal(file2, "File in dir2/subdir"));
+        $(Assert.equal(file1, "File in dir1"));
+        $(Assert.equal(file2, "File in dir2/subdir"));
     });
 
     test("handles empty file", $ => {
@@ -96,10 +96,10 @@ await describeEast("TAR Platform Functions", (test) => {
         const tarBlob = $.let(tar_create(entries));
         const files = $.let(tar_extract(tarBlob));
 
-        $(Test.equal(files.size(), 1n));
+        $(Assert.equal(files.size(), 1n));
 
         const extractedText = $.let(files.get("empty.txt").decodeUtf8());
-        $(Test.equal(extractedText, ""));
+        $(Assert.equal(extractedText, ""));
     });
 
     test("handles large file", $ => {
@@ -115,6 +115,6 @@ await describeEast("TAR Platform Functions", (test) => {
         const files = $.let(tar_extract(tarBlob));
 
         const extractedText = $.let(files.get("large.txt").decodeUtf8());
-        $(Test.equal(extractedText, largeContent));
+        $(Assert.equal(extractedText, largeContent));
     });
 }, { platformFns: TarImpl });

@@ -13,7 +13,7 @@
  * Run `npm run dev:services` to start Docker containers.
  */
 import { East, variant } from "@elaraai/east";
-import { describeEast, Test } from "@elaraai/east-node-std";
+import { describeEast, Assert } from "@elaraai/east-node-std";
 import { redis_connect, redis_get, redis_set, redis_setex, redis_del, redis_close, redis_close_all, RedisImpl } from "./redis.js";
 
 // Redis test configuration
@@ -33,7 +33,7 @@ await describeEast("Redis platform functions", (test) => {
         const handle = $.let(redis_connect(config));
 
         // Handle should be non-empty string
-        $(Test.greater(handle.length(), East.value(0n)));
+        $(Assert.greater(handle.length(), East.value(0n)));
 
         // Close connection
         $(redis_close(handle));
@@ -67,9 +67,9 @@ await describeEast("Redis platform functions", (test) => {
         // Verify value matches
         $.match(retrieved, {
             some: ($, value) => {
-                $(Test.equal(value, testValue));
+                $(Assert.equal(value, testValue));
             },
-            none: ($) => $(Test.fail("Expected to find value")),
+            none: ($) => $(Assert.fail("Expected to find value")),
         });
 
         $(redis_close(conn));
@@ -86,7 +86,7 @@ await describeEast("Redis platform functions", (test) => {
 
         // Verify it's None
         $.match(result, {
-            some: ($) => $(Test.fail("Expected None for non-existent key")),
+            some: ($) => $(Assert.fail("Expected None for non-existent key")),
         });
 
         $(redis_close(conn));
@@ -112,9 +112,9 @@ await describeEast("Redis platform functions", (test) => {
 
         $.match(retrieved, {
             some: ($, value) => {
-                $(Test.equal(value, value2));
+                $(Assert.equal(value, value2));
             },
-            none: ($) => $(Test.fail("Expected to find value")),
+            none: ($) => $(Assert.fail("Expected to find value")),
         });
 
         $(redis_close(conn));
@@ -133,13 +133,13 @@ await describeEast("Redis platform functions", (test) => {
         const deleted = $.let(redis_del(conn, "test:del"));
 
         // Verify deletion count is 1
-        $(Test.equal(deleted, East.value(1n)));
+        $(Assert.equal(deleted, East.value(1n)));
 
         // Verify key no longer exists
         const retrieved = $.let(redis_get(conn, "test:del"));
 
         $.match(retrieved, {
-            some: ($) => $(Test.fail("Expected None after deletion")),
+            some: ($) => $(Assert.fail("Expected None after deletion")),
         });
 
         $(redis_close(conn));
@@ -155,7 +155,7 @@ await describeEast("Redis platform functions", (test) => {
         const deleted = $.let(redis_del(conn, "test:del-nonexistent"));
 
         // Verify deletion count is 0
-        $(Test.equal(deleted, East.value(0n)));
+        $(Assert.equal(deleted, East.value(0n)));
 
         $(redis_close(conn));
     });
@@ -174,9 +174,9 @@ await describeEast("Redis platform functions", (test) => {
 
         $.match(retrieved, {
             some: ($, value) => {
-                $(Test.equal(value, East.value("expiring-value")));
+                $(Assert.equal(value, East.value("expiring-value")));
             },
-            none: ($) => $(Test.fail("Expected to find value")),
+            none: ($) => $(Assert.fail("Expected to find value")),
         });
 
         $(redis_close(conn));
@@ -202,9 +202,9 @@ await describeEast("Redis platform functions", (test) => {
 
         $.match(retrieved, {
             some: ($, value) => {
-                $(Test.equal(value, value2));
+                $(Assert.equal(value, value2));
             },
-            none: ($) => $(Test.fail("Expected to find value")),
+            none: ($) => $(Assert.fail("Expected to find value")),
         });
 
         $(redis_close(conn));
@@ -224,9 +224,9 @@ await describeEast("Redis platform functions", (test) => {
 
         $.match(retrieved, {
             some: ($, value) => {
-                $(Test.equal(value, specialValue));
+                $(Assert.equal(value, specialValue));
             },
-            none: ($) => $(Test.fail("Expected to find value")),
+            none: ($) => $(Assert.fail("Expected to find value")),
         });
 
         $(redis_close(conn));

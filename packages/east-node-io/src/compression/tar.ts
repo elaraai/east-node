@@ -14,7 +14,7 @@
 
 import { East, BlobType } from "@elaraai/east";
 import type { ValueTypeOf } from "@elaraai/east";
-import type { PlatformFunctionDef, PlatformFunction } from "@elaraai/east/internal";
+import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 import { pack, extract } from "tar-stream";
 import { Readable } from "node:stream";
@@ -70,10 +70,7 @@ import { TarEntriesType, TarExtractedType } from "./types.js";
  * - File permissions default to 0644 (readable/writable by owner)
  * - Operations are asynchronous (use East.compileAsync)
  */
-export const tar_create: PlatformFunctionDef<
-    [typeof TarEntriesType],
-    typeof BlobType
-> = East.platform("tar_create", [TarEntriesType], BlobType);
+export const tar_create = East.asyncPlatform("tar_create", [TarEntriesType], BlobType);
 
 /**
  * Extracts files from a TAR archive.
@@ -114,10 +111,7 @@ export const tar_create: PlatformFunctionDef<
  * - Skips directory entries (only extracts files)
  * - Operations are asynchronous (use East.compileAsync)
  */
-export const tar_extract: PlatformFunctionDef<
-    [typeof BlobType],
-    typeof TarExtractedType
-> = East.platform("tar_extract", [BlobType], TarExtractedType);
+export const tar_extract = East.asyncPlatform("tar_extract", [BlobType], TarExtractedType);
 
 /**
  * Helper function to create a TAR archive using tar-stream.
@@ -260,7 +254,7 @@ async function extractTar(tarData: ValueTypeOf<typeof BlobType>): Promise<Map<st
  * Pass this array to {@link East.compileAsync} to enable TAR archive operations.
  */
 export const TarImpl: PlatformFunction[] = [
-    tar_create.implementAsync(async (entries: ValueTypeOf<typeof TarEntriesType>) => {
+    tar_create.implement(async (entries: ValueTypeOf<typeof TarEntriesType>) => {
         try {
             return await createTar(entries);
         } catch (err: any) {
@@ -272,7 +266,7 @@ export const TarImpl: PlatformFunction[] = [
         }
     }),
 
-    tar_extract.implementAsync(async (tarData: ValueTypeOf<typeof BlobType>) => {
+    tar_extract.implement(async (tarData: ValueTypeOf<typeof BlobType>) => {
         try {
             return await extractTar(tarData);
         } catch (err: any) {

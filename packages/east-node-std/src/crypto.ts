@@ -3,7 +3,7 @@
  * Dual-licensed under AGPL-3.0 and commercial license. See LICENSE for details.
  */
 import { East, StringType, IntegerType, BlobType } from "@elaraai/east";
-import type { PlatformFunction, PlatformFunctionDef } from "@elaraai/east/internal";
+import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 import { randomBytes, createHash, randomUUID } from "node:crypto";
 
@@ -31,7 +31,7 @@ import { randomBytes, createHash, randomUUID } from "node:crypto";
  * });
  * ```
  */
-export const crypto_random_bytes: PlatformFunctionDef<[typeof IntegerType], typeof BlobType> = East.platform("crypto_random_bytes", [IntegerType], BlobType);
+export const crypto_random_bytes = East.platform("crypto_random_bytes", [IntegerType], BlobType);
 
 /**
  * Computes SHA-256 hash of a string.
@@ -54,7 +54,7 @@ export const crypto_random_bytes: PlatformFunctionDef<[typeof IntegerType], type
  * });
  * ```
  */
-export const crypto_hash_sha256: PlatformFunctionDef<[typeof StringType], typeof StringType> = East.platform("crypto_hash_sha256", [StringType], StringType);
+export const crypto_hash_sha256 = East.platform("crypto_hash_sha256", [StringType], StringType);
 
 /**
  * Computes SHA-256 hash of binary data.
@@ -77,7 +77,7 @@ export const crypto_hash_sha256: PlatformFunctionDef<[typeof StringType], typeof
  * });
  * ```
  */
-export const crypto_hash_sha256_bytes: PlatformFunctionDef<[typeof BlobType], typeof BlobType> = East.platform("crypto_hash_sha256_bytes", [BlobType], BlobType);
+export const crypto_hash_sha256_bytes = East.platform("crypto_hash_sha256_bytes", [BlobType], BlobType);
 
 /**
  * Generates a random UUID v4.
@@ -100,8 +100,7 @@ export const crypto_hash_sha256_bytes: PlatformFunctionDef<[typeof BlobType], ty
  * });
  * ```
  */
-export const crypto_uuid: PlatformFunctionDef<[], typeof StringType> = East.platform("crypto_uuid", [], StringType);
-
+export const crypto_uuid = East.platform("crypto_uuid", [], StringType);
 /**
  * Node.js implementation of cryptographic platform functions.
  *

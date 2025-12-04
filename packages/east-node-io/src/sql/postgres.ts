@@ -14,7 +14,7 @@
 
 import { BlobType, BooleanType, DateTimeType, East, FloatType, IntegerType, isValueOf, match, NullType, SortedMap, StringType as EastStringType, variant } from "@elaraai/east";
 import type { ValueTypeOf } from "@elaraai/east";
-import type { PlatformFunctionDef, PlatformFunction } from "@elaraai/east/internal";
+import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 import pg from 'pg';
 import { createHandle, getConnection, closeHandle, closeAllHandles } from '../connection/index.js';
@@ -108,10 +108,7 @@ type PostgresOid =
  * - All queries are asynchronous
  * - Connections are automatically returned to the pool after queries
  */
-export const postgres_connect: PlatformFunctionDef<
-    [typeof PostgresConfigType],
-    typeof ConnectionHandleType
-> = East.platform("postgres_connect", [PostgresConfigType], ConnectionHandleType);
+export const postgres_connect = East.asyncPlatform("postgres_connect", [PostgresConfigType], ConnectionHandleType);
 
 /**
  * Executes a SQL query with parameterized values.
@@ -170,10 +167,7 @@ export const postgres_connect: PlatformFunctionDef<
  * - All queries are asynchronous
  * - Parameters prevent SQL injection attacks
  */
-export const postgres_query: PlatformFunctionDef<
-    [typeof ConnectionHandleType, typeof StringType, typeof SqlParametersType],
-    typeof SqlResultType
-> = East.platform("postgres_query", [ConnectionHandleType, StringType, SqlParametersType], SqlResultType);
+export const postgres_query = East.asyncPlatform("postgres_query", [ConnectionHandleType, StringType, SqlParametersType], SqlResultType);
 
 /**
  * Closes a PostgreSQL connection pool.
@@ -210,10 +204,7 @@ export const postgres_query: PlatformFunctionDef<
  * await compiled();
  * ```
  */
-export const postgres_close: PlatformFunctionDef<
-    [typeof ConnectionHandleType],
-    typeof NullType
-> = East.platform("postgres_close", [ConnectionHandleType], NullType);
+export const postgres_close = East.asyncPlatform("postgres_close", [ConnectionHandleType], NullType);
 
 /**
  * Closes all PostgreSQL connections.
@@ -240,7 +231,7 @@ export const postgres_close: PlatformFunctionDef<
  *
  * @internal
  */
-export const postgres_close_all: PlatformFunctionDef<[], typeof NullType> = East.platform("postgres_close_all", [], NullType);
+export const postgres_close_all = East.asyncPlatform("postgres_close_all", [], NullType);
 
 /**
  * Converts East SQL parameter to native JavaScript value.
@@ -329,7 +320,7 @@ function convertNativeToParam(value: any, columnOid: PostgresOid | null): ValueT
  * Pass this to East.compileAsync() to enable PostgreSQL functionality.
  */
 export const PostgresImpl: PlatformFunction[] = [
-    postgres_connect.implementAsync(async (config: ValueTypeOf<typeof PostgresConfigType>) => {
+    postgres_connect.implement(async (config: ValueTypeOf<typeof PostgresConfigType>) => {
         try {
             const poolConfig: pg.PoolConfig = {
                 host: config.host,
@@ -366,7 +357,7 @@ export const PostgresImpl: PlatformFunction[] = [
         }
     }),
 
-    postgres_query.implementAsync(async (
+    postgres_query.implement(async (
         handle: ValueTypeOf<typeof ConnectionHandleType>,
         sql: ValueTypeOf<typeof StringType>,
         params: ValueTypeOf<typeof SqlParametersType>
@@ -442,7 +433,7 @@ export const PostgresImpl: PlatformFunction[] = [
         }
     }),
 
-    postgres_close.implementAsync(async (handle: ValueTypeOf<typeof ConnectionHandleType>) => {
+    postgres_close.implement(async (handle: ValueTypeOf<typeof ConnectionHandleType>) => {
         try {
             const pool = getConnection<pg.Pool>(handle);
             await pool.end();
@@ -456,7 +447,7 @@ export const PostgresImpl: PlatformFunction[] = [
         }
     }),
 
-    postgres_close_all.implementAsync(async () => {
+    postgres_close_all.implement(async () => {
         await closeAllHandles();
         return null;
     }),

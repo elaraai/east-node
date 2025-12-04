@@ -153,7 +153,7 @@ FetchMethod, FetchRequestConfig, FetchResponse
 
 **Example:**
 ```typescript
-const fetchData = East.function([], StringType, $ => {
+const fetchData = East.asyncFunction([], StringType, $ => {
     const data = $.let(Fetch.get("https://api.example.com/users"));
     $(Console.log(East.str`Received: ${data}`));
     return data;
@@ -204,7 +204,7 @@ import { Time } from "@elaraai/east-node-std";
 
 **Example:**
 ```typescript
-const measureTime = East.function([], IntegerType, $ => {
+const measureTime = East.asyncFunction([], IntegerType, $ => {
     const start = $.let(Time.now());
     $(Time.sleep(1000n));
     const end = $.let(Time.now());
@@ -298,7 +298,7 @@ const iqScore = compiled2();   // e.g., 103.7
 
 **Import:**
 ```typescript
-import { describeEast, Test } from "@elaraai/east-node-std";
+import { describeEast, Assert } from "@elaraai/east-node-std";
 ```
 
 **Test Framework:**
@@ -306,7 +306,7 @@ import { describeEast, Test } from "@elaraai/east-node-std";
 await describeEast("Test Suite Name", (test) => {
     test("test case description", $ => {
         const result = $.let(someExpression);
-        $(Test.equal(result, expectedValue));
+        $(Assert.equal(result, expectedValue));
     });
 });
 ```

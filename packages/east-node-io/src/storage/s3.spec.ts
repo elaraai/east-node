@@ -13,7 +13,7 @@
  * Run `npm run dev:services` to start Docker containers.
  */
 import { East, variant } from "@elaraai/east";
-import { describeEast, Test } from "@elaraai/east-node-std";
+import { describeEast, Assert } from "@elaraai/east-node-std";
 import { s3_put_object, s3_get_object, s3_head_object, s3_delete_object, s3_list_objects, s3_presign_url, S3Impl } from "./s3.js";
 import { S3Client, CreateBucketCommand } from "@aws-sdk/client-s3";
 
@@ -45,7 +45,7 @@ async function ensureTestBucket() {
         console.log(`✓ Created test bucket: ${TEST_CONFIG.bucket}`);
     } catch (err: any) {
         if (err.name === 'BucketAlreadyOwnedByYou' || err.Code === 'BucketAlreadyOwnedByYou') {
-            console.log(`✓ Test bucket already exists: ${TEST_CONFIG.bucket}`);
+            console.log(`✓ Assert bucket already exists: ${TEST_CONFIG.bucket}`);
         } else {
             console.error(`Failed to create test bucket: ${err.message}`);
             throw err;
@@ -80,7 +80,7 @@ await describeEast("S3 platform functions", (test) => {
         const downloaded = $.let(s3_get_object(config, "test-download.bin"));
 
         // Verify data matches
-        $(Test.equal(downloaded, testData));
+        $(Assert.equal(downloaded, testData));
     });
 
     test("headObject retrieves metadata without downloading", $ => {
@@ -97,18 +97,18 @@ await describeEast("S3 platform functions", (test) => {
         const metadata = $.let(s3_head_object(config, "test-metadata.bin"));
 
         // Verify key matches
-        $(Test.equal(metadata.key, East.value("test-metadata.bin")));
+        $(Assert.equal(metadata.key, East.value("test-metadata.bin")));
 
         // Verify size matches
-        $(Test.equal(metadata.size, expectedSize));
+        $(Assert.equal(metadata.size, expectedSize));
 
         // Verify ETag is present
         $.match(metadata.etag, {
             some: ($, etag) => {
                 // ETag should be non-empty
-                $(Test.greater(etag.length(), East.value(0n)));
+                $(Assert.greater(etag.length(), East.value(0n)));
             },
-            none: ($) => $(Test.fail("Expected ETag to be present")),
+            none: ($) => $(Assert.fail("Expected ETag to be present")),
         });
 
         // Clean up
@@ -155,7 +155,7 @@ await describeEast("S3 platform functions", (test) => {
         const result = $.let(s3_list_objects(config, "list-test/", 100n));
 
         // Should have at least 3 objects
-        $(Test.greaterEqual(result.objects.size(), East.value(3n)));
+        $(Assert.greaterEqual(result.objects.size(), East.value(3n)));
 
         // Clean up
         $(s3_delete_object(config, "list-test/file1.bin"));
@@ -178,7 +178,7 @@ await describeEast("S3 platform functions", (test) => {
         const result = $.let(s3_list_objects(config, "maxkeys-test/", 2n));
 
         // Should return at most 2 objects
-        $(Test.lessEqual(result.objects.size(), East.value(2n)));
+        $(Assert.lessEqual(result.objects.size(), East.value(2n)));
 
         // Clean up
         $(s3_delete_object(config, "maxkeys-test/file1.bin"));
@@ -199,11 +199,11 @@ await describeEast("S3 platform functions", (test) => {
         const url = $.let(s3_presign_url(config, "presign-test.bin", 3600n));
 
         // URL should be non-empty
-        $(Test.greater(url.length(), East.value(0n)));
+        $(Assert.greater(url.length(), East.value(0n)));
 
         // URL should start with the MinIO endpoint and include bucket/key
         const expectedPrefix = $.let("http://localhost:9000/test-bucket/presign-test.bin");
-        $(Test.equal(url.contains(expectedPrefix), true));
+        $(Assert.equal(url.contains(expectedPrefix), true));
 
 
         // Clean up
@@ -229,7 +229,7 @@ await describeEast("S3 platform functions", (test) => {
         const decodedText = $.let(downloaded.decodeUtf8());
 
         // Verify text matches
-        $(Test.equal(decodedText, textContent));
+        $(Assert.equal(decodedText, textContent));
 
         // Clean up
         $(s3_delete_object(config, "test-text.txt"));
@@ -248,7 +248,7 @@ await describeEast("S3 platform functions", (test) => {
         const result = $.let(s3_list_objects(config, "", 1000n));
 
         // Should have at least 1 object
-        $(Test.greaterEqual(result.objects.size(), East.value(1n)));
+        $(Assert.greaterEqual(result.objects.size(), East.value(1n)));
 
         // Clean up
         $(s3_delete_object(config, "root-level-file.bin"));
@@ -267,15 +267,15 @@ await describeEast("S3 platform functions", (test) => {
         const result = $.let(s3_list_objects(config, "metadata-test.bin", 10n));
 
         // Should have exactly 1 object
-        $(Test.equal(result.objects.size(), East.value(1n)));
+        $(Assert.equal(result.objects.size(), East.value(1n)));
 
         const obj = $.let(result.objects.get(East.value(0n)));
 
         // Key should match
-        $(Test.equal(obj.key, East.value("metadata-test.bin")));
+        $(Assert.equal(obj.key, East.value("metadata-test.bin")));
 
         // Size should be 10 bytes
-        $(Test.equal(obj.size, East.value(10n)));
+        $(Assert.equal(obj.size, East.value(10n)));
 
         // Clean up
         $(s3_delete_object(config, "metadata-test.bin"));
@@ -296,7 +296,7 @@ await describeEast("S3 platform functions", (test) => {
 
         // Download and verify it's the second version
         const downloaded = $.let(s3_get_object(config, "overwrite-test.bin"));
-        $(Test.equal(downloaded, data2));
+        $(Assert.equal(downloaded, data2));
 
         // Clean up
         $(s3_delete_object(config, "overwrite-test.bin"));

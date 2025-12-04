@@ -11,7 +11,7 @@
  *
  * Requires Docker MySQL service running on localhost:3306
  */
-import { describeEast, Test } from "@elaraai/east-node-std";
+import { describeEast, Assert } from "@elaraai/east-node-std";
 import { East, variant, type ValueTypeOf } from "@elaraai/east";
 import { mysql_connect, mysql_query, mysql_close, mysql_close_all, MySqlImpl } from "./mysql.js";
 import { SqlRowType, SqlParameterType } from "./types.js";
@@ -31,7 +31,7 @@ await describeEast("MySQL platform functions", (test) => {
         const handle = $.let(mysql_connect(config));
 
         // Handle should be non-empty string
-        $(Test.greater(handle.length(), East.value(0n)));
+        $(Assert.greater(handle.length(), East.value(0n)));
 
         // Close returns void, use $()
         $(mysql_close(handle));
@@ -63,11 +63,11 @@ await describeEast("MySQL platform functions", (test) => {
                 const expectedRow = $.let(new Map<string, ValueTypeOf<typeof SqlParameterType>>([
                     ["value", variant('Integer', 1n)],  // MySQL LONG returns Integer with column metadata
                 ]), SqlRowType);
-                $(Test.equal(selectResult.rows, East.value([expectedRow])));
+                $(Assert.equal(selectResult.rows, East.value([expectedRow])));
             },
-            insert: ($, _) => $(Test.fail("Expected select, got insert")),
-            update: ($, _) => $(Test.fail("Expected select, got update")),
-            delete: ($, _) => $(Test.fail("Expected select, got delete")),
+            insert: ($, _) => $(Assert.fail("Expected select, got insert")),
+            update: ($, _) => $(Assert.fail("Expected select, got update")),
+            delete: ($, _) => $(Assert.fail("Expected select, got delete")),
         });
 
         $(mysql_close(conn));
@@ -102,19 +102,19 @@ await describeEast("MySQL platform functions", (test) => {
 
         // Verify result is insert variant using $.match
         $.match(result, {
-            select: ($, _) => $(Test.fail("Expected insert, got select")),
+            select: ($, _) => $(Assert.fail("Expected insert, got select")),
             insert: ($, insertResult) => {
                 // Verify rowsAffected
-                $(Test.equal(insertResult.rowsAffected, East.value(1n)));
+                $(Assert.equal(insertResult.rowsAffected, East.value(1n)));
 
                 // Verify lastInsertId is Some
                 $.match(insertResult.lastInsertId, {
-                    some: ($, id) => $(Test.equal(id, East.value(1n))),
-                    none: ($) => $(Test.fail("Expected lastInsertId to be Some")),
+                    some: ($, id) => $(Assert.equal(id, East.value(1n))),
+                    none: ($) => $(Assert.fail("Expected lastInsertId to be Some")),
                 });
             },
-            update: ($, _) => $(Test.fail("Expected insert, got update")),
-            delete: ($, _) => $(Test.fail("Expected insert, got delete")),
+            update: ($, _) => $(Assert.fail("Expected insert, got update")),
+            delete: ($, _) => $(Assert.fail("Expected insert, got delete")),
         });
 
         $(mysql_close(conn));
@@ -155,12 +155,12 @@ await describeEast("MySQL platform functions", (test) => {
 
         // Verify result is update variant using $.match
         $.match(result, {
-            select: ($, _) => $(Test.fail("Expected update, got select")),
-            insert: ($, _) => $(Test.fail("Expected update, got insert")),
+            select: ($, _) => $(Assert.fail("Expected update, got select")),
+            insert: ($, _) => $(Assert.fail("Expected update, got insert")),
             update: ($, updateResult) => {
-                $(Test.equal(updateResult.rowsAffected, East.value(1n)));
+                $(Assert.equal(updateResult.rowsAffected, East.value(1n)));
             },
-            delete: ($, _) => $(Test.fail("Expected update, got delete")),
+            delete: ($, _) => $(Assert.fail("Expected update, got delete")),
         });
 
         $(mysql_close(conn));
@@ -201,11 +201,11 @@ await describeEast("MySQL platform functions", (test) => {
 
         // Verify result is delete variant using $.match
         $.match(result, {
-            select: ($, _) => $(Test.fail("Expected delete, got select")),
-            insert: ($, _) => $(Test.fail("Expected delete, got insert")),
-            update: ($, _) => $(Test.fail("Expected delete, got update")),
+            select: ($, _) => $(Assert.fail("Expected delete, got select")),
+            insert: ($, _) => $(Assert.fail("Expected delete, got insert")),
+            update: ($, _) => $(Assert.fail("Expected delete, got update")),
             delete: ($, deleteResult) => {
-                $(Test.equal(deleteResult.rowsAffected, East.value(1n)));
+                $(Assert.equal(deleteResult.rowsAffected, East.value(1n)));
             },
         });
 
@@ -253,11 +253,11 @@ await describeEast("MySQL platform functions", (test) => {
                     ["id", variant("Integer", 42n)],  // MySQL INT returns Integer with column metadata
                     ["name", variant("String", "test")],
                 ]), SqlRowType);
-                $(Test.equal(selectResult.rows, East.value([expectedRow])));
+                $(Assert.equal(selectResult.rows, East.value([expectedRow])));
             },
-            insert: ($, _) => $(Test.fail("Expected select, got insert")),
-            update: ($, _) => $(Test.fail("Expected select, got update")),
-            delete: ($, _) => $(Test.fail("Expected select, got delete")),
+            insert: ($, _) => $(Assert.fail("Expected select, got insert")),
+            update: ($, _) => $(Assert.fail("Expected select, got update")),
+            delete: ($, _) => $(Assert.fail("Expected select, got delete")),
         });
 
         $(mysql_close(conn));
@@ -306,11 +306,11 @@ await describeEast("MySQL platform functions", (test) => {
                     ["id", variant("Integer", 1n)],  // MySQL INT returns Integer with column metadata
                     ["created_at", variant("DateTime", new Date("2025-01-15T10:30:00Z"))],
                 ]), SqlRowType);
-                $(Test.equal(selectResult.rows, East.value([expectedRow])));
+                $(Assert.equal(selectResult.rows, East.value([expectedRow])));
             },
-            insert: ($, _) => $(Test.fail("Expected select, got insert")),
-            update: ($, _) => $(Test.fail("Expected select, got update")),
-            delete: ($, _) => $(Test.fail("Expected select, got delete")),
+            insert: ($, _) => $(Assert.fail("Expected select, got insert")),
+            update: ($, _) => $(Assert.fail("Expected select, got update")),
+            delete: ($, _) => $(Assert.fail("Expected select, got delete")),
         });
 
         $(mysql_close(conn));
@@ -375,11 +375,11 @@ await describeEast("MySQL platform functions", (test) => {
                     ["blob", variant("Blob", new Uint8Array([1, 2, 3]))],
                     ["dt", variant("DateTime", new Date("2025-01-15T10:30:00Z"))],
                 ]), SqlRowType);
-                $(Test.equal(selectResult.rows, East.value([expectedRow])));
+                $(Assert.equal(selectResult.rows, East.value([expectedRow])));
             },
-            insert: ($, _) => $(Test.fail("Expected select, got insert")),
-            update: ($, _) => $(Test.fail("Expected select, got update")),
-            delete: ($, _) => $(Test.fail("Expected select, got delete")),
+            insert: ($, _) => $(Assert.fail("Expected select, got insert")),
+            update: ($, _) => $(Assert.fail("Expected select, got update")),
+            delete: ($, _) => $(Assert.fail("Expected select, got delete")),
         });
 
         $(mysql_close(conn));

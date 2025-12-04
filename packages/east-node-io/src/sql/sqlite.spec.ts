@@ -10,7 +10,7 @@
  * Tests compile East functions and run them to validate platform function behavior.
  */
 import { East, variant, type ValueTypeOf } from "@elaraai/east";
-import { describeEast, Test } from "@elaraai/east-node-std";
+import { describeEast, Assert } from "@elaraai/east-node-std";
 import { sqlite_connect, sqlite_query, sqlite_close, sqlite_close_all, SqliteImpl } from "./sqlite.js";
 import { SqlRowType, SqlParameterType } from "./types.js";
 
@@ -25,7 +25,7 @@ await describeEast("SQLite platform functions", (test) => {
         const handle = $.let(sqlite_connect(config));
 
         // Handle should be non-empty string
-        $(Test.greater(handle.length(), East.value(0n)));
+        $(Assert.greater(handle.length(), East.value(0n)));
 
         // Close returns void, use $()
         $(sqlite_close(handle));
@@ -56,11 +56,11 @@ await describeEast("SQLite platform functions", (test) => {
                 const expectedRow = $.let(new Map<string, ValueTypeOf<typeof SqlParameterType>>([
                     ["value", variant('Float', 1.0)],
                 ]), SqlRowType);
-                $(Test.equal(selectResult.rows, East.value([expectedRow])));
+                $(Assert.equal(selectResult.rows, East.value([expectedRow])));
             },
-            insert: ($, _) => $(Test.fail("Expected select, got insert")),
-            update: ($, _) => $(Test.fail("Expected select, got update")),
-            delete: ($, _) => $(Test.fail("Expected select, got delete")),
+            insert: ($, _) => $(Assert.fail("Expected select, got insert")),
+            update: ($, _) => $(Assert.fail("Expected select, got update")),
+            delete: ($, _) => $(Assert.fail("Expected select, got delete")),
         });
 
         $(sqlite_close(conn));
@@ -92,19 +92,19 @@ await describeEast("SQLite platform functions", (test) => {
 
         // Verify result is insert variant using $.match
         $.match(result, {
-            select: ($, _) => $(Test.fail("Expected insert, got select")),
+            select: ($, _) => $(Assert.fail("Expected insert, got select")),
             insert: ($, insertResult) => {
                 // Verify rowsAffected
-                $(Test.equal(insertResult.rowsAffected, East.value(1n)));
+                $(Assert.equal(insertResult.rowsAffected, East.value(1n)));
 
                 // Verify lastInsertId is Some
                 $.match(insertResult.lastInsertId, {
-                    some: ($, id) => $(Test.equal(id, East.value(1n))),
-                    none: ($) => $(Test.fail("Expected lastInsertId to be Some")),
+                    some: ($, id) => $(Assert.equal(id, East.value(1n))),
+                    none: ($) => $(Assert.fail("Expected lastInsertId to be Some")),
                 });
             },
-            update: ($, _) => $(Test.fail("Expected insert, got update")),
-            delete: ($, _) => $(Test.fail("Expected insert, got delete")),
+            update: ($, _) => $(Assert.fail("Expected insert, got update")),
+            delete: ($, _) => $(Assert.fail("Expected insert, got delete")),
         });
 
         $(sqlite_close(conn));
@@ -142,12 +142,12 @@ await describeEast("SQLite platform functions", (test) => {
 
         // Verify result is update variant using $.match
         $.match(result, {
-            select: ($, _) => $(Test.fail("Expected update, got select")),
-            insert: ($, _) => $(Test.fail("Expected update, got insert")),
+            select: ($, _) => $(Assert.fail("Expected update, got select")),
+            insert: ($, _) => $(Assert.fail("Expected update, got insert")),
             update: ($, updateResult) => {
-                $(Test.equal(updateResult.rowsAffected, East.value(1n)));
+                $(Assert.equal(updateResult.rowsAffected, East.value(1n)));
             },
-            delete: ($, _) => $(Test.fail("Expected update, got delete")),
+            delete: ($, _) => $(Assert.fail("Expected update, got delete")),
         });
 
         $(sqlite_close(conn));
@@ -185,11 +185,11 @@ await describeEast("SQLite platform functions", (test) => {
 
         // Verify result is delete variant using $.match
         $.match(result, {
-            select: ($, _) => $(Test.fail("Expected delete, got select")),
-            insert: ($, _) => $(Test.fail("Expected delete, got insert")),
-            update: ($, _) => $(Test.fail("Expected delete, got update")),
+            select: ($, _) => $(Assert.fail("Expected delete, got select")),
+            insert: ($, _) => $(Assert.fail("Expected delete, got insert")),
+            update: ($, _) => $(Assert.fail("Expected delete, got update")),
             delete: ($, deleteResult) => {
-                $(Test.equal(deleteResult.rowsAffected, East.value(1n)));
+                $(Assert.equal(deleteResult.rowsAffected, East.value(1n)));
             },
         });
 
@@ -252,11 +252,11 @@ await describeEast("SQLite platform functions", (test) => {
                     ["blob", variant("Blob", new Uint8Array([1, 2, 3]))],
                     ["dt", variant("DateTime", new Date("2025-01-15T10:30:00Z"))],
                 ]), SqlRowType);
-                $(Test.equal(selectResult.rows, East.value([expectedRow])));
+                $(Assert.equal(selectResult.rows, East.value([expectedRow])));
             },
-            insert: ($, _) => $(Test.fail("Expected select, got insert")),
-            update: ($, _) => $(Test.fail("Expected select, got update")),
-            delete: ($, _) => $(Test.fail("Expected select, got delete")),
+            insert: ($, _) => $(Assert.fail("Expected select, got insert")),
+            update: ($, _) => $(Assert.fail("Expected select, got update")),
+            delete: ($, _) => $(Assert.fail("Expected select, got delete")),
         });
 
         $(sqlite_close(conn));

@@ -14,7 +14,7 @@
 
 import { BlobType, BooleanType, DateTimeType, East, FloatType, IntegerType, isValueOf, match, NullType, SortedMap, StringType as EastStringType, variant } from "@elaraai/east";
 import type { ValueTypeOf } from "@elaraai/east";
-import type { PlatformFunctionDef, PlatformFunction } from "@elaraai/east/internal";
+import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 import mysql from 'mysql2/promise';
 import { createHandle, getConnection, closeHandle, closeAllHandles } from '../connection/index.js';
@@ -111,10 +111,7 @@ type MySqlFieldType =
  * - All queries are asynchronous
  * - Connections are automatically returned to the pool after queries
  */
-export const mysql_connect: PlatformFunctionDef<
-    [typeof MySqlConfigType],
-    typeof ConnectionHandleType
-> = East.platform("mysql_connect", [MySqlConfigType], ConnectionHandleType);
+export const mysql_connect = East.asyncPlatform("mysql_connect", [MySqlConfigType], ConnectionHandleType);
 
 /**
  * Executes a SQL query with parameterized values.
@@ -174,10 +171,7 @@ export const mysql_connect: PlatformFunctionDef<
  * - Parameters prevent SQL injection attacks
  * - Returns lastInsertId for INSERT operations
  */
-export const mysql_query: PlatformFunctionDef<
-    [typeof ConnectionHandleType, typeof StringType, typeof SqlParametersType],
-    typeof SqlResultType
-> = East.platform("mysql_query", [ConnectionHandleType, StringType, SqlParametersType], SqlResultType);
+export const mysql_query = East.asyncPlatform("mysql_query", [ConnectionHandleType, StringType, SqlParametersType], SqlResultType);
 
 /**
  * Closes a MySQL connection pool.
@@ -214,10 +208,7 @@ export const mysql_query: PlatformFunctionDef<
  * await compiled();
  * ```
  */
-export const mysql_close: PlatformFunctionDef<
-    [typeof ConnectionHandleType],
-    typeof NullType
-> = East.platform("mysql_close", [ConnectionHandleType], NullType);
+export const mysql_close = East.asyncPlatform("mysql_close", [ConnectionHandleType], NullType);
 
 /**
  * Closes all MySQL connections.
@@ -244,7 +235,7 @@ export const mysql_close: PlatformFunctionDef<
  *
  * @internal
  */
-export const mysql_close_all: PlatformFunctionDef<[], typeof NullType> = East.platform("mysql_close_all", [], NullType);
+export const mysql_close_all = East.asyncPlatform("mysql_close_all", [], NullType);
 
 /**
  * Converts East SQL parameter to native JavaScript value.
@@ -338,7 +329,7 @@ function convertNativeToParam(value: any, fieldType: MySqlFieldType | null): Val
  * Pass this to East.compileAsync() to enable MySQL functionality.
  */
 export const MySqlImpl: PlatformFunction[] = [
-    mysql_connect.implementAsync(async (config: ValueTypeOf<typeof MySqlConfigType>) => {
+    mysql_connect.implement(async (config: ValueTypeOf<typeof MySqlConfigType>) => {
         try {
             const poolConfig: mysql.PoolOptions = {
                 host: config.host,
@@ -375,7 +366,7 @@ export const MySqlImpl: PlatformFunction[] = [
         }
     }),
 
-    mysql_query.implementAsync(async (
+    mysql_query.implement(async (
         handle: ValueTypeOf<typeof ConnectionHandleType>,
         sql: ValueTypeOf<typeof StringType>,
         params: ValueTypeOf<typeof SqlParametersType>
@@ -459,7 +450,7 @@ export const MySqlImpl: PlatformFunction[] = [
         }
     }),
 
-    mysql_close.implementAsync(async (handle: ValueTypeOf<typeof ConnectionHandleType>) => {
+    mysql_close.implement(async (handle: ValueTypeOf<typeof ConnectionHandleType>) => {
         try {
             const pool = getConnection<mysql.Pool>(handle);
             await pool.end();
@@ -473,7 +464,7 @@ export const MySqlImpl: PlatformFunction[] = [
         }
     }),
 
-    mysql_close_all.implementAsync(async () => {
+    mysql_close_all.implement(async () => {
         await closeAllHandles();
         return null;
     }),

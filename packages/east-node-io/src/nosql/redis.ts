@@ -14,7 +14,7 @@
 
 import { East, StringType, IntegerType, OptionType, NullType, variant } from "@elaraai/east";
 import type { ValueTypeOf } from "@elaraai/east";
-import type { PlatformFunctionDef, PlatformFunction } from "@elaraai/east/internal";
+import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 import { Redis } from "ioredis";
 import { createHandle, getConnection, closeHandle, closeAllHandles } from '../connection/index.js';
@@ -53,10 +53,7 @@ import { RedisConfigType, ConnectionHandleType } from "./types.js";
  * const handle = await compiled();  // Returns connection handle string
  * ```
  */
-export const redis_connect: PlatformFunctionDef<
-    [typeof RedisConfigType],
-    typeof ConnectionHandleType
-> = East.platform("redis_connect", [RedisConfigType], ConnectionHandleType);
+export const redis_connect = East.asyncPlatform("redis_connect", [RedisConfigType], ConnectionHandleType);
 
 /**
  * Gets a value by key from Redis.
@@ -93,10 +90,7 @@ export const redis_connect: PlatformFunctionDef<
  * await compiled("user:42");  // variant('some', "Alice") or variant('none', null)
  * ```
  */
-export const redis_get: PlatformFunctionDef<
-    [typeof ConnectionHandleType, typeof StringType],
-    ReturnType<typeof OptionType<typeof StringType>>
-> = East.platform("redis_get", [ConnectionHandleType, StringType], OptionType(StringType));
+export const redis_get = East.asyncPlatform("redis_get", [ConnectionHandleType, StringType], OptionType(StringType));
 
 /**
  * Sets a key-value pair in Redis.
@@ -134,10 +128,7 @@ export const redis_get: PlatformFunctionDef<
  * await compiled("user:42", "Alice");
  * ```
  */
-export const redis_set: PlatformFunctionDef<
-    [typeof ConnectionHandleType, typeof StringType, typeof StringType],
-    typeof NullType
-> = East.platform("redis_set", [ConnectionHandleType, StringType, StringType], NullType);
+export const redis_set = East.asyncPlatform("redis_set", [ConnectionHandleType, StringType, StringType], NullType);
 
 /**
  * Sets a key-value pair with expiration in Redis.
@@ -176,10 +167,7 @@ export const redis_set: PlatformFunctionDef<
  * await compiled("session:xyz", "user_data");
  * ```
  */
-export const redis_setex: PlatformFunctionDef<
-    [typeof ConnectionHandleType, typeof StringType, typeof StringType, typeof IntegerType],
-    typeof NullType
-> = East.platform("redis_setex", [ConnectionHandleType, StringType, StringType, IntegerType], NullType);
+export const redis_setex = East.asyncPlatform("redis_setex", [ConnectionHandleType, StringType, StringType, IntegerType], NullType);
 
 /**
  * Deletes a key from Redis.
@@ -216,10 +204,7 @@ export const redis_setex: PlatformFunctionDef<
  * await compiled("user:42");  // 1n (deleted) or 0n (not found)
  * ```
  */
-export const redis_del: PlatformFunctionDef<
-    [typeof ConnectionHandleType, typeof StringType],
-    typeof IntegerType
-> = East.platform("redis_del", [ConnectionHandleType, StringType], IntegerType);
+export const redis_del = East.asyncPlatform("redis_del", [ConnectionHandleType, StringType], IntegerType);
 
 /**
  * Closes a Redis connection.
@@ -254,10 +239,7 @@ export const redis_del: PlatformFunctionDef<
  * await compiled();
  * ```
  */
-export const redis_close: PlatformFunctionDef<
-    [typeof ConnectionHandleType],
-    typeof NullType
-> = East.platform("redis_close", [ConnectionHandleType], NullType);
+export const redis_close = East.asyncPlatform("redis_close", [ConnectionHandleType], NullType);
 
 /**
  * Closes all Redis connections.
@@ -284,7 +266,7 @@ export const redis_close: PlatformFunctionDef<
  *
  * @internal
  */
-export const redis_close_all: PlatformFunctionDef<[], typeof NullType> = East.platform("redis_close_all", [], NullType);
+export const redis_close_all = East.asyncPlatform("redis_close_all", [], NullType);
 
 /**
  * Node.js implementation of Redis platform functions.
@@ -292,7 +274,7 @@ export const redis_close_all: PlatformFunctionDef<[], typeof NullType> = East.pl
  * Pass this to East.compileAsync() to enable Redis operations.
  */
 export const RedisImpl: PlatformFunction[] = [
-    redis_connect.implementAsync(async (config: ValueTypeOf<typeof RedisConfigType>): Promise<string> => {
+    redis_connect.implement(async (config: ValueTypeOf<typeof RedisConfigType>): Promise<string> => {
         try {
             const options: any = {
                 host: config.host,
@@ -330,7 +312,7 @@ export const RedisImpl: PlatformFunction[] = [
         }
     }),
 
-    redis_get.implementAsync(async (
+    redis_get.implement(async (
         handle: ValueTypeOf<typeof ConnectionHandleType>,
         key: ValueTypeOf<typeof StringType>
     ): Promise<ValueTypeOf<ReturnType<typeof OptionType>>> => {
@@ -351,7 +333,7 @@ export const RedisImpl: PlatformFunction[] = [
         }
     }),
 
-    redis_set.implementAsync(async (
+    redis_set.implement(async (
         handle: ValueTypeOf<typeof ConnectionHandleType>,
         key: ValueTypeOf<typeof StringType>,
         value: ValueTypeOf<typeof StringType>
@@ -368,7 +350,7 @@ export const RedisImpl: PlatformFunction[] = [
         }
     }),
 
-    redis_setex.implementAsync(async (
+    redis_setex.implement(async (
         handle: ValueTypeOf<typeof ConnectionHandleType>,
         key: ValueTypeOf<typeof StringType>,
         value: ValueTypeOf<typeof StringType>,
@@ -386,7 +368,7 @@ export const RedisImpl: PlatformFunction[] = [
         }
     }),
 
-    redis_del.implementAsync(async (
+    redis_del.implement(async (
         handle: ValueTypeOf<typeof ConnectionHandleType>,
         key: ValueTypeOf<typeof StringType>
     ): Promise<bigint> => {
@@ -402,7 +384,7 @@ export const RedisImpl: PlatformFunction[] = [
         }
     }),
 
-    redis_close.implementAsync(async (handle: ValueTypeOf<typeof ConnectionHandleType>) => {
+    redis_close.implement(async (handle: ValueTypeOf<typeof ConnectionHandleType>) => {
         try {
             const client = getConnection<Redis>(handle);
             await client.quit();
@@ -416,7 +398,7 @@ export const RedisImpl: PlatformFunction[] = [
         }
     }),
 
-    redis_close_all.implementAsync(async () => {
+    redis_close_all.implement(async () => {
         await closeAllHandles();
         return null;
     }),

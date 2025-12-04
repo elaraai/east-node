@@ -3,7 +3,7 @@
  * Dual-licensed under AGPL-3.0 and commercial license. See LICENSE for details.
  */
 import { East, StringType, NullType } from "@elaraai/east";
-import type { PlatformFunction, PlatformFunctionDef } from "@elaraai/east/internal";
+import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 import { stdout } from "node:process";
 
@@ -28,8 +28,7 @@ import { stdout } from "node:process";
  * });
  * ```
  */
-export const console_log: PlatformFunctionDef<[typeof StringType], typeof NullType> =
-    East.platform("console_log", [StringType], NullType);
+export const console_log = East.platform("console_log", [StringType], NullType);
 
 /**
  * Writes a message to stderr with a newline.
@@ -52,8 +51,7 @@ export const console_log: PlatformFunctionDef<[typeof StringType], typeof NullTy
  * });
  * ```
  */
-export const console_error: PlatformFunctionDef<[typeof StringType], typeof NullType> =
-    East.platform("console_error", [StringType], NullType);
+export const console_error = East.platform("console_error", [StringType], NullType);
 
 /**
  * Writes a message to stdout without a newline.
@@ -77,8 +75,7 @@ export const console_error: PlatformFunctionDef<[typeof StringType], typeof Null
  * });
  * ```
  */
-export const console_write: PlatformFunctionDef<[typeof StringType], typeof NullType> =
-    East.platform("console_write", [StringType], NullType);
+export const console_write = East.platform("console_write", [StringType], NullType);
 
 /**
  * Node.js implementation of console platform functions.
