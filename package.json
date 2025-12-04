@@ -1,6 +1,6 @@
 {
   "name": "east-node-monorepo",
-  "version": "0.0.1-beta.1",
+  "version": "0.0.1-beta.2",
   "private": true,
   "description": "East Node - Node.js platform integration for East language",
   "workspaces": [

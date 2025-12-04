@@ -1,6 +1,6 @@
 {
   "name": "@elaraai/east-node-std",
-  "version": "0.0.1-beta.1",
+  "version": "0.0.1-beta.2",
   "description": "East Node - Node.js platform integration for East language",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
