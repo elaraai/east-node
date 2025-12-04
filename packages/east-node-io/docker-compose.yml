@@ -106,8 +106,6 @@ services:
   sftp:
     image: atmoz/sftp:latest
     container_name: east-node-io-sftp
-    command: testuser:testpass:1001:100
+    command: testuser:testpass:::upload
     ports:
       - "2222:22"
-    tmpfs:
-      - /home/testuser/upload
