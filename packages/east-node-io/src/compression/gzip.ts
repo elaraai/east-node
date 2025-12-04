@@ -14,7 +14,7 @@
 
 import { East, BlobType } from "@elaraai/east";
 import type { ValueTypeOf } from "@elaraai/east";
-import type { PlatformFunctionDef, PlatformFunction } from "@elaraai/east/internal";
+import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 import { gzip as nodeGzip, gunzip as nodeGunzip } from "node:zlib";
 import { promisify } from "node:util";
@@ -69,10 +69,7 @@ const gunzipAsync = promisify(nodeGunzip);
  * - Higher levels (7-9) provide better compression but are slower
  * - All operations are asynchronous (use East.compileAsync)
  */
-export const gzip_compress: PlatformFunctionDef<
-    [typeof BlobType, typeof GzipOptionsType],
-    typeof BlobType
-> = East.platform("gzip_compress", [BlobType, GzipOptionsType], BlobType);
+export const gzip_compress = East.asyncPlatform("gzip_compress", [BlobType, GzipOptionsType], BlobType);
 
 /**
  * Decompresses gzip-compressed data.
@@ -112,10 +109,7 @@ export const gzip_compress: PlatformFunctionDef<
  * - Automatically detects gzip header and validates format
  * - All operations are asynchronous (use East.compileAsync)
  */
-export const gzip_decompress: PlatformFunctionDef<
-    [typeof BlobType],
-    typeof BlobType
-> = East.platform("gzip_decompress", [BlobType], BlobType);
+export const gzip_decompress = East.asyncPlatform("gzip_decompress", [BlobType], BlobType);
 
 /**
  * Node.js implementation of Gzip platform functions.
@@ -123,7 +117,7 @@ export const gzip_decompress: PlatformFunctionDef<
  * Pass this array to {@link East.compileAsync} to enable gzip compression operations.
  */
 export const GzipImpl: PlatformFunction[] = [
-    gzip_compress.implementAsync(async (
+    gzip_compress.implement(async (
         data: ValueTypeOf<typeof BlobType>,
         options: ValueTypeOf<typeof GzipOptionsType>
     ) => {
@@ -152,7 +146,7 @@ export const GzipImpl: PlatformFunction[] = [
         }
     }),
 
-    gzip_decompress.implementAsync(async (
+    gzip_decompress.implement(async (
         compressed: ValueTypeOf<typeof BlobType>
     ) => {
         try {

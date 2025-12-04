@@ -3,7 +3,7 @@
  * Dual-licensed under AGPL-3.0 and commercial license. See LICENSE for details.
  */
 import { East, IntegerType, NullType } from "@elaraai/east";
-import type { PlatformFunction, PlatformFunctionDef } from "@elaraai/east/internal";
+import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 
 /**
@@ -26,7 +26,7 @@ import { EastError } from "@elaraai/east/internal";
  * });
  * ```
  */
-export const time_now: PlatformFunctionDef<[], typeof IntegerType> = East.platform("time_now", [], IntegerType);
+export const time_now = East.platform("time_now", [], IntegerType);
 
 /**
  * Sleeps for the specified number of milliseconds.
@@ -52,7 +52,7 @@ export const time_now: PlatformFunctionDef<[], typeof IntegerType> = East.platfo
  * });
  * ```
  */
-export const time_sleep: PlatformFunctionDef<[typeof IntegerType], typeof NullType> = East.platform("time_sleep", [IntegerType], NullType);
+export const time_sleep = East.asyncPlatform("time_sleep", [IntegerType], NullType);
 
 /**
  * Node.js implementation of time platform functions.
@@ -70,7 +70,7 @@ const TimeImpl: PlatformFunction[] = [
             });
         }
     }),
-    time_sleep.implementAsync(async (ms: bigint) => {
+    time_sleep.implement(async (ms: bigint) => {
         try {
             await new Promise(resolve => setTimeout(resolve, Number(ms)));
         } catch (err: any) {

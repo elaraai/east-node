@@ -14,7 +14,7 @@
 
 import { East, BlobType } from "@elaraai/east";
 import type { ValueTypeOf } from "@elaraai/east";
-import type { PlatformFunctionDef, PlatformFunction } from "@elaraai/east/internal";
+import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 import AdmZip from "adm-zip";
 import { ZipOptionsType, ZipEntriesType, ZipExtractedType } from "./types.js";
@@ -74,10 +74,7 @@ import { ZipOptionsType, ZipEntriesType, ZipExtractedType } from "./types.js";
  * - Higher levels (7-9) provide better compression but are slower
  * - File names can include directory paths (e.g., "dir/file.txt")
  */
-export const zip_compress: PlatformFunctionDef<
-    [typeof ZipEntriesType, typeof ZipOptionsType],
-    typeof BlobType
-> = East.platform("zip_compress", [ZipEntriesType, ZipOptionsType], BlobType);
+export const zip_compress = East.platform("zip_compress", [ZipEntriesType, ZipOptionsType], BlobType);
 
 /**
  * Extracts files from a ZIP archive.
@@ -117,10 +114,7 @@ export const zip_compress: PlatformFunctionDef<
  * - Automatically detects and validates ZIP format
  * - Preserves directory structure in file names
  */
-export const zip_decompress: PlatformFunctionDef<
-    [typeof BlobType],
-    typeof ZipExtractedType
-> = East.platform("zip_decompress", [BlobType], ZipExtractedType);
+export const zip_decompress = East.platform("zip_decompress", [BlobType], ZipExtractedType);
 
 /**
  * Helper function to compress files into a ZIP archive using adm-zip.

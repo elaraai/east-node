@@ -14,7 +14,7 @@
 
 import { East, BlobType, variant, match } from "@elaraai/east";
 import type { ValueTypeOf } from "@elaraai/east";
-import type { PlatformFunctionDef, PlatformFunction } from "@elaraai/east/internal";
+import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError, LiteralValueType } from "@elaraai/east/internal";
 import * as XLSX from 'xlsx';
 import {
@@ -73,11 +73,7 @@ import {
  * - Dates are converted to ISO 8601 strings
  * - Formulas are evaluated and their results are returned
  */
-export const xlsx_read: PlatformFunctionDef<
-    [typeof BlobType, typeof XlsxReadOptionsType],
-    typeof XlsxSheetType
-> = East.platform("xlsx_read", [BlobType, XlsxReadOptionsType], XlsxSheetType);
-
+export const xlsx_read = East.platform("xlsx_read", [BlobType, XlsxReadOptionsType], XlsxSheetType);
 /**
  * Writes a 2D array of cell values to an XLSX file.
  *
@@ -127,10 +123,7 @@ export const xlsx_read: PlatformFunctionDef<
  * - Booleans are written as boolean cells
  * - All rows should ideally have the same number of columns
  */
-export const xlsx_write: PlatformFunctionDef<
-    [typeof XlsxSheetType, typeof XlsxWriteOptionsType],
-    typeof BlobType
-> = East.platform("xlsx_write", [XlsxSheetType, XlsxWriteOptionsType], BlobType);
+export const xlsx_write = East.platform("xlsx_write", [XlsxSheetType, XlsxWriteOptionsType], BlobType);
 
 /**
  * Gets metadata about an XLSX file without reading all data.
@@ -161,10 +154,7 @@ export const xlsx_write: PlatformFunctionDef<
  * compiled(xlsxBlob);  // "Sheet1"
  * ```
  */
-export const xlsx_info: PlatformFunctionDef<
-    [typeof BlobType],
-    typeof XlsxInfoType
-> = East.platform("xlsx_info", [BlobType], XlsxInfoType);
+export const xlsx_info = East.platform("xlsx_info", [BlobType], XlsxInfoType);
 
 /**
  * Converts East LiteralValueType to native JavaScript value for XLSX.

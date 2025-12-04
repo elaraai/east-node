@@ -78,10 +78,7 @@ All **exported** platform function definitions MUST include comprehensive TypeDo
  * - Follows symbolic links
  * - Blocks until the read operation completes
  */
-export const fs_read_file: PlatformFunctionDef<
-    [typeof StringType],
-    typeof StringType
-> = East.platform("fs_read_file", [StringType], StringType);
+export const fs_read_file = East.platform("fs_read_file", [StringType], StringType);
 ```
 
 **Key principles for platform function documentation:**
@@ -319,7 +316,7 @@ export interface RuntimeOptions {
  * This is a convenience function for basic GET requests without custom headers.
  * For more control, use {@link Fetch.request} instead.
  */
-export const fetch_get: PlatformFunctionDef<[typeof StringType], typeof StringType> = ...;
+export const fetch_get = ...;
 
 /**
  * Reads a file from the file system.
@@ -331,7 +328,7 @@ export const fetch_get: PlatformFunctionDef<[typeof StringType], typeof StringTy
  * See {@link FileSystem.readFileBytes} for reading binary data.
  * See {@link Path.join} for constructing file paths.
  */
-export const fs_read_file: PlatformFunctionDef<[typeof StringType], typeof StringType> = ...;
+export const fs_read_file = ...;
 ```
 
 ---
@@ -361,7 +358,7 @@ await describeEast("Time platform functions", (test) => {
         const timestamp = $.let(Time.now());
 
         // Should be a reasonable timestamp (after 2020)
-        $(Test.greater(timestamp, 1577836800000n)); // Jan 1, 2020
+        $(Assert.greater(timestamp, 1577836800000n)); // Jan 1, 2020
     });
 
     test("sleep pauses execution", $ => {
@@ -372,7 +369,7 @@ await describeEast("Time platform functions", (test) => {
         const elapsed = $.let(end.subtract(start));
 
         // Should have slept at least 90ms (allowing for some timing variance)
-        $(Test.greaterEqual(elapsed, 90n));
+        $(Assert.greaterEqual(elapsed, 90n));
     });
 }, { platformFns: TimeImpl });
 ```
@@ -390,17 +387,17 @@ await describeEast("Time platform functions", (test) => {
 ```typescript
 test("basic operation", $ => {
     const result = $.let(Path.join(["foo", "bar"]));
-    $(Test.equal(result.contains("/"), true));
+    $(Assert.equal(result.contains("/"), true));
 });
 
 test("edge case - empty array", $ => {
     const result = $.let(Path.join([]));
-    $(Test.equal(result, "."));
+    $(Assert.equal(result, "."));
 });
 
 test("error condition", $ => {
     // Test that division by zero throws
-    $(Test.throws(East.value(1n).divide(0n)));
+    $(Assert.throws(East.value(1n).divide(0n)));
 });
 ```
 
@@ -420,16 +417,16 @@ test("error condition", $ => {
 
 **Available assertions:**
 ```typescript
-$(Test.equal(actual, expected))              // Deep equality
-$(Test.notEqual(actual, expected))           // Deep inequality
-$(Test.is(actual, expected))                 // Reference equality
-$(Test.less(actual, expected))               // Less than
-$(Test.lessEqual(actual, expected))          // Less than or equal
-$(Test.greater(actual, expected))            // Greater than
-$(Test.greaterEqual(actual, expected))       // Greater than or equal
-$(Test.between(actual, min, max))            // Range check (inclusive)
-$(Test.throws(expression))                   // Expects error
-$(Test.throws(expression, /pattern/))        // Expects error matching pattern
+$(Assert.equal(actual, expected))              // Deep equality
+$(Assert.notEqual(actual, expected))           // Deep inequality
+$(Assert.is(actual, expected))                 // Reference equality
+$(Assert.less(actual, expected))               // Less than
+$(Assert.lessEqual(actual, expected))          // Less than or equal
+$(Assert.greater(actual, expected))            // Greater than
+$(Assert.greaterEqual(actual, expected))       // Greater than or equal
+$(Assert.between(actual, min, max))            // Range check (inclusive)
+$(Assert.throws(expression))                   // Expects error
+$(Assert.throws(expression, /pattern/))        // Expects error matching pattern
 ```
 
 **Best practices:**

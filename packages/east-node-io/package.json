@@ -1,6 +1,6 @@
 {
   "name": "@elaraai/east-node-io",
-  "version": "0.0.1-beta.0",
+  "version": "0.0.1-beta.1",
   "description": "I/O platform functions for the East language on Node.js",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -24,6 +24,7 @@
     "prepublishOnly": "npm run lint && npm run test",
     "test": "npm run build && node --enable-source-maps --test 'dist/**/*.spec.js'",
     "test:coverage": "npm run build && node --enable-source-maps --test --experimental-test-coverage 'dist/**/*.spec.js'",
+    "test:export": "npm run build && npm run lint && EXPORT_TEST_IR=/tmp/east-node-io npm test 2>&1 | grep 'Exported test IR'",
     "test:integration": "npm run test:docker:up && npm test && npm run test:docker:down",
     "test:docker:up": "docker-compose up -d && npm run test:wait",
     "test:docker:down": "docker-compose down -v",
@@ -97,7 +98,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.713.0",
     "@aws-sdk/s3-request-presigner": "^3.713.0",
-    "@elaraai/east": "^0.0.1-beta.0",
+    "@elaraai/east": "^0.0.1-beta.3",
     "adm-zip": "^0.5.16",
     "basic-ftp": "^5.0.5",
     "better-sqlite3": "^11.0.0",

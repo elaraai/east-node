@@ -78,10 +78,7 @@ All **exported** platform function definitions MUST include comprehensive TypeDo
  * - Follows symbolic links
  * - Blocks until the read operation completes
  */
-export const fs_read_file: PlatformFunctionDef<
-    [typeof StringType],
-    typeof StringType
-> = East.platform("fs_read_file", [StringType], StringType);
+export const fs_read_file = East.platform("fs_read_file", [StringType], StringType);
 ```
 
 **Key principles for platform function documentation:**
@@ -319,7 +316,7 @@ export interface RuntimeOptions {
  * This is a convenience function for basic GET requests without custom headers.
  * For more control, use {@link Fetch.request} instead.
  */
-export const fetch_get: PlatformFunctionDef<[typeof StringType], typeof StringType> = ...;
+export const fetch_get = ...;
 
 /**
  * Reads a file from the file system.
@@ -331,7 +328,7 @@ export const fetch_get: PlatformFunctionDef<[typeof StringType], typeof StringTy
  * See {@link FileSystem.readFileBytes} for reading binary data.
  * See {@link Path.join} for constructing file paths.
  */
-export const fs_read_file: PlatformFunctionDef<[typeof StringType], typeof StringType> = ...;
+export const fs_read_file = ...;
 ```
 
 ---

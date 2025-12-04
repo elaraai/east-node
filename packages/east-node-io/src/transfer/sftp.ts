@@ -14,7 +14,7 @@
 
 import { East, BlobType, ArrayType, NullType } from "@elaraai/east";
 import type { ValueTypeOf } from "@elaraai/east";
-import type { PlatformFunctionDef, PlatformFunction } from "@elaraai/east/internal";
+import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 import SftpClient from "ssh2-sftp-client";
 import type { FileInfo as SftpFileInfo } from "ssh2-sftp-client";
@@ -67,10 +67,7 @@ import { SftpConfigType, ConnectionHandleType, StringType, FileInfoType } from "
  * - Connection is maintained until explicitly closed
  * - All operations are asynchronous (use East.compileAsync)
  */
-export const sftp_connect: PlatformFunctionDef<
-    [typeof SftpConfigType],
-    typeof ConnectionHandleType
-> = East.platform("sftp_connect", [SftpConfigType], ConnectionHandleType);
+export const sftp_connect = East.asyncPlatform("sftp_connect", [SftpConfigType], ConnectionHandleType);
 
 /**
  * Uploads a file to an SFTP server.
@@ -120,10 +117,7 @@ export const sftp_connect: PlatformFunctionDef<
  * - Overwrites existing files
  * - Binary mode transfer
  */
-export const sftp_put: PlatformFunctionDef<
-    [typeof ConnectionHandleType, typeof StringType, typeof BlobType],
-    typeof NullType
-> = East.platform("sftp_put", [ConnectionHandleType, StringType, BlobType], NullType);
+export const sftp_put = East.asyncPlatform("sftp_put", [ConnectionHandleType, StringType, BlobType], NullType);
 
 /**
  * Downloads a file from an SFTP server.
@@ -171,10 +165,7 @@ export const sftp_put: PlatformFunctionDef<
  * - Binary mode transfer
  * - Entire file is loaded into memory
  */
-export const sftp_get: PlatformFunctionDef<
-    [typeof ConnectionHandleType, typeof StringType],
-    typeof BlobType
-> = East.platform("sftp_get", [ConnectionHandleType, StringType], BlobType);
+export const sftp_get = East.asyncPlatform("sftp_get", [ConnectionHandleType, StringType], BlobType);
 
 /**
  * Lists files in an SFTP directory.
@@ -222,10 +213,7 @@ export const sftp_get: PlatformFunctionDef<
  * - Returns both files and directories
  * - Use isDirectory field to distinguish between files and directories
  */
-export const sftp_list: PlatformFunctionDef<
-    [typeof ConnectionHandleType, typeof StringType],
-    ReturnType<typeof ArrayType<typeof FileInfoType>>
-> = East.platform("sftp_list", [ConnectionHandleType, StringType], ArrayType(FileInfoType));
+export const sftp_list = East.asyncPlatform("sftp_list", [ConnectionHandleType, StringType], ArrayType(FileInfoType));
 
 /**
  * Deletes a file from an SFTP server.
@@ -273,10 +261,7 @@ export const sftp_list: PlatformFunctionDef<
  * - Only deletes files, not directories
  * - Throws error if file doesn't exist
  */
-export const sftp_delete: PlatformFunctionDef<
-    [typeof ConnectionHandleType, typeof StringType],
-    typeof NullType
-> = East.platform("sftp_delete", [ConnectionHandleType, StringType], NullType);
+export const sftp_delete = East.asyncPlatform("sftp_delete", [ConnectionHandleType, StringType], NullType);
 
 /**
  * Closes an SFTP connection.
@@ -312,10 +297,7 @@ export const sftp_delete: PlatformFunctionDef<
  * await compiled();
  * ```
  */
-export const sftp_close: PlatformFunctionDef<
-    [typeof ConnectionHandleType],
-    typeof NullType
-> = East.platform("sftp_close", [ConnectionHandleType], NullType);
+export const sftp_close = East.asyncPlatform("sftp_close", [ConnectionHandleType], NullType);
 
 /**
  * Closes all SFTP connections.
@@ -342,7 +324,7 @@ export const sftp_close: PlatformFunctionDef<
  *
  * @internal
  */
-export const sftp_close_all: PlatformFunctionDef<[], typeof NullType> = East.platform("sftp_close_all", [], NullType);
+export const sftp_close_all = East.asyncPlatform("sftp_close_all", [], NullType);
 
 /**
  * Node.js implementation of SFTP platform functions.
@@ -351,7 +333,7 @@ export const sftp_close_all: PlatformFunctionDef<[], typeof NullType> = East.pla
  * Pass this to East.compileAsync() to enable SFTP functionality.
  */
 export const SftpImpl: PlatformFunction[] = [
-    sftp_connect.implementAsync(async (config: ValueTypeOf<typeof SftpConfigType>): Promise<string> => {
+    sftp_connect.implement(async (config: ValueTypeOf<typeof SftpConfigType>): Promise<string> => {
         try {
             const client = new SftpClient();
 
@@ -384,7 +366,7 @@ export const SftpImpl: PlatformFunction[] = [
         }
     }),
 
-    sftp_put.implementAsync(async (
+    sftp_put.implement(async (
         handle: ValueTypeOf<typeof ConnectionHandleType>,
         remotePath: ValueTypeOf<typeof StringType>,
         data: ValueTypeOf<typeof BlobType>
@@ -403,7 +385,7 @@ export const SftpImpl: PlatformFunction[] = [
         }
     }),
 
-    sftp_get.implementAsync(async (
+    sftp_get.implement(async (
         handle: ValueTypeOf<typeof ConnectionHandleType>,
         remotePath: ValueTypeOf<typeof StringType>
     ): Promise<Uint8Array> => {
@@ -426,7 +408,7 @@ export const SftpImpl: PlatformFunction[] = [
         }
     }),
 
-    sftp_list.implementAsync(async (
+    sftp_list.implement(async (
         handle: ValueTypeOf<typeof ConnectionHandleType>,
         remotePath: ValueTypeOf<typeof StringType>
     ): Promise<ValueTypeOf<ReturnType<typeof ArrayType<typeof FileInfoType>>>> => {
@@ -451,7 +433,7 @@ export const SftpImpl: PlatformFunction[] = [
         }
     }),
 
-    sftp_delete.implementAsync(async (
+    sftp_delete.implement(async (
         handle: ValueTypeOf<typeof ConnectionHandleType>,
         remotePath: ValueTypeOf<typeof StringType>
     ): Promise<null> => {
@@ -467,7 +449,7 @@ export const SftpImpl: PlatformFunction[] = [
         }
     }),
 
-    sftp_close.implementAsync(async (handle: ValueTypeOf<typeof ConnectionHandleType>) => {
+    sftp_close.implement(async (handle: ValueTypeOf<typeof ConnectionHandleType>) => {
         try {
             const client = getConnection<SftpClient>(handle);
             await client.end();
@@ -481,7 +463,7 @@ export const SftpImpl: PlatformFunction[] = [
         }
     }),
 
-    sftp_close_all.implementAsync(async () => {
+    sftp_close_all.implement(async () => {
         await closeAllHandles();
         return null;
     }),

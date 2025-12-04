@@ -4,7 +4,7 @@
  */
 import { East, variant, StringType, type ValueTypeOf, DictType } from "@elaraai/east";
 import { LiteralValueType } from "@elaraai/east/internal";
-import { describeEast, Test } from "@elaraai/east-node-std";
+import { describeEast, Assert } from "@elaraai/east-node-std";
 import { csv_parse, csv_serialize, CsvDataType, CsvColumnType, CsvImpl } from "./csv.js";
 
 await describeEast("CSV Platform Functions", (test) => {
@@ -25,16 +25,16 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_parse(blob, config));
         const length = $.let(result.size());
-        $(Test.equal(length, 2n));
+        $(Assert.equal(length, 2n));
 
         const row0 = $.let(result.get(0n));
         const name0 = $.let(row0.get("name"));
         const nameValue0 = $.let(name0.unwrap("String"));
-        $(Test.equal(nameValue0, "Alice"));
+        $(Assert.equal(nameValue0, "Alice"));
 
         const age0 = $.let(row0.get("age"));
         const ageValue0 = $.let(age0.unwrap("String"));
-        $(Test.equal(ageValue0, "30"));
+        $(Assert.equal(ageValue0, "30"));
     });
 
     test("parses CSV without header", $ => {
@@ -54,16 +54,16 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_parse(blob, config));
         const length = $.let(result.size());
-        $(Test.equal(length, 2n));
+        $(Assert.equal(length, 2n));
 
         const row0 = $.let(result.get(0n));
         const col0 = $.let(row0.get("column_0"));
         const col0Value = $.let(col0.unwrap("String"));
-        $(Test.equal(col0Value, "Alice"));
+        $(Assert.equal(col0Value, "Alice"));
     });
 
     test("handles quoted fields with delimiters", $ => {
-        const csvData = $.let(East.value('name,description\n"Alice","Hello, World"\n"Bob","Test, Data"'));
+        const csvData = $.let(East.value('name,description\n"Alice","Hello, World"\n"Bob","Assert, Data"'));
         const blob = $.let(csvData.encodeUtf8());
         const config = $.let(East.value({
             columns: variant('none', null),
@@ -81,7 +81,7 @@ await describeEast("CSV Platform Functions", (test) => {
         const row0 = $.let(result.get(0n));
         const desc0 = $.let(row0.get("description"));
         const descValue0 = $.let(desc0.unwrap("String"));
-        $(Test.equal(descValue0, "Hello, World"));
+        $(Assert.equal(descValue0, "Hello, World"));
     });
 
     test("handles quoted fields with quotes (double-quote escape)", $ => {
@@ -103,7 +103,7 @@ await describeEast("CSV Platform Functions", (test) => {
         const row0 = $.let(result.get(0n));
         const quote0 = $.let(row0.get("quote"));
         const quoteValue0 = $.let(quote0.unwrap("String"));
-        $(Test.equal(quoteValue0, 'She said "hello"'));
+        $(Assert.equal(quoteValue0, 'She said "hello"'));
     });
 
     test("handles null values", $ => {
@@ -124,11 +124,11 @@ await describeEast("CSV Platform Functions", (test) => {
         const result = $.let(csv_parse(blob, config));
         const row0 = $.let(result.get(0n));
         const city0 = $.let(row0.get("city"));
-        $(Test.equal(city0, variant('Null', null)));
+        $(Assert.equal(city0, variant('Null', null)));
 
         const row1 = $.let(result.get(1n));
         const age1 = $.let(row1.get("age"));
-        $(Test.equal(age1, variant('Null', null)));
+        $(Assert.equal(age1, variant('Null', null)));
     });
 
     test("serializes simple data with header", $ => {
@@ -156,7 +156,7 @@ await describeEast("CSV Platform Functions", (test) => {
         const result = $.let(csv_serialize(data, config));
         const text = $.let(result.decodeUtf8());
         // Note: Dict keys are sorted alphabetically, so columns will be "age,name" not "name,age"
-        $(Test.equal(text, "age,name\n30,Alice\n25,Bob\n"));
+        $(Assert.equal(text, "age,name\n30,Alice\n25,Bob\n"));
     });
 
     test("quotes fields with delimiters when serializing", $ => {
@@ -180,7 +180,7 @@ await describeEast("CSV Platform Functions", (test) => {
         const result = $.let(csv_serialize(data, config));
         const text = $.let(result.decodeUtf8());
         // Note: Dict keys are sorted alphabetically, so columns will be "description,name" not "name,description"
-        $(Test.equal(text, 'description,name\n"Hello, World",Alice\n'));
+        $(Assert.equal(text, 'description,name\n"Hello, World",Alice\n'));
     });
 
     test("round-trip: parse and serialize", $ => {
@@ -213,7 +213,7 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const serialized = $.let(csv_serialize(parsed, serializeConfig));
         const text = $.let(serialized.decodeUtf8());
-        $(Test.equal(text, originalCsv));
+        $(Assert.equal(text, originalCsv));
     });
 
     // Error handling tests
@@ -232,7 +232,7 @@ await describeEast("CSV Platform Functions", (test) => {
             trimFields: false,
         }));
 
-        $(Test.throws(csv_parse(blob, config), /Unclosed quote in row 2, column 1/));
+        $(Assert.throws(csv_parse(blob, config), /Unclosed quote in row 2, column 1/));
     });
 
     test("errors on too many fields in row", $ => {
@@ -250,7 +250,7 @@ await describeEast("CSV Platform Functions", (test) => {
             trimFields: false,
         }));
 
-        $(Test.throws(csv_parse(blob, config), /Too many fields in row 3.*expected 2 columns/));
+        $(Assert.throws(csv_parse(blob, config), /Too many fields in row 3.*expected 2 columns/));
     });
 
     test("errors on too few fields in row", $ => {
@@ -268,7 +268,7 @@ await describeEast("CSV Platform Functions", (test) => {
             trimFields: false,
         }));
 
-        $(Test.throws(csv_parse(blob, config), /Too few fields in row 3.*expected 3 columns, got 2/));
+        $(Assert.throws(csv_parse(blob, config), /Too few fields in row 3.*expected 3 columns, got 2/));
     });
 
     test("errors on invalid escape sequence", $ => {
@@ -286,7 +286,7 @@ await describeEast("CSV Platform Functions", (test) => {
             trimFields: false,
         }));
 
-        $(Test.throws(csv_parse(blob, config), /Invalid escape sequence in row 2, column 2/));
+        $(Assert.throws(csv_parse(blob, config), /Invalid escape sequence in row 2, column 2/));
     });
 
     test("errors on text after closing quote", $ => {
@@ -304,7 +304,7 @@ await describeEast("CSV Platform Functions", (test) => {
             trimFields: false,
         }));
 
-        $(Test.throws(csv_parse(blob, config), /Expected delimiter or newline after closing quote in row 2, column 2/));
+        $(Assert.throws(csv_parse(blob, config), /Expected delimiter or newline after closing quote in row 2, column 2/));
     });
 
     test("errors on invalid delimiter length", $ => {
@@ -322,7 +322,7 @@ await describeEast("CSV Platform Functions", (test) => {
             alwaysQuote: false,
         }));
 
-        $(Test.throws(csv_serialize(data, config), /delimiter must not be empty/));
+        $(Assert.throws(csv_serialize(data, config), /delimiter must not be empty/));
     });
 
     test("errors on invalid quote char length", $ => {
@@ -340,7 +340,7 @@ await describeEast("CSV Platform Functions", (test) => {
             alwaysQuote: false,
         }));
 
-        $(Test.throws(csv_serialize(data, config), /quoteChar must have length 1/));
+        $(Assert.throws(csv_serialize(data, config), /quoteChar must have length 1/));
     });
 
     // Configuration option tests
@@ -363,7 +363,7 @@ await describeEast("CSV Platform Functions", (test) => {
         const row0 = $.let(result.get(0n));
         const city0 = $.let(row0.get("city"));
         const cityValue0 = $.let(city0.unwrap("String"));
-        $(Test.equal(cityValue0, "NYC"));
+        $(Assert.equal(cityValue0, "NYC"));
     });
 
     test("parses CSV with custom delimiter (semicolon)", $ => {
@@ -383,7 +383,7 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_parse(blob, config));
         const length = $.let(result.size());
-        $(Test.equal(length, 1n));
+        $(Assert.equal(length, 1n));
     });
 
     test("parses CSV with custom quote char (single quote)", $ => {
@@ -405,7 +405,7 @@ await describeEast("CSV Platform Functions", (test) => {
         const row0 = $.let(result.get(0n));
         const value0 = $.let(row0.get("value"));
         const valueText = $.let(value0.unwrap("String"));
-        $(Test.equal(valueText, "Hello, World"));
+        $(Assert.equal(valueText, "Hello, World"));
     });
 
     test("parses CSV with backslash escape char", $ => {
@@ -427,7 +427,7 @@ await describeEast("CSV Platform Functions", (test) => {
         const row0 = $.let(result.get(0n));
         const value0 = $.let(row0.get("value"));
         const valueText = $.let(value0.unwrap("String"));
-        $(Test.equal(valueText, 'test"quote'));
+        $(Assert.equal(valueText, 'test"quote'));
     });
 
     test("parses CSV with explicit CRLF newline", $ => {
@@ -447,7 +447,7 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_parse(blob, config));
         const length = $.let(result.size());
-        $(Test.equal(length, 2n));
+        $(Assert.equal(length, 2n));
     });
 
     test("skipEmptyLines ignores blank rows", $ => {
@@ -467,7 +467,7 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_parse(blob, config));
         const length = $.let(result.size());
-        $(Test.equal(length, 2n)); // Only Alice and Bob, empty lines skipped
+        $(Assert.equal(length, 2n)); // Only Alice and Bob, empty lines skipped
     });
 
     test("trimFields removes whitespace", $ => {
@@ -489,7 +489,7 @@ await describeEast("CSV Platform Functions", (test) => {
         const row0 = $.let(result.get(0n));
         const name0 = $.let(row0.get("name"));
         const nameValue0 = $.let(name0.unwrap("String"));
-        $(Test.equal(nameValue0, "Alice")); // Trimmed, not "  Alice  "
+        $(Assert.equal(nameValue0, "Alice")); // Trimmed, not "  Alice  "
     });
 
     test("serializes with custom delimiter", $ => {
@@ -509,7 +509,7 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_serialize(data, config));
         const text = $.let(result.decodeUtf8());
-        $(Test.equal(text, "age\tname\n30\tAlice\n"));
+        $(Assert.equal(text, "age\tname\n30\tAlice\n"));
     });
 
     test("serializes with CRLF newline", $ => {
@@ -529,7 +529,7 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_serialize(data, config));
         const text = $.let(result.decodeUtf8());
-        $(Test.equal(text, "name\r\nAlice\r\n"));
+        $(Assert.equal(text, "name\r\nAlice\r\n"));
     });
 
     test("serializes without header", $ => {
@@ -549,7 +549,7 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_serialize(data, config));
         const text = $.let(result.decodeUtf8());
-        $(Test.equal(text, "30,Alice\n")); // No header line
+        $(Assert.equal(text, "30,Alice\n")); // No header line
     });
 
     test("serializes with alwaysQuote", $ => {
@@ -569,7 +569,7 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_serialize(data, config));
         const text = $.let(result.decodeUtf8());
-        $(Test.equal(text, '"age","name"\n"30","Alice"\n')); // All fields quoted
+        $(Assert.equal(text, '"age","name"\n"30","Alice"\n')); // All fields quoted
     });
 
     // Edge case tests
@@ -590,7 +590,7 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_parse(blob, config));
         const length = $.let(result.size());
-        $(Test.equal(length, 0n)); // No data rows
+        $(Assert.equal(length, 0n)); // No data rows
     });
 
     test("handles CSV with all null values", $ => {
@@ -611,10 +611,10 @@ await describeEast("CSV Platform Functions", (test) => {
         const result = $.let(csv_parse(blob, config));
         const row0 = $.let(result.get(0n));
         const name0 = $.let(row0.get("name"));
-        $(Test.equal(name0, variant('Null', null)));
+        $(Assert.equal(name0, variant('Null', null)));
 
         const age0 = $.let(row0.get("age"));
-        $(Test.equal(age0, variant('Null', null)));
+        $(Assert.equal(age0, variant('Null', null)));
     });
 
     test("distinguishes empty string from null", $ => {
@@ -637,11 +637,11 @@ await describeEast("CSV Platform Functions", (test) => {
         const row0 = $.let(result.get(0n));
         const value0 = $.let(row0.get("value"));
         const valueText0 = $.let(value0.unwrap("String"));
-        $(Test.equal(valueText0, "")); // Empty string, not null
+        $(Assert.equal(valueText0, "")); // Empty string, not null
 
         const row1 = $.let(result.get(1n));
         const value1 = $.let(row1.get("value"));
-        $(Test.equal(value1, variant('Null', null))); // NULL string becomes none
+        $(Assert.equal(value1, variant('Null', null))); // NULL string becomes none
     });
 
     test("serializes empty dataset", $ => {
@@ -659,7 +659,7 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_serialize(data, config));
         const text = $.let(result.decodeUtf8());
-        $(Test.equal(text, "")); // Empty output
+        $(Assert.equal(text, "")); // Empty output
     });
 
     test("serializes with all none values", $ => {
@@ -682,7 +682,7 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_serialize(data, config));
         const text = $.let(result.decodeUtf8());
-        $(Test.equal(text, "age,name\nNULL,NULL\n"));
+        $(Assert.equal(text, "age,name\nNULL,NULL\n"));
     });
 
     test("serializes mixed some and none values", $ => {
@@ -709,7 +709,7 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const result = $.let(csv_serialize(data, config));
         const text = $.let(result.decodeUtf8());
-        $(Test.equal(text, "city,name\n,Alice\nLA,\n"));
+        $(Assert.equal(text, "city,name\n,Alice\nLA,\n"));
     });
 
     // Column type tests
@@ -736,11 +736,11 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const name0 = $.let(row0.get("name"));
         const nameValue0 = $.let(name0.unwrap("String"));
-        $(Test.equal(nameValue0, "Alice"));
+        $(Assert.equal(nameValue0, "Alice"));
 
         const age0 = $.let(row0.get("age"));
         const ageValue0 = $.let(age0.unwrap("Integer"));
-        $(Test.equal(ageValue0, 30n));
+        $(Assert.equal(ageValue0, 30n));
     });
 
     test("parses CSV with Boolean column type", $ => {
@@ -766,12 +766,12 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const active0 = $.let(row0.get("active"));
         const activeValue0 = $.let(active0.unwrap("Boolean"));
-        $(Test.equal(activeValue0, true));
+        $(Assert.equal(activeValue0, true));
 
         const row1 = $.let(result.get(1n));
         const active1 = $.let(row1.get("active"));
         const activeValue1 = $.let(active1.unwrap("Boolean"));
-        $(Test.equal(activeValue1, false));
+        $(Assert.equal(activeValue1, false));
     });
 
     test("parses CSV with Float column type", $ => {
@@ -797,7 +797,7 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const score0 = $.let(row0.get("score"));
         const scoreValue0 = $.let(score0.unwrap("Float"));
-        $(Test.equal(scoreValue0, 95.5));
+        $(Assert.equal(scoreValue0, 95.5));
     });
 
     test("parses CSV with multiple typed columns", $ => {
@@ -825,19 +825,19 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const name0 = $.let(row0.get("name"));
         const nameValue0 = $.let(name0.unwrap("String"));
-        $(Test.equal(nameValue0, "Alice"));
+        $(Assert.equal(nameValue0, "Alice"));
 
         const age0 = $.let(row0.get("age"));
         const ageValue0 = $.let(age0.unwrap("Integer"));
-        $(Test.equal(ageValue0, 30n));
+        $(Assert.equal(ageValue0, 30n));
 
         const score0 = $.let(row0.get("score"));
         const scoreValue0 = $.let(score0.unwrap("Float"));
-        $(Test.equal(scoreValue0, 95.5));
+        $(Assert.equal(scoreValue0, 95.5));
 
         const active0 = $.let(row0.get("active"));
         const activeValue0 = $.let(active0.unwrap("Boolean"));
-        $(Test.equal(activeValue0, true));
+        $(Assert.equal(activeValue0, true));
     });
 
     test("columns without type specification default to String", $ => {
@@ -864,11 +864,11 @@ await describeEast("CSV Platform Functions", (test) => {
 
         const name0 = $.let(row0.get("name"));
         const nameValue0 = $.let(name0.unwrap("String"));
-        $(Test.equal(nameValue0, "Alice"));
+        $(Assert.equal(nameValue0, "Alice"));
 
         const city0 = $.let(row0.get("city"));
         const cityValue0 = $.let(city0.unwrap("String"));
-        $(Test.equal(cityValue0, "NYC"));
+        $(Assert.equal(cityValue0, "NYC"));
     });
 
     // Type parsing error tests
@@ -890,7 +890,7 @@ await describeEast("CSV Platform Functions", (test) => {
             trimFields: false,
         }));
 
-        $(Test.throws(csv_parse(blob, config), /Failed to parse value for header age in row 2, column 2: Cannot parse empty string as Integer/));
+        $(Assert.throws(csv_parse(blob, config), /Failed to parse value for header age in row 2, column 2: Cannot parse empty string as Integer/));
     });
 
     test("errors on invalid Integer value (non-numeric)", $ => {
@@ -911,7 +911,7 @@ await describeEast("CSV Platform Functions", (test) => {
             trimFields: false,
         }));
 
-        $(Test.throws(csv_parse(blob, config), /Failed to parse value for header age in row 2, column 2: Cannot parse "abc" as Integer/));
+        $(Assert.throws(csv_parse(blob, config), /Failed to parse value for header age in row 2, column 2: Cannot parse "abc" as Integer/));
     });
 
     test("errors on Integer out of range (too large)", $ => {
@@ -932,7 +932,7 @@ await describeEast("CSV Platform Functions", (test) => {
             trimFields: false,
         }));
 
-        $(Test.throws(csv_parse(blob, config), /Failed to parse value for header age in row 2, column 2: Integer out of range \(must be 64-bit signed\)/));
+        $(Assert.throws(csv_parse(blob, config), /Failed to parse value for header age in row 2, column 2: Integer out of range \(must be 64-bit signed\)/));
     });
 
     test("errors on Integer out of range (too small)", $ => {
@@ -953,7 +953,7 @@ await describeEast("CSV Platform Functions", (test) => {
             trimFields: false,
         }));
 
-        $(Test.throws(csv_parse(blob, config), /Failed to parse value for header age in row 2, column 2: Integer out of range \(must be 64-bit signed\)/));
+        $(Assert.throws(csv_parse(blob, config), /Failed to parse value for header age in row 2, column 2: Integer out of range \(must be 64-bit signed\)/));
     });
 
     test("errors on invalid Float value (empty string)", $ => {
@@ -974,7 +974,7 @@ await describeEast("CSV Platform Functions", (test) => {
             trimFields: false,
         }));
 
-        $(Test.throws(csv_parse(blob, config), /Failed to parse value for header score in row 2, column 2: Cannot parse empty string as Float/));
+        $(Assert.throws(csv_parse(blob, config), /Failed to parse value for header score in row 2, column 2: Cannot parse empty string as Float/));
     });
 
     test("errors on invalid Float value (non-numeric)", $ => {
@@ -995,7 +995,7 @@ await describeEast("CSV Platform Functions", (test) => {
             trimFields: false,
         }));
 
-        $(Test.throws(csv_parse(blob, config), /Failed to parse value for header score in row 2, column 2: Cannot parse "abc" as Float/));
+        $(Assert.throws(csv_parse(blob, config), /Failed to parse value for header score in row 2, column 2: Cannot parse "abc" as Float/));
     });
 
     test("errors on invalid Boolean value", $ => {
@@ -1016,7 +1016,7 @@ await describeEast("CSV Platform Functions", (test) => {
             trimFields: false,
         }));
 
-        $(Test.throws(csv_parse(blob, config), /Failed to parse value for header active in row 2, column 2: Cannot parse "yes" as Boolean \(expected 'true' or 'false'\)/));
+        $(Assert.throws(csv_parse(blob, config), /Failed to parse value for header active in row 2, column 2: Cannot parse "yes" as Boolean \(expected 'true' or 'false'\)/));
     });
 
     test("errors on invalid DateTime value (empty string)", $ => {
@@ -1037,7 +1037,7 @@ await describeEast("CSV Platform Functions", (test) => {
             trimFields: false,
         }));
 
-        $(Test.throws(csv_parse(blob, config), /Failed to parse value for header created in row 2, column 2: Cannot parse empty string as DateTime/));
+        $(Assert.throws(csv_parse(blob, config), /Failed to parse value for header created in row 2, column 2: Cannot parse empty string as DateTime/));
     });
 
     test("errors on invalid DateTime value (invalid format)", $ => {
@@ -1058,7 +1058,7 @@ await describeEast("CSV Platform Functions", (test) => {
             trimFields: false,
         }));
 
-        $(Test.throws(csv_parse(blob, config), /Failed to parse value for header created in row 2, column 2: Cannot parse "not-a-date" as DateTime \(expected ISO 8601 format\)/));
+        $(Assert.throws(csv_parse(blob, config), /Failed to parse value for header created in row 2, column 2: Cannot parse "not-a-date" as DateTime \(expected ISO 8601 format\)/));
     });
 
     test("errors on invalid Blob value (invalid hex)", $ => {
@@ -1079,7 +1079,7 @@ await describeEast("CSV Platform Functions", (test) => {
             trimFields: false,
         }));
 
-        $(Test.throws(csv_parse(blob, config), /Failed to parse value for header data in row 2, column 2: Cannot parse "0xGGGG" as Blob \(invalid hex character\)/));
+        $(Assert.throws(csv_parse(blob, config), /Failed to parse value for header data in row 2, column 2: Cannot parse "0xGGGG" as Blob \(invalid hex character\)/));
     });
 
     // Large dataset test with mixed types and null values
@@ -1151,7 +1151,7 @@ await describeEast("CSV Platform Functions", (test) => {
             new Map<string, ValueTypeOf<typeof LiteralValueType>>([["id", variant('Integer', 20n)], ["name", variant('String', "Quinn")], ["age", variant('Integer', 29n)], ["score", variant('Null', null)], ["active", variant('Boolean', false)], ["city", variant('String', "Vegas")]]),
         ], CsvDataType));
 
-        $(Test.equal(result, expected));
+        $(Assert.equal(result, expected));
 
         // Round-trip: serialize and parse again
         const serializeConfig = $.let(East.value({
@@ -1167,6 +1167,6 @@ await describeEast("CSV Platform Functions", (test) => {
         const serialized = $.let(csv_serialize(expected, serializeConfig));
         const reparsed = $.let(csv_parse(serialized, config));
 
-        $(Test.equal(reparsed, expected));
+        $(Assert.equal(reparsed, expected));
     });
 }, { platformFns: CsvImpl });

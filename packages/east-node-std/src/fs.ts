@@ -3,7 +3,7 @@
  * Dual-licensed under AGPL-3.0 and commercial license. See LICENSE for details.
  */
 import { East, StringType, NullType, BooleanType, ArrayType, BlobType } from "@elaraai/east";
-import type { PlatformFunction, PlatformFunctionDef } from "@elaraai/east/internal";
+import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 import {
     readFileSync,
@@ -41,7 +41,7 @@ import {
  * });
  * ```
  */
-export const fs_read_file: PlatformFunctionDef<[typeof StringType], typeof StringType> = East.platform("fs_read_file", [StringType], StringType);
+export const fs_read_file = East.platform("fs_read_file", [StringType], StringType);
 
 /**
  * Writes a string to a file (overwrites existing content).
@@ -68,7 +68,7 @@ export const fs_read_file: PlatformFunctionDef<[typeof StringType], typeof Strin
  * });
  * ```
  */
-export const fs_write_file: PlatformFunctionDef<[typeof StringType, typeof StringType], typeof NullType> = East.platform("fs_write_file", [StringType, StringType], NullType);
+export const fs_write_file = East.platform("fs_write_file", [StringType, StringType], NullType);
 
 /**
  * Appends a string to a file.
@@ -94,7 +94,7 @@ export const fs_write_file: PlatformFunctionDef<[typeof StringType, typeof Strin
  * });
  * ```
  */
-export const fs_append_file: PlatformFunctionDef<[typeof StringType, typeof StringType], typeof NullType> = East.platform("fs_append_file", [StringType, StringType], NullType);
+export const fs_append_file = East.platform("fs_append_file", [StringType, StringType], NullType);
 
 /**
  * Deletes a file from the file system.
@@ -120,7 +120,7 @@ export const fs_append_file: PlatformFunctionDef<[typeof StringType, typeof Stri
  * });
  * ```
  */
-export const fs_delete_file: PlatformFunctionDef<[typeof StringType], typeof NullType> = East.platform("fs_delete_file", [StringType], NullType);
+export const fs_delete_file = East.platform("fs_delete_file", [StringType], NullType);
 
 /**
  * Checks if a file or directory exists at the given path.
@@ -142,7 +142,7 @@ export const fs_delete_file: PlatformFunctionDef<[typeof StringType], typeof Nul
  * });
  * ```
  */
-export const fs_exists: PlatformFunctionDef<[typeof StringType], typeof BooleanType> = East.platform("fs_exists", [StringType], BooleanType);
+export const fs_exists = East.platform("fs_exists", [StringType], BooleanType);
 
 /**
  * Checks if a path exists and is a regular file.
@@ -164,7 +164,7 @@ export const fs_exists: PlatformFunctionDef<[typeof StringType], typeof BooleanT
  * });
  * ```
  */
-export const fs_is_file: PlatformFunctionDef<[typeof StringType], typeof BooleanType> = East.platform("fs_is_file", [StringType], BooleanType);
+export const fs_is_file = East.platform("fs_is_file", [StringType], BooleanType);
 
 /**
  * Checks if a path exists and is a directory.
@@ -186,7 +186,7 @@ export const fs_is_file: PlatformFunctionDef<[typeof StringType], typeof Boolean
  * });
  * ```
  */
-export const fs_is_directory: PlatformFunctionDef<[typeof StringType], typeof BooleanType> = East.platform("fs_is_directory", [StringType], BooleanType);
+export const fs_is_directory = East.platform("fs_is_directory", [StringType], BooleanType);
 
 /**
  * Creates a directory, including any necessary parent directories.
@@ -212,7 +212,7 @@ export const fs_is_directory: PlatformFunctionDef<[typeof StringType], typeof Bo
  * });
  * ```
  */
-export const fs_create_directory: PlatformFunctionDef<[typeof StringType], typeof NullType> = East.platform("fs_create_directory", [StringType], NullType);
+export const fs_create_directory = East.platform("fs_create_directory", [StringType], NullType);
 
 /**
  * Lists the names of all files and directories within a directory.
@@ -240,7 +240,7 @@ export const fs_create_directory: PlatformFunctionDef<[typeof StringType], typeo
  * });
  * ```
  */
-export const fs_read_directory: PlatformFunctionDef<[typeof StringType], ReturnType<typeof ArrayType<typeof StringType>>> = East.platform("fs_read_directory", [StringType], ArrayType(StringType));
+export const fs_read_directory = East.platform("fs_read_directory", [StringType], ArrayType(StringType));
 
 /**
  * Reads a file as binary data without any encoding.
@@ -267,7 +267,7 @@ export const fs_read_directory: PlatformFunctionDef<[typeof StringType], ReturnT
  * });
  * ```
  */
-export const fs_read_file_bytes: PlatformFunctionDef<[StringType], BlobType> = East.platform("fs_read_file_bytes", [StringType], BlobType);
+export const fs_read_file_bytes = East.platform("fs_read_file_bytes", [StringType], BlobType);
 
 /**
  * Writes binary data to a file (overwrites existing content).
@@ -295,7 +295,7 @@ export const fs_read_file_bytes: PlatformFunctionDef<[StringType], BlobType> = E
  * });
  * ```
  */
-export const fs_write_file_bytes: PlatformFunctionDef<[typeof StringType, typeof BlobType], typeof NullType> = East.platform("fs_write_file_bytes", [StringType, BlobType], NullType);
+export const fs_write_file_bytes = East.platform("fs_write_file_bytes", [StringType, BlobType], NullType);
 
 /**
  * Node.js implementation of file system platform functions.

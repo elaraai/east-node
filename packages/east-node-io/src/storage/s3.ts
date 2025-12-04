@@ -14,7 +14,7 @@
 
 import { East, BlobType, StringType, IntegerType, NullType, variant } from "@elaraai/east";
 import type { ValueTypeOf } from "@elaraai/east";
-import type { PlatformFunctionDef, PlatformFunction } from "@elaraai/east/internal";
+import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 import {
     S3Client,
@@ -110,10 +110,7 @@ function createS3Client(config: ValueTypeOf<typeof S3ConfigType>): S3Client {
  * - Uses AWS SDK v3 for S3 operations
  * - All operations are asynchronous (use East.compileAsync)
  */
-export const s3_put_object: PlatformFunctionDef<
-    [typeof S3ConfigType, typeof StringType, typeof BlobType],
-    typeof NullType
-> = East.platform("s3_put_object", [S3ConfigType, StringType, BlobType], NullType);
+export const s3_put_object = East.asyncPlatform("s3_put_object", [S3ConfigType, StringType, BlobType], NullType);
 
 /**
  * Downloads an object from S3.
@@ -161,11 +158,7 @@ export const s3_put_object: PlatformFunctionDef<
  * - Use decodeUtf8() to convert text files to strings
  * - Streams large objects automatically
  */
-export const s3_get_object: PlatformFunctionDef<
-    [typeof S3ConfigType, typeof StringType],
-    typeof BlobType
-> = East.platform("s3_get_object", [S3ConfigType, StringType], BlobType);
-
+export const s3_get_object = East.asyncPlatform("s3_get_object", [S3ConfigType, StringType], BlobType);
 /**
  * Retrieves object metadata from S3 without downloading the file.
  *
@@ -222,10 +215,7 @@ export const s3_get_object: PlatformFunctionDef<
  * - Much faster than downloading the entire file
  * - Use this to implement efficient sync/caching logic
  */
-export const s3_head_object: PlatformFunctionDef<
-    [typeof S3ConfigType, typeof StringType],
-    typeof S3ObjectMetadataType
-> = East.platform("s3_head_object", [S3ConfigType, StringType], S3ObjectMetadataType);
+export const s3_head_object = East.asyncPlatform("s3_head_object", [S3ConfigType, StringType], S3ObjectMetadataType);
 
 /**
  * Deletes an object from S3.
@@ -271,10 +261,7 @@ export const s3_head_object: PlatformFunctionDef<
  * - Idempotent: succeeds even if object doesn't exist
  * - Does not delete versioned objects (only current version)
  */
-export const s3_delete_object: PlatformFunctionDef<
-    [typeof S3ConfigType, typeof StringType],
-    typeof NullType
-> = East.platform("s3_delete_object", [S3ConfigType, StringType], NullType);
+export const s3_delete_object = East.asyncPlatform("s3_delete_object", [S3ConfigType, StringType], NullType);
 
 /**
  * Lists objects in an S3 bucket with a prefix.
@@ -324,10 +311,7 @@ export const s3_delete_object: PlatformFunctionDef<
  * - Use continuationToken from result to fetch next page
  * - maxKeys is clamped to 1-1000 range
  */
-export const s3_list_objects: PlatformFunctionDef<
-    [typeof S3ConfigType, typeof StringType, typeof IntegerType],
-    typeof S3ListResultType
-> = East.platform("s3_list_objects", [S3ConfigType, StringType, IntegerType], S3ListResultType);
+export const s3_list_objects = East.asyncPlatform("s3_list_objects", [S3ConfigType, StringType, IntegerType], S3ListResultType);
 
 /**
  * Generates a presigned URL for temporary access to an S3 object.
@@ -378,10 +362,7 @@ export const s3_list_objects: PlatformFunctionDef<
  * - Works with S3-compatible services
  * - Maximum expiration: 7 days (604800 seconds)
  */
-export const s3_presign_url: PlatformFunctionDef<
-    [typeof S3ConfigType, typeof StringType, typeof IntegerType],
-    typeof StringType
-> = East.platform("s3_presign_url", [S3ConfigType, StringType, IntegerType], StringType);
+export const s3_presign_url = East.asyncPlatform("s3_presign_url", [S3ConfigType, StringType, IntegerType], StringType);
 
 /**
  * Node.js implementation of S3 platform functions.
@@ -390,7 +371,7 @@ export const s3_presign_url: PlatformFunctionDef<
  * Pass this to East.compileAsync() to enable S3 functionality.
  */
 export const S3Impl: PlatformFunction[] = [
-    s3_put_object.implementAsync(async (
+    s3_put_object.implement(async (
         config: ValueTypeOf<typeof S3ConfigType>,
         key: ValueTypeOf<typeof StringType>,
         data: ValueTypeOf<typeof BlobType>
@@ -412,7 +393,7 @@ export const S3Impl: PlatformFunction[] = [
         }
     }),
 
-    s3_get_object.implementAsync(async (
+    s3_get_object.implement(async (
         config: ValueTypeOf<typeof S3ConfigType>,
         key: ValueTypeOf<typeof StringType>
     ): Promise<Uint8Array> => {
@@ -452,7 +433,7 @@ export const S3Impl: PlatformFunction[] = [
         }
     }),
 
-    s3_head_object.implementAsync(async (
+    s3_head_object.implement(async (
         config: ValueTypeOf<typeof S3ConfigType>,
         key: ValueTypeOf<typeof StringType>
     ): Promise<ValueTypeOf<typeof S3ObjectMetadataType>> => {
@@ -479,7 +460,7 @@ export const S3Impl: PlatformFunction[] = [
         }
     }),
 
-    s3_delete_object.implementAsync(async (
+    s3_delete_object.implement(async (
         config: ValueTypeOf<typeof S3ConfigType>,
         key: ValueTypeOf<typeof StringType>
     ): Promise<null> => {
@@ -499,7 +480,7 @@ export const S3Impl: PlatformFunction[] = [
         }
     }),
 
-    s3_list_objects.implementAsync(async (
+    s3_list_objects.implement(async (
         config: ValueTypeOf<typeof S3ConfigType>,
         prefix: ValueTypeOf<typeof StringType>,
         maxKeys: ValueTypeOf<typeof IntegerType>
@@ -546,7 +527,7 @@ export const S3Impl: PlatformFunction[] = [
         }
     }),
 
-    s3_presign_url.implementAsync(async (
+    s3_presign_url.implement(async (
         config: ValueTypeOf<typeof S3ConfigType>,
         key: ValueTypeOf<typeof StringType>,
         expiresIn: ValueTypeOf<typeof IntegerType>

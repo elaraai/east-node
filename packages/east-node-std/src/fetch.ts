@@ -3,7 +3,7 @@
  * Dual-licensed under AGPL-3.0 and commercial license. See LICENSE for details.
  */
 import { East, StringType, IntegerType, BooleanType, DictType, OptionType, VariantType, NullType, StructType, type ValueTypeOf } from "@elaraai/east";
-import type { PlatformFunction, PlatformFunctionDef } from "@elaraai/east/internal";
+import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 
 /**
@@ -75,7 +75,7 @@ export const FetchResponse = StructType({
  * });
  * ```
  */
-export const fetch_get: PlatformFunctionDef<[typeof StringType], typeof StringType> = East.platform("fetch_get", [StringType], StringType);
+export const fetch_get = East.asyncPlatform("fetch_get", [StringType], StringType);
 
 /**
  * Performs an HTTP POST request with a string body.
@@ -105,7 +105,7 @@ export const fetch_get: PlatformFunctionDef<[typeof StringType], typeof StringTy
  * });
  * ```
  */
-export const fetch_post: PlatformFunctionDef<[typeof StringType, typeof StringType], typeof StringType> = East.platform("fetch_post", [StringType, StringType], StringType);
+export const fetch_post = East.asyncPlatform("fetch_post", [StringType, StringType], StringType);
 
 /**
  * Performs a full HTTP request with custom configuration.
@@ -136,7 +136,7 @@ export const fetch_post: PlatformFunctionDef<[typeof StringType, typeof StringTy
  * });
  * ```
  */
-export const fetch_request: PlatformFunctionDef<[typeof FetchRequestConfig], typeof FetchResponse> = East.platform("fetch_request", [FetchRequestConfig], FetchResponse);
+export const fetch_request = East.asyncPlatform("fetch_request", [FetchRequestConfig], FetchResponse);
 
 /**
  * Node.js implementation of fetch platform functions.
@@ -144,7 +144,7 @@ export const fetch_request: PlatformFunctionDef<[typeof FetchRequestConfig], typ
  * Pass this array to {@link East.compileAsync} to enable fetch operations.
  */
 const FetchImpl: PlatformFunction[] = [
-    fetch_get.implementAsync(async (url: string) => {
+    fetch_get.implement(async (url: string) => {
         try {
             const response = await fetch(url);
             if (!response.ok) {
@@ -161,7 +161,7 @@ const FetchImpl: PlatformFunction[] = [
             });
         }
     }),
-    fetch_post.implementAsync(async (url: string, body: string) => {
+    fetch_post.implement(async (url: string, body: string) => {
         try {
             const response = await fetch(url, {
                 method: 'POST',
@@ -184,7 +184,7 @@ const FetchImpl: PlatformFunction[] = [
             });
         }
     }),
-    fetch_request.implementAsync(async (config: ValueTypeOf<typeof FetchRequestConfig>) => {
+    fetch_request.implement(async (config: ValueTypeOf<typeof FetchRequestConfig>) => {
         const url = config.url;
         const method = config.method.type.toUpperCase(); // Get the variant tag
         const headers: Record<string, string> = {};

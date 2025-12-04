@@ -3,7 +3,7 @@
  * Dual-licensed under AGPL-3.0 and commercial license. See LICENSE for details.
  */
 import { East, BlobType, ArrayType, DictType, StringType, OptionType, BooleanType, StructType, variant, type ValueTypeOf, VariantType, NullType, match } from "@elaraai/east";
-import type { PlatformFunction, PlatformFunctionDef } from "@elaraai/east/internal";
+import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError, LiteralValueType } from "@elaraai/east/internal";
 
 // CSV Configuration Types
@@ -99,10 +99,7 @@ export const CsvDataType = ArrayType(CsvRowType);
  * - Skips UTF-8 BOM (0xEF 0xBB 0xBF) if present at start
  * - When hasHeader is false, generates column names as "column_0", "column_1", etc.
  */
-export const csv_parse: PlatformFunctionDef<
-    [typeof BlobType, typeof CsvParseConfig],
-    typeof CsvDataType
-> = East.platform("csv_parse", [BlobType, CsvParseConfig], CsvDataType);
+export const csv_parse = East.platform("csv_parse", [BlobType, CsvParseConfig], CsvDataType);
 
 /**
  * Serializes structured row data into CSV-formatted binary data.
@@ -148,10 +145,7 @@ export const csv_parse: PlatformFunctionDef<
  * - Null values are serialized as nullString
  * - Use alwaysQuote: true to force quoting of all fields
  */
-export const csv_serialize: PlatformFunctionDef<
-    [typeof CsvDataType, typeof CsvSerializeConfig],
-    typeof BlobType
-> = East.platform("csv_serialize", [CsvDataType, CsvSerializeConfig], BlobType);
+export const csv_serialize = East.platform("csv_serialize", [CsvDataType, CsvSerializeConfig], BlobType);
 
 /**
  * Node.js implementation of CSV platform functions.

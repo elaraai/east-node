@@ -14,7 +14,7 @@
 
 import { East, DictType, StringType, IntegerType, ArrayType, OptionType, NullType, BooleanType, FloatType, DateTimeType, SortedMap, variant, match, isValueOf } from "@elaraai/east";
 import type { ValueTypeOf } from "@elaraai/east";
-import type { PlatformFunctionDef, PlatformFunction } from "@elaraai/east/internal";
+import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 import { MongoClient, Db, ObjectId } from "mongodb";
 import { createHandle, getConnection, closeHandle, closeAllHandles } from '../connection/index.js';
@@ -58,10 +58,7 @@ export const BsonDocumentType = DictType(StringType, BsonValueType);
  * const handle = await compiled();  // Returns connection handle string
  * ```
  */
-export const mongodb_connect: PlatformFunctionDef<
-    [typeof MongoConfigType],
-    typeof ConnectionHandleType
-> = East.platform("mongodb_connect", [MongoConfigType], ConnectionHandleType);
+export const mongodb_connect = East.asyncPlatform("mongodb_connect", [MongoConfigType], ConnectionHandleType);
 
 /**
  * Finds a single document in MongoDB.
@@ -97,10 +94,7 @@ export const mongodb_connect: PlatformFunctionDef<
  * await compiled("alice");  // variant('some', document) or variant('none', null)
  * ```
  */
-export const mongodb_find_one: PlatformFunctionDef<
-    [typeof ConnectionHandleType, typeof BsonDocumentType],
-    ReturnType<typeof OptionType<typeof BsonDocumentType>>
-> = East.platform("mongodb_find_one", [ConnectionHandleType, BsonDocumentType], OptionType(BsonDocumentType));
+export const mongodb_find_one = East.asyncPlatform("mongodb_find_one", [ConnectionHandleType, BsonDocumentType], OptionType(BsonDocumentType));
 
 /**
  * Finds multiple documents in MongoDB.
@@ -138,10 +132,7 @@ export const mongodb_find_one: PlatformFunctionDef<
  * await compiled();  // [doc1, doc2, ...]
  * ```
  */
-export const mongodb_find_many: PlatformFunctionDef<
-    [typeof ConnectionHandleType, typeof BsonDocumentType, typeof MongoFindOptionsType],
-    ReturnType<typeof ArrayType<typeof BsonDocumentType>>
-> = East.platform("mongodb_find_many", [ConnectionHandleType, BsonDocumentType, MongoFindOptionsType], ArrayType(BsonDocumentType));
+export const mongodb_find_many = East.asyncPlatform("mongodb_find_many", [ConnectionHandleType, BsonDocumentType, MongoFindOptionsType], ArrayType(BsonDocumentType));
 
 /**
  * Inserts a document into MongoDB.
@@ -180,10 +171,7 @@ export const mongodb_find_many: PlatformFunctionDef<
  * await compiled("alice", "alice@example.com");  // "507f1f77bcf86cd799439011"
  * ```
  */
-export const mongodb_insert_one: PlatformFunctionDef<
-    [typeof ConnectionHandleType, typeof BsonDocumentType],
-    typeof StringType
-> = East.platform("mongodb_insert_one", [ConnectionHandleType, BsonDocumentType], StringType);
+export const mongodb_insert_one = East.asyncPlatform("mongodb_insert_one", [ConnectionHandleType, BsonDocumentType], StringType);
 
 /**
  * Updates a document in MongoDB.
@@ -221,10 +209,7 @@ export const mongodb_insert_one: PlatformFunctionDef<
  * await compiled("alice", "newemail@example.com");  // 1n (updated) or 0n (not found)
  * ```
  */
-export const mongodb_update_one: PlatformFunctionDef<
-    [typeof ConnectionHandleType, typeof BsonDocumentType, typeof BsonDocumentType],
-    typeof IntegerType
-> = East.platform("mongodb_update_one", [ConnectionHandleType, BsonDocumentType, BsonDocumentType], IntegerType);
+export const mongodb_update_one = East.asyncPlatform("mongodb_update_one", [ConnectionHandleType, BsonDocumentType, BsonDocumentType], IntegerType);
 
 /**
  * Deletes a document from MongoDB.
@@ -260,10 +245,7 @@ export const mongodb_update_one: PlatformFunctionDef<
  * await compiled("alice");  // 1n (deleted) or 0n (not found)
  * ```
  */
-export const mongodb_delete_one: PlatformFunctionDef<
-    [typeof ConnectionHandleType, typeof BsonDocumentType],
-    typeof IntegerType
-> = East.platform("mongodb_delete_one", [ConnectionHandleType, BsonDocumentType], IntegerType);
+export const mongodb_delete_one = East.asyncPlatform("mongodb_delete_one", [ConnectionHandleType, BsonDocumentType], IntegerType);
 
 /**
  * Deletes multiple documents from MongoDB.
@@ -279,10 +261,7 @@ export const mongodb_delete_one: PlatformFunctionDef<
  *
  * @internal
  */
-export const mongodb_delete_many: PlatformFunctionDef<
-    [typeof ConnectionHandleType, typeof BsonDocumentType],
-    typeof IntegerType
-> = East.platform("mongodb_delete_many", [ConnectionHandleType, BsonDocumentType], IntegerType);
+export const mongodb_delete_many = East.asyncPlatform("mongodb_delete_many", [ConnectionHandleType, BsonDocumentType], IntegerType);
 
 /**
  * Closes a MongoDB connection.
@@ -315,10 +294,7 @@ export const mongodb_delete_many: PlatformFunctionDef<
  * await compiled();
  * ```
  */
-export const mongodb_close: PlatformFunctionDef<
-    [typeof ConnectionHandleType],
-    typeof NullType
-> = East.platform("mongodb_close", [ConnectionHandleType], NullType);
+export const mongodb_close = East.asyncPlatform("mongodb_close", [ConnectionHandleType], NullType);
 
 /**
  * Closes all active MongoDB connections.
@@ -330,7 +306,7 @@ export const mongodb_close: PlatformFunctionDef<
  *
  * @internal
  */
-export const mongodb_close_all: PlatformFunctionDef<[], typeof NullType> = East.platform("mongodb_close_all", [], NullType);
+export const mongodb_close_all = East.asyncPlatform("mongodb_close_all", [], NullType);
 
 /**
  * Converts East BsonValue to native MongoDB value.
@@ -405,7 +381,7 @@ function nativeToBsonValue(value: any): ValueTypeOf<typeof BsonValueType> {
  * Pass this to East.compileAsync() to enable MongoDB operations.
  */
 export const MongoDBImpl: PlatformFunction[] = [
-    mongodb_connect.implementAsync(async (config: ValueTypeOf<typeof MongoConfigType>): Promise<string> => {
+    mongodb_connect.implement(async (config: ValueTypeOf<typeof MongoConfigType>): Promise<string> => {
         try {
             const client = new MongoClient(config.uri);
             await client.connect();
@@ -427,7 +403,7 @@ export const MongoDBImpl: PlatformFunction[] = [
         }
     }),
 
-    mongodb_find_one.implementAsync(async (
+    mongodb_find_one.implement(async (
         handle: ValueTypeOf<typeof ConnectionHandleType>,
         query: ValueTypeOf<typeof BsonDocumentType>
     ): Promise<ValueTypeOf<ReturnType<typeof OptionType>>> => {
@@ -461,7 +437,7 @@ export const MongoDBImpl: PlatformFunction[] = [
         }
     }),
 
-    mongodb_find_many.implementAsync(async (
+    mongodb_find_many.implement(async (
         handle: ValueTypeOf<typeof ConnectionHandleType>,
         query: ValueTypeOf<typeof BsonDocumentType>,
         options: ValueTypeOf<typeof MongoFindOptionsType>
@@ -506,7 +482,7 @@ export const MongoDBImpl: PlatformFunction[] = [
         }
     }),
 
-    mongodb_insert_one.implementAsync(async (
+    mongodb_insert_one.implement(async (
         handle: ValueTypeOf<typeof ConnectionHandleType>,
         document: ValueTypeOf<typeof BsonDocumentType>
     ): Promise<string> => {
@@ -530,7 +506,7 @@ export const MongoDBImpl: PlatformFunction[] = [
         }
     }),
 
-    mongodb_update_one.implementAsync(async (
+    mongodb_update_one.implement(async (
         handle: ValueTypeOf<typeof ConnectionHandleType>,
         query: ValueTypeOf<typeof BsonDocumentType>,
         update: ValueTypeOf<typeof BsonDocumentType>
@@ -561,7 +537,7 @@ export const MongoDBImpl: PlatformFunction[] = [
         }
     }),
 
-    mongodb_delete_one.implementAsync(async (
+    mongodb_delete_one.implement(async (
         handle: ValueTypeOf<typeof ConnectionHandleType>,
         query: ValueTypeOf<typeof BsonDocumentType>
     ): Promise<bigint> => {
@@ -585,7 +561,7 @@ export const MongoDBImpl: PlatformFunction[] = [
         }
     }),
 
-    mongodb_delete_many.implementAsync(async (
+    mongodb_delete_many.implement(async (
         handle: ValueTypeOf<typeof ConnectionHandleType>,
         query: ValueTypeOf<typeof BsonDocumentType>
     ): Promise<bigint> => {
@@ -609,7 +585,7 @@ export const MongoDBImpl: PlatformFunction[] = [
         }
     }),
 
-    mongodb_close.implementAsync(async (handle: ValueTypeOf<typeof ConnectionHandleType>) => {
+    mongodb_close.implement(async (handle: ValueTypeOf<typeof ConnectionHandleType>) => {
         try {
             const { client } = getConnection<{ client: MongoClient; db: Db; collection: any }>(handle);
             await client.close();
@@ -623,7 +599,7 @@ export const MongoDBImpl: PlatformFunction[] = [
         }
     }),
 
-    mongodb_close_all.implementAsync(async () => {
+    mongodb_close_all.implement(async () => {
         await closeAllHandles();
         return null;
     }),

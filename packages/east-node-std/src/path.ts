@@ -3,7 +3,7 @@
  * Dual-licensed under AGPL-3.0 and commercial license. See LICENSE for details.
  */
 import { East, StringType, ArrayType } from "@elaraai/east";
-import type { PlatformFunction, PlatformFunctionDef } from "@elaraai/east/internal";
+import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 import { join, resolve, dirname, basename, extname } from "node:path";
 
@@ -29,7 +29,7 @@ import { join, resolve, dirname, basename, extname } from "node:path";
  * });
  * ```
  */
-export const path_join: PlatformFunctionDef<[ReturnType<typeof ArrayType<typeof StringType>>], typeof StringType> = East.platform("path_join", [ArrayType(StringType)], StringType);
+export const path_join = East.platform("path_join", [ArrayType(StringType)], StringType);
 
 /**
  * Resolves a path to an absolute path.
@@ -52,7 +52,7 @@ export const path_join: PlatformFunctionDef<[ReturnType<typeof ArrayType<typeof 
  * });
  * ```
  */
-export const path_resolve: PlatformFunctionDef<[typeof StringType], typeof StringType> = East.platform("path_resolve", [StringType], StringType);
+export const path_resolve = East.platform("path_resolve", [StringType], StringType);
 
 /**
  * Gets the directory name from a path.
@@ -74,7 +74,7 @@ export const path_resolve: PlatformFunctionDef<[typeof StringType], typeof Strin
  * });
  * ```
  */
-export const path_dirname: PlatformFunctionDef<[typeof StringType], typeof StringType> = East.platform("path_dirname", [StringType], StringType);
+export const path_dirname = East.platform("path_dirname", [StringType], StringType);
 
 /**
  * Gets the base name (file name) from a path.
@@ -96,7 +96,7 @@ export const path_dirname: PlatformFunctionDef<[typeof StringType], typeof Strin
  * });
  * ```
  */
-export const path_basename: PlatformFunctionDef<[typeof StringType], typeof StringType> = East.platform("path_basename", [StringType], StringType);
+export const path_basename = East.platform("path_basename", [StringType], StringType);
 
 /**
  * Gets the file extension from a path.
@@ -119,7 +119,7 @@ export const path_basename: PlatformFunctionDef<[typeof StringType], typeof Stri
  * });
  * ```
  */
-export const path_extname: PlatformFunctionDef<[typeof StringType], typeof StringType> = East.platform("path_extname", [StringType], StringType);
+export const path_extname = East.platform("path_extname", [StringType], StringType);
 
 /**
  * Node.js implementation of path platform functions.

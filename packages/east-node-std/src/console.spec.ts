@@ -3,29 +3,29 @@
  * Dual-licensed under AGPL-3.0 and commercial license. See LICENSE for details.
  */
 import { East } from "@elaraai/east";
-import { describeEast, Test } from "./test.js";
+import { describeEast, Assert } from "./test.js";
 import { Console, ConsoleImpl } from "./console.js";
 
 describeEast("Console platform functions", (test) => {
     test("console_log writes message", $ => {
         // We can't easily test stdout, but we can verify it compiles and runs
-        $(Console.log("Test message"));
-        $(Test.equal(East.value(true), true));
+        $(Console.log("Assert message"));
+        $(Assert.equal(East.value(true), true));
     });
 
     test("console_error writes to stderr", $ => {
         $(Console.error("Error message"));
-        $(Test.equal(East.value(true), true));
+        $(Assert.equal(East.value(true), true));
     });
 
     test("console_write writes without newline", $ => {
         $(Console.write("No newline"));
-        $(Test.equal(East.value(true), true));
+        $(Assert.equal(East.value(true), true));
     });
 
     test("String concatenation works with console_log", $ => {
         const msg = $.let(East.value("Hello").concat(" World"));
         $(Console.log(msg));
-        $(Test.equal(msg, "Hello World"));
+        $(Assert.equal(msg, "Hello World"));
     });
 }, { platformFns: ConsoleImpl });
