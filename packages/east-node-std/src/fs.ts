@@ -382,7 +382,8 @@ const FileSystemImpl: PlatformFunction[] = [
     }),
     fs_read_file_bytes.implement((path: string) => {
         try {
-            return readFileSync(path);
+            const buffer = readFileSync(path);
+            return new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
         } catch (err: any) {
             throw new EastError(`Failed to read file bytes ${path}: ${err.message}`, {
                 location: { filename: "fs_read_file_bytes", line: 0n, column: 0n },

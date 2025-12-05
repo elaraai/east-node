@@ -385,7 +385,7 @@ export const MySqlImpl: PlatformFunction[] = [
             // Check using the fields array: SELECT has fields, DML doesn't
             if (Array.isArray(rows) && fields.length > 0) {
                 // Get column metadata for type information
-                const fieldTypeMap = new Map<string, MySqlFieldType | null>();
+                const fieldTypeMap = new SortedMap<string, MySqlFieldType | null>();
                 for (const field of fields) {
                     fieldTypeMap.set(field.name, field.type as MySqlFieldType | null);
                 }

@@ -1,6 +1,6 @@
 {
   "name": "east-node-monorepo",
-  "version": "0.0.1-beta.1",
+  "version": "0.0.1-beta.3",
   "private": true,
   "description": "East Node - Node.js platform integration for East language",
   "workspaces": [
@@ -42,5 +42,8 @@
   "license": "SEE LICENSE IN LICENSE",
   "engines": {
     "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "@elaraai/east": "^0.0.1-beta.5"
   }
 }

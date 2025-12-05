@@ -1,60 +1,35 @@
-.PHONY: all install build test test-integration lint extract-examples services services-up services-down services-logs services-status clean set-east-version version-prerelease version-patch version-minor version-major help
-
-# Default target
-all: build
+.PHONY: install build test lint clean services-up services-down set-east-version version-prerelease version-patch version-minor version-major link-local-east unlink-local-east help
 
 # Install dependencies
 install:
-	. ${NVM_DIR}/nvm.sh && nvm use && npm ci
+	npm ci
 
 # Build the project
 build:
-	. ${NVM_DIR}/nvm.sh && nvm use && npm run build
+	npm run build
 
-# Run tests (unit tests only, no Docker required)
+# Run all tests
 test:
-	. ${NVM_DIR}/nvm.sh && nvm use && npm run build && npm test
-
-# Run integration tests with Docker services (east-node-io only)
-test-integration:
-	. ${NVM_DIR}/nvm.sh && nvm use && npm run test:integration --workspace=@elaraai/east-node-io
+	npm run build && npm test
 
 # Run linter
 lint:
-	. ${NVM_DIR}/nvm.sh && nvm use && npm run build && npm run lint
-
-# Extract TypeDoc examples
-extract-examples:
-	. ${NVM_DIR}/nvm.sh && nvm use && npm run extract-examples --workspaces --if-present
-
-# Start development services (Docker) - for east-node-io integration tests
-services:
-	docker-compose -f packages/east-node-io/docker-compose.yml up -d
-
-# Alias for services
-services-up:
-	docker-compose -f packages/east-node-io/docker-compose.yml up -d
-
-# Stop development services
-services-down:
-	docker-compose -f packages/east-node-io/docker-compose.yml down -v
-
-# View service logs
-services-logs:
-	docker-compose -f packages/east-node-io/docker-compose.yml logs -f
-
-# Check service status
-services-status:
-	docker-compose -f packages/east-node-io/docker-compose.yml ps
+	npm run build && npm run lint
 
 # Clean build artifacts
 clean:
-	rm -rf dist/
-	rm -rf node_modules/
+	rm -rf node_modules/ package-lock.json
 	rm -rf packages/*/dist/
 	rm -rf packages/*/node_modules/
 	rm -rf packages/*/.package/
-	rm -rf package-lock.json
+
+# Start Docker services (for integration tests)
+services-up:
+	docker compose -f packages/east-node-io/docker-compose.yml up -d
+
+# Stop Docker services
+services-down:
+	docker compose -f packages/east-node-io/docker-compose.yml down -v
 
 # Update @elaraai/east version across all packages
 # Usage: make set-east-version VERSION=0.0.1-beta.1
@@ -68,35 +43,50 @@ endif
 
 # Bump all package versions
 version-prerelease:
-	. ${NVM_DIR}/nvm.sh && nvm use && npm run version:all:prerelease
+	npm run version:all:prerelease
 
 version-patch:
-	. ${NVM_DIR}/nvm.sh && nvm use && npm run version:all:patch
+	npm run version:all:patch
 
 version-minor:
-	. ${NVM_DIR}/nvm.sh && nvm use && npm run version:all:minor
+	npm run version:all:minor
 
 version-major:
-	. ${NVM_DIR}/nvm.sh && nvm use && npm run version:all:major
+	npm run version:all:major
 
-# Help target
+# Link local east package for development/testing
+# Usage: make link-local-east EAST_PATH=../east
+link-local-east:
+ifndef EAST_PATH
+	$(error EAST_PATH is required. Usage: make link-local-east EAST_PATH=../east)
+endif
+	@echo "Linking local east from $(EAST_PATH)..."
+	cd $(EAST_PATH) && npm link
+	npm link @elaraai/east
+	@echo ""
+	@echo "Now using LOCAL east from $(EAST_PATH). Remember to 'make unlink-local-east' when done!"
+
+# Unlink local east and restore npm version
+unlink-local-east:
+	@echo "Restoring npm version of east..."
+	npm install @elaraai/east
+	@echo ""
+	@echo "Now using NPM east."
+
+# Help
 help:
-	@echo "Available targets:"
-	@echo "  install            - Install dependencies"
-	@echo "  build              - Build the project"
-	@echo "  test               - Run unit tests"
-	@echo "  test-integration   - Run integration tests with Docker (east-node-io)"
-	@echo "  lint               - Run linter"
-	@echo "  extract-examples   - Extract TypeDoc examples"
-	@echo "  services           - Start Docker services"
-	@echo "  services-up        - Start Docker services (alias)"
-	@echo "  services-down      - Stop Docker services"
-	@echo "  services-logs      - View service logs"
-	@echo "  services-status    - Check service status"
-	@echo "  clean              - Clean build artifacts"
-	@echo "  set-east-version   - Update @elaraai/east version (VERSION=x.y.z)"
-	@echo "  version-prerelease - Bump all packages to next prerelease version"
-	@echo "  version-patch      - Bump all packages patch version"
-	@echo "  version-minor      - Bump all packages minor version"
-	@echo "  version-major      - Bump all packages major version"
-	@echo "  help               - Show this help message"
+	@echo "install           - Install dependencies (npm ci)"
+	@echo "build             - Build the project"
+	@echo "test              - Run all tests"
+	@echo "test-export       - Export test IR from all packages"
+	@echo "lint              - Run linter"
+	@echo "clean             - Clean build artifacts"
+	@echo "services-up       - Start Docker services"
+	@echo "services-down     - Stop Docker services"
+	@echo "set-east-version  - Update @elaraai/east version (VERSION=x.y.z)"
+	@echo "version-prerelease - Bump all packages to next prerelease"
+	@echo "version-patch     - Bump all packages patch version"
+	@echo "version-minor     - Bump all packages minor version"
+	@echo "version-major     - Bump all packages major version"
+	@echo "link-local-east   - Link local east for testing (EAST_PATH=../east)"
+	@echo "unlink-local-east - Restore npm version of east"

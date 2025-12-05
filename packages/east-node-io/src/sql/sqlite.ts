@@ -357,7 +357,7 @@ export const SqliteImpl: PlatformFunction[] = [
 
                 // Get column metadata for type information
                 const columns = stmt.columns();
-                const columnTypeMap = new Map<string, SqliteColumnType | null>();
+                const columnTypeMap = new SortedMap<string, SqliteColumnType | null>();
                 for (const col of columns) {
                     columnTypeMap.set(col.name, col.type as SqliteColumnType | null);
                 }
