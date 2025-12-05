@@ -107,6 +107,14 @@ export interface DescribeEastOptions {
      * Runs even if the test fails.
      */
     afterEach?: ($: BlockBuilder<NullType>) => void;
+
+    /**
+     * If true (and if process.env.EXPORT_TEST_IR is a valid path), only exports the test IR without running the tests.
+     * Useful for generating test IR for other East implementations.
+     * Defaults to false.
+     * @default false
+     */
+    exportOnly?: boolean;
 }
 
 /**
@@ -201,9 +209,11 @@ export function describeEast(
         }
     }
 
-    // Run the test suite using the Node.js platform implementation
-    const compiled = suiteFunction.toIR().compile([...(options?.platformFns ?? []), ...testPlatformImpl]);
-    return compiled();
+    if (options?.exportOnly !== true) {
+        // Run the test suite using the Node.js platform implementation
+        const compiled = suiteFunction.toIR().compile([...(options?.platformFns ?? []), ...testPlatformImpl]);
+        return compiled();
+    }
 }
 
 /**
