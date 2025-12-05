@@ -7,7 +7,7 @@
  * File format platform functions for East Node IO.
  *
  * Provides functions for reading and writing structured file formats like
- * Excel (XLSX), CSV, and more.
+ * Excel (XLSX), XML, and more.
  *
  * @example
  * ```ts
@@ -36,12 +36,10 @@ export * from "./types.js";
 
 // Export platform functions and implementation
 export { xlsx_read, xlsx_write, xlsx_info, XlsxImpl } from "./xlsx.js";
-export { csv_parse, csv_serialize, CsvImpl, CsvParseConfig, CsvSerializeConfig, CsvRowType, CsvDataType } from "./csv.js";
 export { xml_parse, xml_serialize, XmlImpl, XmlParseConfig, XmlSerializeConfig, XmlNode } from "./xml.js";
 
 // Import for grouped exports
 import { xlsx_read, xlsx_write, xlsx_info, XlsxImpl } from "./xlsx.js";
-import { csv_parse, csv_serialize, CsvImpl, CsvParseConfig, CsvSerializeConfig, CsvRowType, CsvDataType } from "./csv.js";
 import { xml_parse, xml_serialize, XmlImpl, XmlParseConfig, XmlSerializeConfig, XmlNode } from "./xml.js";
 import {
     XlsxCellType,
@@ -232,148 +230,6 @@ export const Format = {
              * XLSX file metadata with sheet listing.
              */
             Info: XlsxInfoType,
-        },
-    },
-
-    /**
-     * CSV (Comma-Separated Values) file format operations.
-     *
-     * Provides functions for parsing and serializing CSV files as arrays of dictionaries,
-     * where each row is a dictionary mapping column names to optional string values.
-     */
-    CSV: {
-        /**
-         * Parses CSV data from a binary blob into structured row data.
-         *
-         * Converts CSV-formatted binary data into an array of row dictionaries,
-         * where each dictionary maps column names to optional string values.
-         *
-         * @example
-         * ```ts
-         * import { East, BlobType, variant } from "@elaraai/east";
-         * import { Format } from "@elaraai/east-node-io";
-         *
-         * const parseCSV = East.function([BlobType], Format.CSV.Types.Data, ($, csvBlob) => {
-         *     const config = $.let({
-         *         delimiter: variant('none', null),
-         *         quoteChar: variant('none', null),
-         *         escapeChar: variant('none', null),
-         *         newline: variant('none', null),
-         *         hasHeader: true,
-         *         nullString: variant('some', ""),
-         *         skipEmptyLines: true,
-         *         trimFields: false,
-         *     });
-         *
-         *     return $.return(Format.CSV.parse(csvBlob, config));
-         * });
-         *
-         * const compiled = East.compile(parseCSV.toIR(), Format.CSV.Implementation);
-         * const csvBlob = new TextEncoder().encode("name,age\nAlice,30\nBob,25");
-         * compiled(csvBlob);  // Returns parsed CSV data
-         * ```
-         */
-        parse: csv_parse,
-
-        /**
-         * Serializes structured row data into CSV-formatted binary data.
-         *
-         * Converts an array of row dictionaries into CSV-formatted binary data
-         * with configurable formatting options.
-         *
-         * @example
-         * ```ts
-         * import { East, BlobType, variant } from "@elaraai/east";
-         * import { Format } from "@elaraai/east-node-io";
-         *
-         * const serializeCSV = East.function([Format.CSV.Types.Data], BlobType, ($, data) => {
-         *     const config = $.let({
-         *         delimiter: ",",
-         *         quoteChar: '"',
-         *         escapeChar: '"',
-         *         newline: "\n",
-         *         includeHeader: true,
-         *         nullString: "",
-         *         alwaysQuote: false,
-         *     });
-         *
-         *     return $.return(Format.CSV.serialize(data, config));
-         * });
-         *
-         * const compiled = East.compile(serializeCSV.toIR(), Format.CSV.Implementation);
-         * const data = [new Map([["name", variant("some", "Alice")], ["age", variant("some", "30")]])];
-         * compiled(data);  // Returns CSV blob
-         * ```
-         */
-        serialize: csv_serialize,
-
-        /**
-         * Node.js implementation of CSV platform functions.
-         *
-         * Pass this to {@link East.compile} to enable CSV operations.
-         *
-         * @example
-         * ```ts
-         * import { East, BlobType } from "@elaraai/east";
-         * import { Format } from "@elaraai/east-node-io";
-         *
-         * const myFunction = East.function([BlobType], BlobType, ($, csvBlob) => {
-         *     const parseConfig = $.let({
-         *         delimiter: variant('none', null),
-         *         quoteChar: variant('none', null),
-         *         escapeChar: variant('none', null),
-         *         newline: variant('none', null),
-         *         hasHeader: true,
-         *         nullString: variant('none', null),
-         *         skipEmptyLines: true,
-         *         trimFields: false,
-         *     });
-         *
-         *     const data = $.let(Format.CSV.parse(csvBlob, parseConfig));
-         *
-         *     const serializeConfig = $.let({
-         *         delimiter: ",",
-         *         quoteChar: '"',
-         *         escapeChar: '"',
-         *         newline: "\n",
-         *         includeHeader: true,
-         *         nullString: "",
-         *         alwaysQuote: false,
-         *     });
-         *
-         *     return $.return(Format.CSV.serialize(data, serializeConfig));
-         * });
-         *
-         * const compiled = East.compile(myFunction.toIR(), Format.CSV.Implementation);
-         * const csvBlob = new TextEncoder().encode("name,age\nAlice,30");
-         * compiled(csvBlob);
-         * ```
-         */
-        Implementation: CsvImpl,
-
-        /**
-         * Type definitions for CSV operations.
-         */
-        Types: {
-            /**
-             * CSV parse configuration options.
-             */
-            ParseConfig: CsvParseConfig,
-
-            /**
-             * CSV serialize configuration options.
-             */
-            SerializeConfig: CsvSerializeConfig,
-
-            /**
-             * A row in a CSV file (dictionary mapping column names to optional string values).
-             */
-            Row: CsvRowType,
-
-            /**
-             * CSV data as an array of rows.
-             */
-            Data: CsvDataType,
         },
     },
 
