@@ -78,6 +78,6 @@
     "typescript": "~5.9.2"
   },
   "dependencies": {
-    "@elaraai/east": "^0.0.1-beta.3"
+    "@elaraai/east": "^0.0.1-beta.5"
   }
 }

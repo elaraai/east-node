@@ -12,7 +12,7 @@
  * @packageDocumentation
  */
 
-import { East, BlobType } from "@elaraai/east";
+import { East, BlobType, SortedMap } from "@elaraai/east";
 import type { ValueTypeOf } from "@elaraai/east";
 import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
@@ -193,7 +193,7 @@ async function createTar(entries: ValueTypeOf<typeof TarEntriesType>): Promise<U
  */
 async function extractTar(tarData: ValueTypeOf<typeof BlobType>): Promise<Map<string, Uint8Array>> {
     return new Promise((resolve, reject) => {
-        const files = new Map<string, Uint8Array>();
+        const files = new SortedMap<string, Uint8Array>();
         const tarExtract = extract();
 
         tarExtract.on('entry', (header, stream, next) => {

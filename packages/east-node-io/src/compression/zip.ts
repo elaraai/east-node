@@ -12,7 +12,7 @@
  * @packageDocumentation
  */
 
-import { East, BlobType } from "@elaraai/east";
+import { East, BlobType, SortedMap } from "@elaraai/east";
 import type { ValueTypeOf } from "@elaraai/east";
 import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
@@ -162,7 +162,7 @@ function compressZip(
  * @returns Map of file names to their data
  */
 function decompressZip(zipData: ValueTypeOf<typeof BlobType>): Map<string, Uint8Array> {
-    const files = new Map<string, Uint8Array>();
+    const files = new SortedMap<string, Uint8Array>();
 
     // Create AdmZip instance from buffer
     const zip = new AdmZip(Buffer.from(zipData));

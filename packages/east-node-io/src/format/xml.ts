@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Elara AI Pty Ltd
  * Dual-licensed under AGPL-3.0 and commercial license. See LICENSE for details.
  */
-import { East, BlobType, RecursiveType, StructType, StringType, DictType, ArrayType, VariantType, BooleanType, OptionType, variant, type ValueTypeOf } from "@elaraai/east";
+import { East, BlobType, RecursiveType, StructType, StringType, DictType, ArrayType, VariantType, BooleanType, OptionType, variant, type ValueTypeOf, SortedMap } from "@elaraai/east";
 import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 
@@ -367,7 +367,7 @@ function parseXml(
         }
 
         // Parse attributes
-        const attributes = new Map<string, string>();
+        const attributes = new SortedMap<string, string>();
 
         while (pos < xml.length) {
             skipWhitespace();

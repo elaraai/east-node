@@ -389,7 +389,7 @@ export const PostgresImpl: PlatformFunction[] = [
 
             if (command === 'SELECT') {
                 // Get column metadata for type information
-                const columnOidMap = new Map<string, PostgresOid | null>();
+                const columnOidMap = new SortedMap<string, PostgresOid | null>();
                 if (result.fields) {
                     for (const field of result.fields) {
                         columnOidMap.set(field.name, field.dataTypeID as PostgresOid | null);

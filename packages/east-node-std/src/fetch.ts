@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Elara AI Pty Ltd
  * Dual-licensed under AGPL-3.0 and commercial license. See LICENSE for details.
  */
-import { East, StringType, IntegerType, BooleanType, DictType, OptionType, VariantType, NullType, StructType, type ValueTypeOf } from "@elaraai/east";
+import { East, StringType, IntegerType, BooleanType, DictType, OptionType, VariantType, NullType, StructType, type ValueTypeOf, SortedMap } from "@elaraai/east";
 import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 
@@ -201,7 +201,7 @@ const FetchImpl: PlatformFunction[] = [
                 body: config.body.value,
             });
 
-            const responseHeaders = new Map<string, string>();
+            const responseHeaders = new SortedMap<string, string>();
             response.headers.forEach((value, key) => {
                 responseHeaders.set(key, value);
             });
