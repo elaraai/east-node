@@ -211,7 +211,7 @@ export function describeEast(
 
     if (options?.exportOnly !== true) {
         // Run the test suite using the Node.js platform implementation
-        const compiled = suiteFunction.toIR().compile([...(options?.platformFns ?? []), ...TestImpl]);
+        const compiled = suiteFunction.toIR().compile([...(options?.platformFns ?? [])]);
         return compiled();
     }
 }
