@@ -1,6 +1,6 @@
 {
   "name": "@elaraai/east-node-cli",
-  "version": "0.0.1-beta.5",
+  "version": "0.0.1-beta.6",
   "description": "Command-line interface for running East IR programs with Node.js",
   "bin": {
     "east-node": "./dist/index.js"
@@ -52,7 +52,7 @@
     "node": ">=22.0.0"
   },
   "dependencies": {
-    "@elaraai/east": "^0.0.1-beta.8",
+    "@elaraai/east": "^0.0.1-beta.9",
     "commander": "^14.0.0"
   },
   "devDependencies": {
