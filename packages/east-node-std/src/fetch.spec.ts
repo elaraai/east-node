@@ -4,7 +4,8 @@
  */
 import { variant } from "@elaraai/east";
 import { describeEast, Assert } from "./test.js";
-import { Fetch, FetchRequestConfig, FetchImpl } from "./fetch.js";
+import { Fetch, FetchRequestConfig } from "./fetch.js";
+import { NodePlatform } from "./index.js";
 
 describeEast("Fetch platform functions", (test) => {
     // Note: These tests require network access
@@ -78,4 +79,4 @@ describeEast("Fetch platform functions", (test) => {
         const hasContentType = $.let(response.headers.has("content-type"));
         $(Assert.equal(hasContentType, true));
     });
-}, { platformFns: FetchImpl });
+}, { platformFns: NodePlatform });

@@ -6,6 +6,7 @@ import { describe, test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { describeEast, Assert } from "./test.js";
 import { Random, resetToCryptoRNG } from "./random.js";
+import { NodePlatform } from "./index.js";
 import XorShift128RNG from "./random/xorshift128.js";
 
 // Reset RNG before each test to avoid test pollution
@@ -237,4 +238,4 @@ describeEast("Random platform functions", (test) => {
         const v2 = $.let(Random.uniform());
         $(Assert.notEqual(v1, v2));
     });
-}, { platformFns: Random.Implementation });
+}, { platformFns: NodePlatform });

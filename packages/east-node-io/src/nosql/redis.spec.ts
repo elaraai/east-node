@@ -13,7 +13,7 @@
  * Run `npm run dev:services` to start Docker containers.
  */
 import { East, variant } from "@elaraai/east";
-import { describeEast, Assert } from "@elaraai/east-node-std";
+import { describeEast, Assert, NodePlatform } from "@elaraai/east-node-std";
 import { redis_connect, redis_get, redis_set, redis_setex, redis_del, redis_close, redis_close_all, RedisImpl } from "./redis.js";
 
 // Redis test configuration
@@ -232,7 +232,7 @@ await describeEast("Redis platform functions", (test) => {
         $(redis_close(conn));
     });
 }, {
-    platformFns: RedisImpl,
+    platformFns: [...RedisImpl, ...NodePlatform],
     afterEach: $ => {
         // Close all connections after each test (even on failure)
         $(redis_close_all());

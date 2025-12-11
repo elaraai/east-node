@@ -3,7 +3,7 @@
  * Dual-licensed under AGPL-3.0 and commercial license. See LICENSE for details.
  */
 import { East, variant } from "@elaraai/east";
-import { describeEast, Assert } from "@elaraai/east-node-std";
+import { describeEast, Assert, NodePlatform } from "@elaraai/east-node-std";
 import { xml_parse, xml_serialize, XmlNode, XmlImpl } from "./xml.js";
 
 await describeEast("XML Platform Functions", (test) => {
@@ -626,4 +626,4 @@ await describeEast("XML Platform Functions", (test) => {
         // CDATA content should be preserved as-is without entity decoding
         $(Assert.equal(text, "<html>content & stuff</html>"));
     });
-}, { platformFns: XmlImpl });
+}, { platformFns: [...XmlImpl, ...NodePlatform] });

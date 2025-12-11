@@ -10,7 +10,7 @@
  * Tests compile East functions and run them to validate platform function behavior.
  */
 import { East, variant, type ValueTypeOf } from "@elaraai/east";
-import { describeEast, Assert } from "@elaraai/east-node-std";
+import { describeEast, Assert, NodePlatform } from "@elaraai/east-node-std";
 import { sqlite_connect, sqlite_query, sqlite_close, sqlite_close_all, SqliteImpl } from "./sqlite.js";
 import { SqlRowType, SqlParameterType } from "./types.js";
 
@@ -262,7 +262,7 @@ await describeEast("SQLite platform functions", (test) => {
         $(sqlite_close(conn));
     });
 }, {
-    platformFns: SqliteImpl,
+    platformFns: [...SqliteImpl, ...NodePlatform],
     afterEach: $ => {
         // Close all connections after each test (even on failure)
         $(sqlite_close_all());

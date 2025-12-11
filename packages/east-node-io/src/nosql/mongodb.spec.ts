@@ -14,7 +14,7 @@
  */
 import { East, variant } from "@elaraai/east";
 import type { ValueTypeOf } from "@elaraai/east";
-import { Console, describeEast, Assert } from "@elaraai/east-node-std";
+import { Console, describeEast, Assert, NodePlatform } from "@elaraai/east-node-std";
 import { mongodb_connect, mongodb_find_one, mongodb_find_many, mongodb_insert_one, mongodb_update_one, mongodb_delete_one, mongodb_delete_many, mongodb_close, mongodb_close_all, MongoDBImpl, BsonDocumentType } from "./mongodb.js";
 import { BsonValueType } from "./types.js";
 
@@ -357,7 +357,7 @@ await describeEast("MongoDB platform functions", (test) => {
         $(mongodb_close(conn));
     });
 }, {
-    platformFns: MongoDBImpl,
+    platformFns: [...MongoDBImpl, ...NodePlatform],
     beforeEach: $ => {
         // Clear the collection before each test for isolation
         const config = $.let(TEST_CONFIG);

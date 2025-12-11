@@ -4,7 +4,7 @@
  */
 
 import { East } from "@elaraai/east";
-import { describeEast, Assert } from "@elaraai/east-node-std";
+import { describeEast, Assert, NodePlatform } from "@elaraai/east-node-std";
 import { tar_create, tar_extract, TarImpl } from "./tar.js";
 
 await describeEast("TAR Platform Functions", (test) => {
@@ -117,4 +117,4 @@ await describeEast("TAR Platform Functions", (test) => {
         const extractedText = $.let(files.get("large.txt").decodeUtf8());
         $(Assert.equal(extractedText, largeContent));
     });
-}, { platformFns: TarImpl });
+}, { platformFns: [...TarImpl, ...NodePlatform] });

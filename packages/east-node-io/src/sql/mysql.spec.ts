@@ -11,7 +11,7 @@
  *
  * Requires Docker MySQL service running on localhost:3306
  */
-import { describeEast, Assert } from "@elaraai/east-node-std";
+import { describeEast, Assert, NodePlatform } from "@elaraai/east-node-std";
 import { East, variant, type ValueTypeOf } from "@elaraai/east";
 import { mysql_connect, mysql_query, mysql_close, mysql_close_all, MySqlImpl } from "./mysql.js";
 import { SqlRowType, SqlParameterType } from "./types.js";
@@ -385,7 +385,7 @@ await describeEast("MySQL platform functions", (test) => {
         $(mysql_close(conn));
     });
 }, {
-    platformFns: MySqlImpl,
+    platformFns: [...MySqlImpl, ...NodePlatform],
     afterEach: $ => {
         // Close all connections after each test (even on failure)
         $(mysql_close_all());

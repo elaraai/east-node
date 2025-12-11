@@ -4,7 +4,7 @@
  */
 
 import { East, variant } from "@elaraai/east";
-import { describeEast, Assert } from "@elaraai/east-node-std";
+import { describeEast, Assert, NodePlatform } from "@elaraai/east-node-std";
 import { zip_compress, zip_decompress, ZipImpl } from "./zip.js";
 
 await describeEast("ZIP Platform Functions", (test) => {
@@ -117,4 +117,4 @@ await describeEast("ZIP Platform Functions", (test) => {
         const extractedText = $.let(files.get("empty.txt").decodeUtf8());
         $(Assert.equal(extractedText, ""));
     });
-}, { platformFns: ZipImpl });
+}, { platformFns: [...ZipImpl, ...NodePlatform] });
