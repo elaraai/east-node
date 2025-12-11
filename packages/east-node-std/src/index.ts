@@ -29,6 +29,7 @@ import { CryptoImpl } from "./crypto.js";
 import { TimeImpl } from "./time.js";
 import { FetchImpl } from "./fetch.js";
 import { RandomImpl } from "./random.js";
+import { TestImpl } from "./test.js";
 
 /**
  * Complete Node.js platform implementation.
@@ -58,6 +59,7 @@ export const NodePlatform = [
     ...TimeImpl,
     ...FetchImpl,
     ...RandomImpl,
+    ...TestImpl,
 ];
 
 /**

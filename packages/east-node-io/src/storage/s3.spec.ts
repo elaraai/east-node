@@ -13,7 +13,7 @@
  * Run `npm run dev:services` to start Docker containers.
  */
 import { East, variant } from "@elaraai/east";
-import { describeEast, Assert } from "@elaraai/east-node-std";
+import { describeEast, Assert, NodePlatform } from "@elaraai/east-node-std";
 import { s3_put_object, s3_get_object, s3_head_object, s3_delete_object, s3_list_objects, s3_presign_url, S3Impl } from "./s3.js";
 import { S3Client, CreateBucketCommand } from "@aws-sdk/client-s3";
 
@@ -302,5 +302,5 @@ await describeEast("S3 platform functions", (test) => {
         $(s3_delete_object(config, "overwrite-test.bin"));
     });
 }, {
-    platformFns: S3Impl
+    platformFns: [...S3Impl, ...NodePlatform]
 });

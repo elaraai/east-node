@@ -3,7 +3,8 @@
  * Dual-licensed under AGPL-3.0 and commercial license. See LICENSE for details.
  */
 import { describeEast, Assert } from "./test.js";
-import { Time, TimeImpl } from "./time.js";
+import { Time } from "./time.js";
+import { NodePlatform } from "./index.js";
 
 describeEast("Time platform functions", (test) => {
     test("now returns a timestamp", $ => {
@@ -31,4 +32,4 @@ describeEast("Time platform functions", (test) => {
         // Should have slept at least 90ms (allowing for some timing variance)
         $(Assert.greaterEqual(elapsed, 90n));
     });
-}, { platformFns: TimeImpl });
+}, { platformFns: NodePlatform });

@@ -4,7 +4,7 @@
  */
 
 import { East, variant } from "@elaraai/east";
-import { describeEast, Assert } from "@elaraai/east-node-std";
+import { describeEast, Assert, NodePlatform } from "@elaraai/east-node-std";
 import { gzip_compress, gzip_decompress, GzipImpl } from "./gzip.js";
 
 await describeEast("Gzip Platform Functions", (test) => {
@@ -101,4 +101,4 @@ await describeEast("Gzip Platform Functions", (test) => {
 
         $(Assert.equal(result, largeText));
     });
-}, { platformFns: GzipImpl });
+}, { platformFns: [...GzipImpl, ...NodePlatform]  });

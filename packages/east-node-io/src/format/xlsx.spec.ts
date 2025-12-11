@@ -9,7 +9,7 @@
  * These tests use describeEast following east-node conventions.
  * Tests compile East functions and run them to validate platform function behavior.
  */
-import { describeEast, Assert } from "@elaraai/east-node-std";
+import { describeEast, Assert, NodePlatform } from "@elaraai/east-node-std";
 import { East, variant } from "@elaraai/east";
 import { xlsx_read, xlsx_write, xlsx_info, XlsxImpl } from "./xlsx.js";
 import { XlsxSheetType } from "./types.js";
@@ -382,5 +382,5 @@ await describeEast("XLSX platform functions", (test) => {
         $(Assert.equal(sheet2, data));
     });
 }, {
-    platformFns: XlsxImpl,
+    platformFns: [...XlsxImpl, ...NodePlatform],
 });

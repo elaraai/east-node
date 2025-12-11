@@ -4,7 +4,8 @@
  */
 import { East } from "@elaraai/east";
 import { describeEast, Assert } from "./test.js";
-import { Path, PathImpl } from "./path.js";
+import { Path } from "./path.js";
+import { NodePlatform } from "./index.js";
 
 describeEast("Path platform functions", (test) => {
     test("join combines path segments", $ => {
@@ -43,4 +44,4 @@ describeEast("Path platform functions", (test) => {
         // Absolute paths are longer than relative
         $(Assert.greater(len, 8n));
     });
-}, { platformFns: PathImpl });
+}, { platformFns: NodePlatform });

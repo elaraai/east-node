@@ -11,7 +11,7 @@
  *
  * Requires Docker PostgreSQL service running on localhost:5432
  */
-import { describeEast, Assert } from "@elaraai/east-node-std";
+import { describeEast, Assert, NodePlatform } from "@elaraai/east-node-std";
 import { East, variant, type ValueTypeOf } from "@elaraai/east";
 import { postgres_connect, postgres_query, postgres_close, postgres_close_all, PostgresImpl } from "./postgres.js";
 import { SqlRowType, SqlParameterType } from "./types.js";
@@ -379,7 +379,7 @@ await describeEast("PostgreSQL platform functions", (test) => {
         $(postgres_close(conn));
     });
 }, {
-    platformFns: PostgresImpl,
+    platformFns: [...PostgresImpl, ...NodePlatform],
     afterEach: $ => {
         // Close all connections after each test (even on failure)
         $(postgres_close_all());

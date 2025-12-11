@@ -4,7 +4,8 @@
  */
 import { East } from "@elaraai/east";
 import { describeEast, Assert } from "./test.js";
-import { FileSystem, FileSystemImpl } from "./fs.js";
+import { FileSystem } from "./fs.js";
+import { NodePlatform } from "./index.js";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -106,5 +107,5 @@ describeEast("FileSystem platform functions", (test) => {
         $(Assert.equal(read, data));
     });
 }, {
-    platformFns: FileSystemImpl,
+    platformFns: NodePlatform,
 });

@@ -63,7 +63,7 @@ const describe = East.asyncPlatform("describe", [StringType, AsyncFunctionType([
  *
  * @returns A platform object with `testPass`, `testFail`, `test`, and `describe` functions
  */
-const testPlatformImpl: PlatformFunction[] = [
+export const TestImpl: PlatformFunction[] = [
     testPass.implement(() => { }), // Assertion passed - do nothing (test continues)
     testFail.implement((message: string) => {
         // Assertion failed - throw to fail the test
@@ -211,7 +211,7 @@ export function describeEast(
 
     if (options?.exportOnly !== true) {
         // Run the test suite using the Node.js platform implementation
-        const compiled = suiteFunction.toIR().compile([...(options?.platformFns ?? []), ...testPlatformImpl]);
+        const compiled = suiteFunction.toIR().compile([...(options?.platformFns ?? [])]);
         return compiled();
     }
 }

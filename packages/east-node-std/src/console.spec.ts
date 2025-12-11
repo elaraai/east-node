@@ -4,7 +4,8 @@
  */
 import { East } from "@elaraai/east";
 import { describeEast, Assert } from "./test.js";
-import { Console, ConsoleImpl } from "./console.js";
+import { Console } from "./console.js";
+import { NodePlatform } from "./index.js";
 
 describeEast("Console platform functions", (test) => {
     test("console_log writes message", $ => {
@@ -28,4 +29,4 @@ describeEast("Console platform functions", (test) => {
         $(Console.log(msg));
         $(Assert.equal(msg, "Hello World"));
     });
-}, { platformFns: ConsoleImpl });
+}, { platformFns: NodePlatform });

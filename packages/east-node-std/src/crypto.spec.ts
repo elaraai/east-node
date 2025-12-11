@@ -3,7 +3,8 @@
  * Dual-licensed under AGPL-3.0 and commercial license. See LICENSE for details.
  */
 import { describeEast, Assert } from "./test.js";
-import { Crypto, CryptoImpl } from "./crypto.js";
+import { Crypto } from "./crypto.js";
+import { NodePlatform } from "./index.js";
 
 describeEast("Crypto platform functions", (test) => {
     test("randomBytes generates correct length", $ => {
@@ -54,4 +55,4 @@ describeEast("Crypto platform functions", (test) => {
 
         $(Assert.notEqual(uuid1, uuid2));
     });
-}, { platformFns: CryptoImpl });
+}, { platformFns: NodePlatform });
