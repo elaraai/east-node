@@ -19,7 +19,7 @@ describeEast("Fetch platform functions", (test) => {
     });
 
     test("post sends data to URL", $ => {
-        const response = $.let(Fetch.post("https://httpbin.org/post", "test data"));
+        const response = $.let(Fetch.post("https://postman-echo.com/post", "test data"));
         const len = $.let(response.length());
 
         // Response should not be empty
@@ -49,7 +49,7 @@ describeEast("Fetch platform functions", (test) => {
     test("request handles POST with body", $ => {
         const headers = $.let(new Map([["Content-Type", "application/json"]]));
         const config = $.let({
-            url: "https://httpbin.org/post",
+            url: "https://postman-echo.com/post",
             method: variant("POST", null),
             headers,
             body: variant("some", '{"test": "data"}'),
