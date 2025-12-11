@@ -127,9 +127,17 @@ Dual-licensed:
 
 - **Website**: [https://elaraai.com/](https://elaraai.com/)
 - **East Repository**: [https://github.com/elaraai/East](https://github.com/elaraai/East)
-- **Issues**: [https://github.com/elaraai/East/issues](https://github.com/elaraai/East/issues)
+- **Issues**: [https://github.com/elaraai/east-node/issues](https://github.com/elaraai/east-node/issues)
 - **Email**: support@elara.ai
 
----
+### Related Repositories
 
-*Developed by [Elara AI Pty Ltd](https://elaraai.com/) - Powering the computational layer of AI-driven business optimization.*
+- **[east](https://github.com/elaraai/east)** - The East programming language
+- **[east-py](https://github.com/elaraai/east-py)** - Python integration and data science platform functions
+- **[e3](https://github.com/elaraai/e3)** - TypeScript SDK for authoring Elara solutions
+
+## About Elara
+
+East Node is developed by [Elara AI Pty Ltd](https://elaraai.com/), an AI-powered platform that creates economic digital twins of businesses that optimize performance. Elara combines business objectives, decisions and data to help organizations make data-driven decisions across work management, purchasing, customer engagement, and investment planning. East powers the computational layer of Elara solutions, enabling the expression of complex business logic and data in a simple, type-safe and portable language.
+
+---
