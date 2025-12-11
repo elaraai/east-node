@@ -8,7 +8,12 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    }
+    },
+    "./platform": {
+      "types": "./dist/platform.d.ts",
+      "default": "./dist/platform.js"
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "dist",

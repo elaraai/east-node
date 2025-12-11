@@ -1,4 +1,4 @@
-.PHONY: install build test lint clean services-up services-down set-east-version version-prerelease version-patch version-minor version-major link-local-east unlink-local-east help
+.PHONY: install build test test-export lint clean services-up services-down set-east-version version-prerelease version-patch version-minor version-major link-local-east unlink-local-east link-cli unlink-cli help
 
 # Install dependencies
 install:
@@ -11,6 +11,11 @@ build:
 # Run all tests
 test:
 	npm run build && npm test
+
+# Export test IR from packages that support it
+test-export:
+	npm run test:export -w @elaraai/east-node-std
+	npm run test:export -w @elaraai/east-node-io
 
 # Run linter
 lint:
@@ -73,6 +78,18 @@ unlink-local-east:
 	@echo ""
 	@echo "Now using NPM east."
 
+# Link CLI globally for local development
+link-cli:
+	npm run link:cli
+	@echo ""
+	@echo "east-node CLI is now available globally. Use 'make unlink-cli' when done."
+
+# Unlink CLI
+unlink-cli:
+	npm run unlink:cli
+	@echo ""
+	@echo "east-node CLI unlinked."
+
 # Help
 help:
 	@echo "install           - Install dependencies (npm ci)"
@@ -90,3 +107,5 @@ help:
 	@echo "version-major     - Bump all packages major version"
 	@echo "link-local-east   - Link local east for testing (EAST_PATH=../east)"
 	@echo "unlink-local-east - Restore npm version of east"
+	@echo "link-cli          - Link CLI globally for local development"
+	@echo "unlink-cli        - Unlink CLI"

@@ -13,6 +13,11 @@ on:
         required: true
         default: true
         type: boolean
+      publish_east_node_cli:
+        description: 'Publish @elaraai/east-node-cli'
+        required: true
+        default: true
+        type: boolean
       npm_tag:
         description: 'npm tag (latest or beta)'
         required: true
@@ -84,3 +89,9 @@ jobs:
         if: ${{ inputs.publish_east_node_io }}
         run: npm publish --access public --provenance --tag ${{ inputs.npm_tag }}
         working-directory: packages/east-node-io
+
+      # 3. east-node-cli (CLI tool, depends on east)
+      - name: Publish @elaraai/east-node-cli
+        if: ${{ inputs.publish_east_node_cli }}
+        run: npm publish --access public --provenance --tag ${{ inputs.npm_tag }}
+        working-directory: packages/east-node-cli
