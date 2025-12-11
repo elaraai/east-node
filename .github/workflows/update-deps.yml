@@ -85,7 +85,7 @@ jobs:
         run: |
           git add -A
           git commit -m "deps: update @elaraai/east to ${{ steps.check_updates.outputs.latest_version }}"
-          git push -u origin "${{ env.branch_name }}"
+          git push -u --force origin "${{ env.branch_name }}"
 
       - name: Create Pull Request
         if: steps.check_updates.outputs.has_updates == 'true'
