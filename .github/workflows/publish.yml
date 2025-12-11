@@ -3,6 +3,19 @@ name: Publish
 on:
   workflow_dispatch:
     inputs:
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'prerelease'
+        type: choice
+        options:
+          - prerelease   # 0.0.1-beta.7 -> 0.0.1-beta.8 (npm tag: beta)
+          - prepatch     # 0.0.1-beta.8 -> 0.0.2-beta.0 (npm tag: beta)
+          - preminor     # 0.0.1-beta.8 -> 0.1.0-beta.0 (npm tag: beta)
+          - premajor     # 0.0.1-beta.8 -> 1.0.0-beta.0 (npm tag: beta)
+          - patch        # 0.0.1 -> 0.0.2 (npm tag: latest)
+          - minor        # 0.0.1 -> 0.1.0 (npm tag: latest)
+          - major        # 0.0.1 -> 1.0.0 (npm tag: latest)
       publish_east_node_std:
         description: 'Publish @elaraai/east-node-std'
         required: true
@@ -18,23 +31,22 @@ on:
         required: true
         default: true
         type: boolean
-      npm_tag:
-        description: 'npm tag (latest or beta)'
-        required: true
-        default: 'latest'
-        type: choice
-        options:
-          - latest
-          - beta
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write  # Need write to push version bump and tag
       id-token: write  # Required for npm trusted publishers (OIDC)
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Use Node.js 22.x
         uses: actions/setup-node@v4
@@ -70,28 +82,134 @@ jobs:
         if: always()
         run: docker compose -f packages/east-node-io/docker-compose.yml down -v
 
-      # Publish npm packages in dependency order (using OIDC trusted publishers)
-      # 1. east-node-std (core platform functions)
-      - name: Publish @elaraai/east-node-std
-        if: ${{ inputs.publish_east_node_std }}
-        run: npm publish --access public --provenance --tag ${{ inputs.npm_tag }}
-        working-directory: packages/east-node-std
+      - name: Determine npm tag
+        id: npm_tag
+        run: |
+          if [[ "${{ inputs.release_type }}" == pre* ]]; then
+            echo "tag=beta" >> $GITHUB_OUTPUT
+            echo "prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "tag=latest" >> $GITHUB_OUTPUT
+            echo "prerelease=false" >> $GITHUB_OUTPUT
+          fi
 
-      # 2. east-node-io (depends on east-node-std)
-      - name: Update east-node-io workspace dependency
+      # Bump versions in all selected packages
+      - name: Bump east-node-std version
+        if: ${{ inputs.publish_east_node_std }}
+        id: version_std
+        working-directory: packages/east-node-std
+        run: |
+          if [[ "${{ inputs.release_type }}" == pre* ]]; then
+            NEW_VERSION=$(npm version ${{ inputs.release_type }} --preid=beta --no-git-tag-version)
+          else
+            NEW_VERSION=$(npm version ${{ inputs.release_type }} --no-git-tag-version)
+          fi
+          echo "new_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Bump east-node-io version
         if: ${{ inputs.publish_east_node_io }}
+        id: version_io
+        working-directory: packages/east-node-io
+        run: |
+          if [[ "${{ inputs.release_type }}" == pre* ]]; then
+            NEW_VERSION=$(npm version ${{ inputs.release_type }} --preid=beta --no-git-tag-version)
+          else
+            NEW_VERSION=$(npm version ${{ inputs.release_type }} --no-git-tag-version)
+          fi
+          echo "new_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Bump east-node-cli version
+        if: ${{ inputs.publish_east_node_cli }}
+        id: version_cli
+        working-directory: packages/east-node-cli
+        run: |
+          if [[ "${{ inputs.release_type }}" == pre* ]]; then
+            NEW_VERSION=$(npm version ${{ inputs.release_type }} --preid=beta --no-git-tag-version)
+          else
+            NEW_VERSION=$(npm version ${{ inputs.release_type }} --no-git-tag-version)
+          fi
+          echo "new_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+
+      # Update workspace dependencies before publish
+      - name: Update east-node-io workspace dependency
+        if: ${{ inputs.publish_east_node_io && inputs.publish_east_node_std }}
         run: |
           EAST_NODE_STD_VERSION=$(node -p "require('./packages/east-node-std/package.json').version")
           cd packages/east-node-io
           npm pkg set "devDependencies.@elaraai/east-node-std=^${EAST_NODE_STD_VERSION}"
 
+      # Commit all version bumps
+      - name: Commit version bumps
+        run: |
+          git add -A
+          PACKAGES=""
+          if [[ "${{ inputs.publish_east_node_std }}" == "true" ]]; then
+            PACKAGES="${PACKAGES} east-node-std@${{ steps.version_std.outputs.new_version }}"
+          fi
+          if [[ "${{ inputs.publish_east_node_io }}" == "true" ]]; then
+            PACKAGES="${PACKAGES} east-node-io@${{ steps.version_io.outputs.new_version }}"
+          fi
+          if [[ "${{ inputs.publish_east_node_cli }}" == "true" ]]; then
+            PACKAGES="${PACKAGES} east-node-cli@${{ steps.version_cli.outputs.new_version }}"
+          fi
+          git commit -m "chore: bump versions -${PACKAGES}" || echo "No changes to commit"
+
+      # Create tags for each package
+      - name: Create tags
+        run: |
+          if [[ "${{ inputs.publish_east_node_std }}" == "true" ]]; then
+            git tag "east-node-std-${{ steps.version_std.outputs.new_version }}"
+          fi
+          if [[ "${{ inputs.publish_east_node_io }}" == "true" ]]; then
+            git tag "east-node-io-${{ steps.version_io.outputs.new_version }}"
+          fi
+          if [[ "${{ inputs.publish_east_node_cli }}" == "true" ]]; then
+            git tag "east-node-cli-${{ steps.version_cli.outputs.new_version }}"
+          fi
+
+      - name: Push changes and tags
+        run: git push origin HEAD --tags
+
+      # Publish npm packages in dependency order
+      - name: Publish @elaraai/east-node-std
+        if: ${{ inputs.publish_east_node_std }}
+        run: npm publish --access public --provenance --tag ${{ steps.npm_tag.outputs.tag }}
+        working-directory: packages/east-node-std
+
       - name: Publish @elaraai/east-node-io
         if: ${{ inputs.publish_east_node_io }}
-        run: npm publish --access public --provenance --tag ${{ inputs.npm_tag }}
+        run: npm publish --access public --provenance --tag ${{ steps.npm_tag.outputs.tag }}
         working-directory: packages/east-node-io
 
-      # 3. east-node-cli (CLI tool, depends on east)
       - name: Publish @elaraai/east-node-cli
         if: ${{ inputs.publish_east_node_cli }}
-        run: npm publish --access public --provenance --tag ${{ inputs.npm_tag }}
+        run: npm publish --access public --provenance --tag ${{ steps.npm_tag.outputs.tag }}
         working-directory: packages/east-node-cli
+
+      # Create GitHub releases
+      - name: Create GitHub Release for east-node-std
+        if: ${{ inputs.publish_east_node_std }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: east-node-std-${{ steps.version_std.outputs.new_version }}
+          name: "@elaraai/east-node-std ${{ steps.version_std.outputs.new_version }}"
+          generate_release_notes: true
+          prerelease: ${{ steps.npm_tag.outputs.prerelease == 'true' }}
+
+      - name: Create GitHub Release for east-node-io
+        if: ${{ inputs.publish_east_node_io }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: east-node-io-${{ steps.version_io.outputs.new_version }}
+          name: "@elaraai/east-node-io ${{ steps.version_io.outputs.new_version }}"
+          generate_release_notes: true
+          prerelease: ${{ steps.npm_tag.outputs.prerelease == 'true' }}
+
+      - name: Create GitHub Release for east-node-cli
+        if: ${{ inputs.publish_east_node_cli }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: east-node-cli-${{ steps.version_cli.outputs.new_version }}
+          name: "@elaraai/east-node-cli ${{ steps.version_cli.outputs.new_version }}"
+          generate_release_notes: true
+          prerelease: ${{ steps.npm_tag.outputs.prerelease == 'true' }}
