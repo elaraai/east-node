@@ -100,9 +100,9 @@ jobs:
         working-directory: packages/east-node-std
         run: |
           if [[ "${{ inputs.release_type }}" == pre* ]]; then
-            NEW_VERSION=$(npm version ${{ inputs.release_type }} --preid=beta --no-git-tag-version)
+            NEW_VERSION=$(npm version ${{ inputs.release_type }} --preid=beta --no-git-tag-version | sed 's/^v//')
           else
-            NEW_VERSION=$(npm version ${{ inputs.release_type }} --no-git-tag-version)
+            NEW_VERSION=$(npm version ${{ inputs.release_type }} --no-git-tag-version | sed 's/^v//')
           fi
           echo "new_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
 
@@ -112,9 +112,9 @@ jobs:
         working-directory: packages/east-node-io
         run: |
           if [[ "${{ inputs.release_type }}" == pre* ]]; then
-            NEW_VERSION=$(npm version ${{ inputs.release_type }} --preid=beta --no-git-tag-version)
+            NEW_VERSION=$(npm version ${{ inputs.release_type }} --preid=beta --no-git-tag-version | sed 's/^v//')
           else
-            NEW_VERSION=$(npm version ${{ inputs.release_type }} --no-git-tag-version)
+            NEW_VERSION=$(npm version ${{ inputs.release_type }} --no-git-tag-version | sed 's/^v//')
           fi
           echo "new_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
 
@@ -124,9 +124,9 @@ jobs:
         working-directory: packages/east-node-cli
         run: |
           if [[ "${{ inputs.release_type }}" == pre* ]]; then
-            NEW_VERSION=$(npm version ${{ inputs.release_type }} --preid=beta --no-git-tag-version)
+            NEW_VERSION=$(npm version ${{ inputs.release_type }} --preid=beta --no-git-tag-version | sed 's/^v//')
           else
-            NEW_VERSION=$(npm version ${{ inputs.release_type }} --no-git-tag-version)
+            NEW_VERSION=$(npm version ${{ inputs.release_type }} --no-git-tag-version | sed 's/^v//')
           fi
           echo "new_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
 
