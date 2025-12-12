@@ -11,7 +11,7 @@ describeEast("Fetch platform functions", (test) => {
     // Note: These tests require network access
 
     test("get fetches data from URL", $ => {
-        const response = $.let(Fetch.get("https://www.google.com"));
+        const response = $.let(Fetch.get("http://localhost:8085/get"));
         const len = $.let(response.length());
 
         // Response should not be empty
@@ -19,7 +19,7 @@ describeEast("Fetch platform functions", (test) => {
     });
 
     test("post sends data to URL", $ => {
-        const response = $.let(Fetch.post("https://postman-echo.com/post", "test data"));
+        const response = $.let(Fetch.post("http://localhost:8085/post", "test data"));
         const len = $.let(response.length());
 
         // Response should not be empty
@@ -31,7 +31,7 @@ describeEast("Fetch platform functions", (test) => {
 
     test("request performs GET request", $ => {
         const config = $.let({
-            url: "https://www.google.com",
+            url: "http://localhost:8085/get",
             method: variant("GET", null),
             headers: new Map<string, string>(),
             body: variant("none", null),
@@ -49,7 +49,7 @@ describeEast("Fetch platform functions", (test) => {
     test("request handles POST with body", $ => {
         const headers = $.let(new Map([["Content-Type", "application/json"]]));
         const config = $.let({
-            url: "https://postman-echo.com/post",
+            url: "http://localhost:8085/post",
             method: variant("POST", null),
             headers,
             body: variant("some", '{"test": "data"}'),
@@ -63,7 +63,7 @@ describeEast("Fetch platform functions", (test) => {
 
     test("request returns response headers", $ => {
         const config = $.let({
-            url: "https://www.google.com",
+            url: "http://localhost:8085/get",
             method: variant("GET", null),
             headers: new Map<string, string>(),
             body: variant("none", null),
@@ -75,7 +75,7 @@ describeEast("Fetch platform functions", (test) => {
         const headersSize = $.let(response.headers.size());
         $(Assert.greater(headersSize, 0n));
 
-        // Check that content-type header exists (Google always returns this)
+        // Check that content-type header exists (httpbin always returns this)
         const hasContentType = $.let(response.headers.has("content-type"));
         $(Assert.equal(hasContentType, true));
     });

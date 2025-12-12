@@ -30,11 +30,11 @@ clean:
 
 # Start Docker services (for integration tests)
 services-up:
-	docker compose -f packages/east-node-io/docker-compose.yml up -d
+	docker compose up -d --wait
 
 # Stop Docker services
 services-down:
-	docker compose -f packages/east-node-io/docker-compose.yml down -v
+	docker compose down -v
 
 # Update @elaraai/east version across all packages
 # Usage: make set-east-version VERSION=0.0.1-beta.1

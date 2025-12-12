@@ -78,7 +78,7 @@ jobs:
         if: steps.check_updates.outputs.has_updates == 'true'
         uses: ScribeMD/docker-cache@0.5.0
         with:
-          key: docker-${{ runner.os }}-${{ hashFiles('packages/east-node-io/docker-compose.yml') }}
+          key: docker-${{ runner.os }}-${{ hashFiles('docker-compose.yml') }}
 
       - name: Install dependencies
         if: steps.check_updates.outputs.has_updates == 'true'
@@ -96,7 +96,7 @@ jobs:
 
       - name: Start test services
         if: steps.check_updates.outputs.has_updates == 'true'
-        run: docker compose -f packages/east-node-io/docker-compose.yml up -d --wait
+        run: docker compose up -d --wait
 
       - name: Run tests
         if: steps.check_updates.outputs.has_updates == 'true'
@@ -106,7 +106,7 @@ jobs:
 
       - name: Stop test services
         if: steps.check_updates.outputs.has_updates == 'true'
-        run: docker compose -f packages/east-node-io/docker-compose.yml down -v
+        run: docker compose down -v
 
       - name: Determine test status
         if: steps.check_updates.outputs.has_updates == 'true'

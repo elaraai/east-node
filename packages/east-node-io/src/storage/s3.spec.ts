@@ -15,7 +15,6 @@
 import { East, variant } from "@elaraai/east";
 import { describeEast, Assert, NodePlatform } from "@elaraai/east-node-std";
 import { s3_put_object, s3_get_object, s3_head_object, s3_delete_object, s3_list_objects, s3_presign_url, S3Impl } from "./s3.js";
-import { S3Client, CreateBucketCommand } from "@aws-sdk/client-s3";
 
 // MinIO test configuration
 const TEST_CONFIG = {
@@ -25,36 +24,6 @@ const TEST_CONFIG = {
     secretAccessKey: variant('some', "minioadmin"),
     endpoint: variant('some', "http://localhost:9000"),
 };
-
-// Ensure test bucket exists before running tests
-async function ensureTestBucket() {
-    const client = new S3Client({
-        region: TEST_CONFIG.region,
-        credentials: {
-            accessKeyId: "minioadmin",
-            secretAccessKey: "minioadmin",
-        },
-        endpoint: "http://localhost:9000",
-        forcePathStyle: true,
-    });
-
-    try {
-        await client.send(new CreateBucketCommand({
-            Bucket: TEST_CONFIG.bucket,
-        }));
-        console.log(`✓ Created test bucket: ${TEST_CONFIG.bucket}`);
-    } catch (err: any) {
-        if (err.name === 'BucketAlreadyOwnedByYou' || err.Code === 'BucketAlreadyOwnedByYou') {
-            console.log(`✓ Assert bucket already exists: ${TEST_CONFIG.bucket}`);
-        } else {
-            console.error(`Failed to create test bucket: ${err.message}`);
-            throw err;
-        }
-    }
-}
-
-// Run setup before tests
-await ensureTestBucket();
 
 await describeEast("S3 platform functions", (test) => {
     test("putObject uploads data successfully", $ => {
@@ -302,5 +271,5 @@ await describeEast("S3 platform functions", (test) => {
         $(s3_delete_object(config, "overwrite-test.bin"));
     });
 }, {
-    platformFns: [...S3Impl, ...NodePlatform]
+    platformFns: [...S3Impl, ...NodePlatform],
 });
