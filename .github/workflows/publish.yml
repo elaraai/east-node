@@ -100,12 +100,11 @@ jobs:
         working-directory: packages/east-node-std
         run: |
           if [[ "${{ inputs.release_type }}" == pre* ]]; then
-            NEW_VERSION=$(npm version ${{ inputs.release_type }} --preid=beta --no-git-tag-version | grep '^v' | sed 's/^v//')
+            npm version ${{ inputs.release_type }} --preid=beta --no-git-tag-version
           else
-            NEW_VERSION=$(npm version ${{ inputs.release_type }} --no-git-tag-version | grep '^v' | sed 's/^v//')
+            npm version ${{ inputs.release_type }} --no-git-tag-version
           fi
-          echo "new_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
-          echo "Bumped to ${NEW_VERSION}"
+          echo "new_version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
       - name: Bump east-node-io version
         if: ${{ inputs.publish_east_node_io }}
@@ -113,12 +112,11 @@ jobs:
         working-directory: packages/east-node-io
         run: |
           if [[ "${{ inputs.release_type }}" == pre* ]]; then
-            NEW_VERSION=$(npm version ${{ inputs.release_type }} --preid=beta --no-git-tag-version | grep '^v' | sed 's/^v//')
+            npm version ${{ inputs.release_type }} --preid=beta --no-git-tag-version
           else
-            NEW_VERSION=$(npm version ${{ inputs.release_type }} --no-git-tag-version | grep '^v' | sed 's/^v//')
+            npm version ${{ inputs.release_type }} --no-git-tag-version
           fi
-          echo "new_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
-          echo "Bumped to ${NEW_VERSION}"
+          echo "new_version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
       - name: Bump east-node-cli version
         if: ${{ inputs.publish_east_node_cli }}
@@ -126,12 +124,11 @@ jobs:
         working-directory: packages/east-node-cli
         run: |
           if [[ "${{ inputs.release_type }}" == pre* ]]; then
-            NEW_VERSION=$(npm version ${{ inputs.release_type }} --preid=beta --no-git-tag-version | grep '^v' | sed 's/^v//')
+            npm version ${{ inputs.release_type }} --preid=beta --no-git-tag-version
           else
-            NEW_VERSION=$(npm version ${{ inputs.release_type }} --no-git-tag-version | grep '^v' | sed 's/^v//')
+            npm version ${{ inputs.release_type }} --no-git-tag-version
           fi
-          echo "new_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
-          echo "Bumped to ${NEW_VERSION}"
+          echo "new_version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
       # Update workspace dependencies before publish
       - name: Update east-node-io workspace dependency
