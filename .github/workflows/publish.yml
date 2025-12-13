@@ -154,21 +154,21 @@ jobs:
           fi
           git commit -m "chore: bump versions -${PACKAGES}" || echo "No changes to commit"
 
-      # Create tags for each package
+      # Create tags for each package (force to overwrite if retrying)
       - name: Create tags
         run: |
           if [[ "${{ inputs.publish_east_node_std }}" == "true" ]]; then
-            git tag "east-node-std-${{ steps.version_std.outputs.new_version }}"
+            git tag -f "east-node-std-${{ steps.version_std.outputs.new_version }}"
           fi
           if [[ "${{ inputs.publish_east_node_io }}" == "true" ]]; then
-            git tag "east-node-io-${{ steps.version_io.outputs.new_version }}"
+            git tag -f "east-node-io-${{ steps.version_io.outputs.new_version }}"
           fi
           if [[ "${{ inputs.publish_east_node_cli }}" == "true" ]]; then
-            git tag "east-node-cli-${{ steps.version_cli.outputs.new_version }}"
+            git tag -f "east-node-cli-${{ steps.version_cli.outputs.new_version }}"
           fi
 
       - name: Push changes and tags
-        run: git push origin HEAD --tags
+        run: git push origin HEAD --tags --force
 
       # Publish npm packages in dependency order
       - name: Publish @elaraai/east-node-std
