@@ -52,7 +52,7 @@
     "node": ">=22.0.0"
   },
   "dependencies": {
-    "@elaraai/east": "^0.0.1-beta.14",
+    "@elaraai/east": "^0.0.1-beta.16",
     "commander": "^14.0.0"
   },
   "devDependencies": {
