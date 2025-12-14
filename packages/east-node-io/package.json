@@ -1,6 +1,6 @@
 {
   "name": "@elaraai/east-node-io",
-  "version": "0.0.1-beta.8",
+  "version": "0.0.1-beta.6",
   "description": "I/O platform functions for the East language on Node.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -85,7 +85,7 @@
     "node": ">=22.0.0"
   },
   "devDependencies": {
-    "@elaraai/east-node-std": "^0.0.1-beta.9",
+    "@elaraai/east-node-std": "*",
     "@types/adm-zip": "^0.5.7",
     "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^22.18.1",
@@ -102,7 +102,6 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.713.0",
     "@aws-sdk/s3-request-presigner": "^3.713.0",
-    "@elaraai/east": "^0.0.1-beta.16",
     "adm-zip": "^0.5.16",
     "basic-ftp": "^5.0.5",
     "better-sqlite3": "^11.0.0",
@@ -113,5 +112,9 @@
     "ssh2-sftp-client": "^11.0.0",
     "tar-stream": "^3.1.7",
     "xlsx": "^0.18.5"
+  },
+  "peerDependencies": {
+    "@elaraai/east": "^0.0.1-beta.13",
+    "@elaraai/east-node-std": "*"
   }
 }

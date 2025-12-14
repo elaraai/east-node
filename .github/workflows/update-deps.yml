@@ -39,7 +39,7 @@ jobs:
         id: check_updates
         run: |
           # Get current version from east-node-std (canonical source)
-          CURRENT_VERSION=$(node -p "require('./packages/east-node-std/package.json').dependencies['@elaraai/east']" | sed 's/\^//')
+          CURRENT_VERSION=$(node -p "require('./packages/east-node-std/package.json').peerDependencies['@elaraai/east']" | sed 's/\^//')
           echo "current_version=${CURRENT_VERSION}" >> $GITHUB_OUTPUT
 
           # Get latest version from npm (check both latest and beta tags)
