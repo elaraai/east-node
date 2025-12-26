@@ -45,6 +45,7 @@ jobs:
         with:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          repositories: east-node,e3
 
       - uses: actions/checkout@v4
         with:
@@ -220,3 +221,39 @@ jobs:
           name: "@elaraai/east-node-cli ${{ steps.version_cli.outputs.new_version }}"
           generate_release_notes: true
           prerelease: ${{ steps.npm_tag.outputs.prerelease == 'true' }}
+
+      - name: Wait for npm propagation
+        if: ${{ inputs.publish_east_node_std }}
+        uses: nick-invision/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 20
+          retry_wait_seconds: 15
+          command: npm view "@elaraai/east-node-std@${{ steps.version_std.outputs.new_version }}" version
+
+      - name: Trigger update-deps in dependent repos
+        if: ${{ inputs.publish_east_node_std }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          # Only trigger direct dependents - e3 depends on east-node-std
+          # east-node -> e3 -> east-ui
+          REPOS="elaraai/e3"
+          FAILED=""
+
+          for repo in $REPOS; do
+            echo "Triggering update-deps in $repo..."
+            if gh workflow run update-deps.yml --repo "$repo"; then
+              echo "Successfully triggered $repo"
+            else
+              echo "Failed to trigger $repo"
+              FAILED="$FAILED $repo"
+            fi
+          done
+
+          if [[ -n "$FAILED" ]]; then
+            echo "Failed to trigger update-deps in:$FAILED"
+            exit 1
+          fi
+
+          echo "Successfully triggered update-deps in e3 (cascade will continue to east-ui)"
