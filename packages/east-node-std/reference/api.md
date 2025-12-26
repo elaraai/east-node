@@ -1,73 +1,23 @@
-# East Node Usage Guide
+# East Node API Reference
 
-Usage guide for East Node.js platform functions.
+Complete function signatures, types, and arguments for all platform modules.
 
 ---
 
 ## Table of Contents
 
-- [Quick Start](#quick-start)
-- [Platform Functions](#platform-functions)
-  - [Console I/O](#console-io)
-  - [File System](#file-system)
-  - [HTTP Client (Fetch)](#http-client-fetch)
-  - [Cryptography](#cryptography)
-  - [Time Operations](#time-operations)
-  - [Path Manipulation](#path-manipulation)
-  - [Random Number Generation](#random-number-generation)
+- [Console I/O](#console-io)
+- [File System](#file-system)
+- [HTTP Client (Fetch)](#http-client-fetch)
+- [Cryptography](#cryptography)
+- [Time Operations](#time-operations)
+- [Path Manipulation](#path-manipulation)
+- [Random Number Generation](#random-number-generation)
 - [Testing](#testing)
-- [Error Handling](#error-handling)
 
 ---
 
-## Quick Start
-
-```typescript
-import { East, StringType, NullType } from "@elaraai/east";
-import { NodePlatform, Console, FileSystem } from "@elaraai/east-node-std";
-
-// Define East function using platform functions
-const processFile = East.function(
-    [StringType],
-    NullType,
-    ($, path) => {
-        const content = $.let(FileSystem.readFile(path));
-        $(Console.log(content));
-    }
-);
-
-// Compile with NodePlatform (includes all platform functions)
-const compiled = East.compile(processFile.toIR(), NodePlatform);
-await compiled("input.txt");
-
-// Or compile with specific modules only
-const compiled2 = East.compile(processFile.toIR(), [...Console.Implementation, ...FileSystem.Implementation]);
-```
-
----
-
-## Accessing Types
-
-All module types are now accessible via a nested `Types` property for better organization:
-
-```typescript
-import { Fetch } from "@elaraai/east-node-std";
-
-// Access Fetch types
-const method = Fetch.Types.Method;
-const config = Fetch.Types.RequestConfig;
-const response = Fetch.Types.Response;
-```
-
-**Pattern:**
-- `Module.Types.TypeName` - Access types through the module namespace
-- Legacy flat exports (e.g., `FetchMethod`) are still available for backwards compatibility
-
----
-
-## Platform Functions
-
-### Console I/O
+## Console I/O
 
 **Import:**
 ```typescript
@@ -81,16 +31,9 @@ import { Console } from "@elaraai/east-node-std";
 | `error(message: StringExpr \| string): NullExpr` | Write to stderr with newline | `Console.error("Error!")` |
 | `write(message: StringExpr \| string): NullExpr` | Write to stdout without newline | `Console.write("Loading...")` |
 
-**Example:**
-```typescript
-const greet = East.function([StringType], NullType, ($, name) => {
-    $(Console.log(East.str`Hello, ${name}!`));
-});
-```
-
 ---
 
-### File System
+## File System
 
 **Import:**
 ```typescript
@@ -112,18 +55,9 @@ import { FileSystem } from "@elaraai/east-node-std";
 | `readFileBytes(path: StringExpr \| string): BlobExpr` | Read file as binary data | `FileSystem.readFileBytes("image.png")` |
 | `writeFileBytes(path: StringExpr \| string, content: BlobExpr \| Uint8Array): NullExpr` | Write binary data to file | `FileSystem.writeFileBytes("out.bin", data)` |
 
-**Example:**
-```typescript
-const copyFile = East.function([StringType, StringType], NullType, ($, src, dest) => {
-    const content = $.let(FileSystem.readFile(src));
-    $(FileSystem.writeFile(dest, content));
-    $(Console.log(East.str`Copied ${src} to ${dest}`));
-});
-```
-
 ---
 
-### HTTP Client (Fetch)
+## HTTP Client (Fetch)
 
 **Import:**
 ```typescript
@@ -151,18 +85,9 @@ Legacy exports (also available):
 FetchMethod, FetchRequestConfig, FetchResponse
 ```
 
-**Example:**
-```typescript
-const fetchData = East.asyncFunction([], StringType, $ => {
-    const data = $.let(Fetch.get("https://api.example.com/users"));
-    $(Console.log(East.str`Received: ${data}`));
-    return data;
-});
-```
-
 ---
 
-### Cryptography
+## Cryptography
 
 **Import:**
 ```typescript
@@ -177,19 +102,9 @@ import { Crypto } from "@elaraai/east-node-std";
 | `hashSha256Bytes(data: BlobExpr \| Uint8Array): BlobExpr` | SHA-256 hash (binary) | `Crypto.hashSha256Bytes(data)` |
 | `uuid(): StringExpr` | Generate UUID v4 | `Crypto.uuid()` |
 
-**Example:**
-```typescript
-const generateToken = East.function([], StringType, $ => {
-    const id = $.let(Crypto.uuid());
-    const random = $.let(Crypto.randomBytes(16n));
-    const hash = $.let(Crypto.hashSha256(id));
-    return hash;
-});
-```
-
 ---
 
-### Time Operations
+## Time Operations
 
 **Import:**
 ```typescript
@@ -202,19 +117,9 @@ import { Time } from "@elaraai/east-node-std";
 | `now(): IntegerExpr` | Get current timestamp (ms since epoch) | `Time.now()` |
 | `sleep(ms: IntegerExpr \| bigint): NullExpr` | Sleep for milliseconds (async) | `Time.sleep(1000n)` |
 
-**Example:**
-```typescript
-const measureTime = East.asyncFunction([], IntegerType, $ => {
-    const start = $.let(Time.now());
-    $(Time.sleep(1000n));
-    const end = $.let(Time.now());
-    return end.subtract(start);
-});
-```
-
 ---
 
-### Path Manipulation
+## Path Manipulation
 
 **Import:**
 ```typescript
@@ -230,19 +135,9 @@ import { Path } from "@elaraai/east-node-std";
 | `basename(path: StringExpr \| string): StringExpr` | Get file name | `Path.basename("/home/user/file.txt")` |
 | `extname(path: StringExpr \| string): StringExpr` | Get file extension | `Path.extname("file.txt")` |
 
-**Example:**
-```typescript
-const processPath = East.function([StringType], StringType, ($, filepath) => {
-    const dir = $.let(Path.dirname(filepath));
-    const name = $.let(Path.basename(filepath));
-    const ext = $.let(Path.extname(filepath));
-    return East.str`Dir: ${dir}, Name: ${name}, Ext: ${ext}`;
-});
-```
-
 ---
 
-### Random Number Generation
+## Random Number Generation
 
 **Import:**
 ```typescript
@@ -267,31 +162,6 @@ import { Random } from "@elaraai/east-node-std";
 | `bates(n: IntegerExpr \| bigint): FloatExpr` | Average of n uniform variables | `Random.bates(12n)` |
 | `seed(value: IntegerExpr \| bigint): NullExpr` | Seed RNG for reproducibility | `Random.seed(12345n)` |
 
-**Example:**
-```typescript
-import { East, IntegerType, FloatType } from "@elaraai/east";
-import { Random } from "@elaraai/east-node-std";
-
-// Roll a six-sided die
-const rollDice = East.function([], IntegerType, $ => {
-    return Random.range(1n, 6n);
-});
-
-// Generate normally distributed values
-const generateNormal = East.function([], FloatType, $ => {
-    const z = $.let(Random.normal());
-    // Scale to mean=100, stddev=15
-    return z.multiply(15.0).add(100.0);
-});
-
-// Compile with Random.Implementation
-const compiled1 = East.compile(rollDice.toIR(), Random.Implementation);
-const compiled2 = East.compile(generateNormal.toIR(), Random.Implementation);
-
-const diceRoll = compiled1();  // e.g., 4n
-const iqScore = compiled2();   // e.g., 103.7
-```
-
 ---
 
 ## Testing
@@ -311,26 +181,52 @@ await describeEast("Test Suite Name", (test) => {
 });
 ```
 
+**describeEast Options:**
+```typescript
+await describeEast("Suite Name", (test) => {
+    // tests here
+}, {
+    platformFns?: PlatformFunction[];  // Platform functions to include
+    beforeAll?: ($: BlockBuilder<NullType>) => void;   // Run once before all tests
+    afterAll?: ($: BlockBuilder<NullType>) => void;    // Run once after all tests
+    beforeEach?: ($: BlockBuilder<NullType>) => void;  // Run before each test
+    afterEach?: ($: BlockBuilder<NullType>) => void;   // Run after each test
+    exportOnly?: boolean;  // If true, only export IR without running tests
+});
+```
+
 **Assertions:**
 | Signature | Description |
 |-----------|-------------|
-| `equal<T>(actual: Expr<T>, expected: Expr<T> \| ValueTypeOf<T>): NullExpr` | Assert equality |
-| `notEqual<T>(actual: Expr<T>, expected: Expr<T> \| ValueTypeOf<T>): NullExpr` | Assert inequality |
-| `isTrue(value: BooleanExpr): NullExpr` | Assert true |
-| `isFalse(value: BooleanExpr): NullExpr` | Assert false |
+| `is<E extends Expr>(actual: E, expected: SubtypeExprOrValue<E>)` | Assert same reference (identity) |
+| `equal<E extends Expr>(actual: E, expected: SubtypeExprOrValue<E>)` | Assert equality |
+| `notEqual<E extends Expr>(actual: E, expected: SubtypeExprOrValue<E>)` | Assert inequality |
+| `less<E extends Expr>(actual: E, expected: SubtypeExprOrValue<E>)` | Assert actual < expected |
+| `lessEqual<E extends Expr>(actual: E, expected: SubtypeExprOrValue<E>)` | Assert actual <= expected |
+| `greater<E extends Expr>(actual: E, expected: SubtypeExprOrValue<E>)` | Assert actual > expected |
+| `greaterEqual<E extends Expr>(actual: E, expected: SubtypeExprOrValue<E>)` | Assert actual >= expected |
+| `between<E extends Expr>(actual: E, min: SubtypeExprOrValue<E>, max: SubtypeExprOrValue<E>)` | Assert min <= actual <= max |
+| `throws(fn: Expr<any>, pattern?: RegExp)` | Assert expression throws error (optionally matching pattern) |
+| `fail(message: SubtypeExprOrValue<StringType>)` | Unconditionally fail test with message |
 
-**Example:**
+---
+
+## Accessing Types
+
+All module types are accessible via a nested `Types` property:
+
 ```typescript
-await describeEast("File Operations", (test) => {
-    test("read and write file", $ => {
-        const testData = "Hello, World!";
-        $(FileSystem.writeFile("test.txt", testData));
-        const result = $.let(FileSystem.readFile("test.txt"));
-        $(Test.equal(result, testData));
-        $(FileSystem.deleteFile("test.txt"));
-    });
-});
+import { Fetch } from "@elaraai/east-node-std";
+
+// Access Fetch types
+const method = Fetch.Types.Method;
+const config = Fetch.Types.RequestConfig;
+const response = Fetch.Types.Response;
 ```
+
+**Pattern:**
+- `Module.Types.TypeName` - Access types through the module namespace
+- Legacy flat exports (e.g., `FetchMethod`) are still available for backwards compatibility
 
 ---
 
@@ -356,9 +252,3 @@ try {
 - File operations: `ENOENT`, `EACCES`, `EISDIR`
 - HTTP requests: Network errors, non-2xx status codes
 - Invalid input: Type mismatches, malformed data
-
----
-
-## License
-
-Dual-licensed under AGPL-3.0 (open source) and commercial license. See [LICENSE.md](LICENSE.md).

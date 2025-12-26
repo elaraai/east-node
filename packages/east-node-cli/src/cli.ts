@@ -5,6 +5,7 @@
 
 import { Command } from 'commander';
 import { createRequire } from 'module';
+import { EastError } from '@elaraai/east/internal';
 import { loadPlatforms, loadPlatformWithMetadata } from './loader.js';
 import { runProgram } from './runner.js';
 
@@ -56,7 +57,11 @@ async function cmdRun(irFile: string, options: RunOptions): Promise<void> {
             console.log(JSON.stringify(result, null, 2));
         }
     } catch (err) {
-        console.error(`Error: ${(err as Error).message}`);
+        if (err instanceof EastError) {
+            console.error(`Error: ${err.toString()}`);
+        } else {
+            console.error(`Error: ${(err as Error).message}`);
+        }
         process.exit(1);
     }
 }
