@@ -18,11 +18,11 @@ await describeEast("XML Platform Functions", (test) => {
         const result = $.let(xml_parse(blob, config));
 
         // Access tag through struct fields
-        const tag = $.let(result.tag);
+        const tag = $.let(result.unwrap().tag);
         $(Assert.equal(tag, "book"));
 
         // Access children array
-        const children = $.let(result.children);
+        const children = $.let(result.unwrap().children);
         const length = $.let(children.size());
         $(Assert.equal(length, 1n));
 
@@ -41,7 +41,7 @@ await describeEast("XML Platform Functions", (test) => {
         }));
 
         const result = $.let(xml_parse(blob, config));
-        const attrs = $.let(result.attributes);
+        const attrs = $.let(result.unwrap().attributes);
 
         const id = $.let(attrs.get("id"));
         $(Assert.equal(id, "123"));
@@ -59,17 +59,17 @@ await describeEast("XML Platform Functions", (test) => {
         }));
 
         const result = $.let(xml_parse(blob, config));
-        const children = $.let(result.children);
+        const children = $.let(result.unwrap().children);
         const length = $.let(children.size());
         $(Assert.equal(length, 2n));
 
         // First child is an ELEMENT variant
         const child0 = $.let(children.get(0n));
         const titleElement = $.let(child0.unwrap("ELEMENT"));
-        const titleTag = $.let(titleElement.tag);
+        const titleTag = $.let(titleElement.unwrap().tag);
         $(Assert.equal(titleTag, "title"));
 
-        const titleChildren = $.let(titleElement.children);
+        const titleChildren = $.let(titleElement.unwrap().children);
         const titleText = $.let(titleChildren.get(0n));
         const titleValue = $.let(titleText.unwrap("TEXT"));
         $(Assert.equal(titleValue, "East"));
@@ -84,7 +84,7 @@ await describeEast("XML Platform Functions", (test) => {
         }));
 
         const result = $.let(xml_parse(blob, config));
-        const children = $.let(result.children);
+        const children = $.let(result.unwrap().children);
         const child0 = $.let(children.get(0n));
         const text = $.let(child0.unwrap("TEXT"));
         $(Assert.equal(text, '<html> & "quote"'));
@@ -99,10 +99,10 @@ await describeEast("XML Platform Functions", (test) => {
         }));
 
         const result = $.let(xml_parse(blob, config));
-        const tag = $.let(result.tag);
+        const tag = $.let(result.unwrap().tag);
         $(Assert.equal(tag, "br"));
 
-        const children = $.let(result.children);
+        const children = $.let(result.unwrap().children);
         const length = $.let(children.size());
         $(Assert.equal(length, 0n));
     });
@@ -242,7 +242,7 @@ await describeEast("XML Platform Functions", (test) => {
         }));
 
         const result = $.let(xml_parse(blob, config));
-        const tag = $.let(result.tag);
+        const tag = $.let(result.unwrap().tag);
         $(Assert.equal(tag, "root"));
     });
 
@@ -255,14 +255,14 @@ await describeEast("XML Platform Functions", (test) => {
         }));
 
         const result = $.let(xml_parse(blob, config));
-        const attrs = $.let(result.attributes);
+        const attrs = $.let(result.unwrap().attributes);
         const xmlns = $.let(attrs.get("xmlns:foo"));
         $(Assert.equal(xmlns, "http://example.com"));
 
-        const children = $.let(result.children);
+        const children = $.let(result.unwrap().children);
         const child0 = $.let(children.get(0n));
         const element = $.let(child0.unwrap("ELEMENT"));
-        const childTag = $.let(element.tag);
+        const childTag = $.let(element.unwrap().tag);
         $(Assert.equal(childTag, "foo:element"));
     });
 
@@ -275,7 +275,7 @@ await describeEast("XML Platform Functions", (test) => {
         }));
 
         const result = $.let(xml_parse(blob, config));
-        const children = $.let(result.children);
+        const children = $.let(result.unwrap().children);
         const child0 = $.let(children.get(0n));
         const text = $.let(child0.unwrap("TEXT"));
         $(Assert.equal(text, "ABC"));
@@ -290,7 +290,7 @@ await describeEast("XML Platform Functions", (test) => {
         }));
 
         const result = $.let(xml_parse(blob, config));
-        const children = $.let(result.children);
+        const children = $.let(result.unwrap().children);
         const child0 = $.let(children.get(0n));
         const text = $.let(child0.unwrap("TEXT"));
         $(Assert.equal(text, "ABC"));
@@ -305,7 +305,7 @@ await describeEast("XML Platform Functions", (test) => {
         }));
 
         const result = $.let(xml_parse(blob, config));
-        const children = $.let(result.children);
+        const children = $.let(result.unwrap().children);
         const length = $.let(children.size());
         $(Assert.equal(length, 1n)); // Only child element, comment ignored
     });
@@ -319,7 +319,7 @@ await describeEast("XML Platform Functions", (test) => {
         }));
 
         const result = $.let(xml_parse(blob, config));
-        const tag = $.let(result.tag);
+        const tag = $.let(result.unwrap().tag);
         $(Assert.equal(tag, "root"));
     });
 
@@ -332,7 +332,7 @@ await describeEast("XML Platform Functions", (test) => {
         }));
 
         const result = $.let(xml_parse(blob, config));
-        const children = $.let(result.children);
+        const children = $.let(result.unwrap().children);
         const child0 = $.let(children.get(0n));
         const text = $.let(child0.unwrap("TEXT"));
         $(Assert.equal(text, "  space  "));
@@ -347,7 +347,7 @@ await describeEast("XML Platform Functions", (test) => {
         }));
 
         const result = $.let(xml_parse(blob, config));
-        const children = $.let(result.children);
+        const children = $.let(result.unwrap().children);
         const child0 = $.let(children.get(0n));
         const text = $.let(child0.unwrap("TEXT"));
         $(Assert.equal(text, "space"));
@@ -362,7 +362,7 @@ await describeEast("XML Platform Functions", (test) => {
         }));
 
         const result = $.let(xml_parse(blob, config));
-        const attrs = $.let(result.attributes);
+        const attrs = $.let(result.unwrap().attributes);
         const a = $.let(attrs.get("a"));
         const b = $.let(attrs.get("b"));
         const c = $.let(attrs.get("c"));
@@ -404,7 +404,7 @@ await describeEast("XML Platform Functions", (test) => {
         }));
 
         const result = $.let(xml_parse(blob, config));
-        const tag = $.let(result.tag);
+        const tag = $.let(result.unwrap().tag);
         $(Assert.equal(tag, "root"));
     });
 
@@ -417,7 +417,7 @@ await describeEast("XML Platform Functions", (test) => {
         }));
 
         const result = $.let(xml_parse(blob, config));
-        const attrs = $.let(result.attributes);
+        const attrs = $.let(result.unwrap().attributes);
         const attr = $.let(attrs.get("attr"));
         $(Assert.equal(attr, "<value>"));
     });
@@ -431,7 +431,7 @@ await describeEast("XML Platform Functions", (test) => {
         }));
 
         const result = $.let(xml_parse(blob, config));
-        const children = $.let(result.children);
+        const children = $.let(result.unwrap().children);
         const length = $.let(children.size());
         $(Assert.equal(length, 3n));
 
@@ -441,7 +441,7 @@ await describeEast("XML Platform Functions", (test) => {
 
         const elem = $.let(children.get(1n));
         const boldElement = $.let(elem.unwrap("ELEMENT"));
-        const boldTag = $.let(boldElement.tag);
+        const boldTag = $.let(boldElement.unwrap().tag);
         $(Assert.equal(boldTag, "b"));
 
         const text2 = $.let(children.get(2n));
@@ -460,15 +460,15 @@ await describeEast("XML Platform Functions", (test) => {
         const result = $.let(xml_parse(blob, config));
 
         // Navigate to deepest element
-        const children1 = $.let(result.children);
+        const children1 = $.let(result.unwrap().children);
         const b = $.let(children1.get(0n).unwrap("ELEMENT"));
-        const children2 = $.let(b.children);
+        const children2 = $.let(b.unwrap().children);
         const c = $.let(children2.get(0n).unwrap("ELEMENT"));
-        const children3 = $.let(c.children);
+        const children3 = $.let(c.unwrap().children);
         const d = $.let(children3.get(0n).unwrap("ELEMENT"));
-        const children4 = $.let(d.children);
+        const children4 = $.let(d.unwrap().children);
         const e = $.let(children4.get(0n).unwrap("ELEMENT"));
-        const children5 = $.let(e.children);
+        const children5 = $.let(e.unwrap().children);
         const text = $.let(children5.get(0n).unwrap("TEXT"));
 
         $(Assert.equal(text, "deep"));
@@ -568,7 +568,7 @@ await describeEast("XML Platform Functions", (test) => {
         }));
 
         const result = $.let(xml_parse(blob, config));
-        const attrs = $.let(result.attributes);
+        const attrs = $.let(result.unwrap().attributes);
         const attr = $.let(attrs.get("attr"));
         $(Assert.equal(attr, "line1\nline2"));
     });
@@ -582,7 +582,7 @@ await describeEast("XML Platform Functions", (test) => {
         }));
 
         const result = $.let(xml_parse(blob, config));
-        const attrs = $.let(result.attributes);
+        const attrs = $.let(result.unwrap().attributes);
         const attr = $.let(attrs.get("attr"));
         $(Assert.equal(attr, "col1\tcol2"));
     });
@@ -620,7 +620,7 @@ await describeEast("XML Platform Functions", (test) => {
         }));
 
         const result = $.let(xml_parse(blob, config));
-        const children = $.let(result.children);
+        const children = $.let(result.unwrap().children);
         const child0 = $.let(children.get(0n));
         const text = $.let(child0.unwrap("TEXT"));
         // CDATA content should be preserved as-is without entity decoding
