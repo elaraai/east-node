@@ -79,16 +79,19 @@ describeEast("Parallel platform functions", (test) => {
         $(Assert.equal(result.get(7n), -80n));
     });
 
-    test("map rejects closures with captured variables", $ => {
+    test("map handles closures with captured variables", $ => {
         const input = $.let(East.value([1n, 2n, 3n, 4n, 5n, 6n, 7n, 8n]));
         const multiplier = $.let(East.value(10n));
 
-        // Function captures 'multiplier' from parent scope - this should fail
-        // because closures cannot be serialized to worker threads
+        // Function captures 'multiplier' from parent scope
         const multiplyBy = East.function([IntegerType], IntegerType, ($, x) => {
             return x.multiply(multiplier);
         });
 
-        $(Assert.throws(Parallel.map([IntegerType, IntegerType], input, multiplyBy)));
+        const result = $.let(Parallel.map([IntegerType, IntegerType], input, multiplyBy));
+
+        $(Assert.equal(result.length(), 8n));
+        $(Assert.equal(result.get(0n), 10n));
+        $(Assert.equal(result.get(7n), 80n));
     });
 }, { platformFns: NodePlatform });
