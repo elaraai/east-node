@@ -7,7 +7,7 @@ import util from "node:util";
 import { test as testNode, describe as describeNode } from "node:test";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { AsyncFunctionType, East, Expr, get_location, IRType, NullType, printLocation, printLocations, StringType, toJSONFor, type SubtypeExprOrValue } from "@elaraai/east";
+import { AsyncFunctionType, East, Expr, get_location, IRType, NullType, printLocations, StringType, toJSONFor, type SubtypeExprOrValue } from "@elaraai/east";
 import type { BlockBuilder, PlatformFunction, TypeSymbol } from "@elaraai/east/internal";
 
 const { str } = East;
