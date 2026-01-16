@@ -130,7 +130,7 @@ function compressZip(
     // Validate level
     if (level < 0 || level > 9) {
         throw new EastError(`Invalid compression level: ${level}. Must be 0-9.`, {
-            location: { filename: "zip_compress", line: 0n, column: 0n }
+            location: [{ filename: "zip_compress", line: 0n, column: 0n }]
         });
     }
 
@@ -142,7 +142,7 @@ function compressZip(
 
         if (!name || name.length === 0) {
             throw new EastError("File name cannot be empty", {
-                location: { filename: "zip_compress", line: 0n, column: 0n }
+                location: [{ filename: "zip_compress", line: 0n, column: 0n }]
             });
         }
 
@@ -201,7 +201,7 @@ export const ZipImpl: PlatformFunction[] = [
         } catch (err: any) {
             if (err instanceof EastError) throw err;
             throw new EastError(`ZIP compression failed: ${err.message}`, {
-                location: { filename: "zip_compress", line: 0n, column: 0n },
+                location: [{ filename: "zip_compress", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -215,7 +215,7 @@ export const ZipImpl: PlatformFunction[] = [
         } catch (err: any) {
             if (err instanceof EastError) throw err;
             throw new EastError(`ZIP decompression failed: ${err.message}`, {
-                location: { filename: "zip_decompress", line: 0n, column: 0n },
+                location: [{ filename: "zip_decompress", line: 0n, column: 0n }],
                 cause: err
             });
         }

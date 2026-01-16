@@ -155,7 +155,7 @@ const XmlImpl: PlatformFunction[] = [
         } catch (err: any) {
             if (err instanceof EastError) throw err;
             throw new EastError(`XML parsing failed: ${err.message}`, {
-                location: { filename: "xml_parse", line: 0n, column: 0n },
+                location: [{ filename: "xml_parse", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -167,7 +167,7 @@ const XmlImpl: PlatformFunction[] = [
         } catch (err: any) {
             if (err instanceof EastError) throw err;
             throw new EastError(`XML serialization failed: ${err.message}`, {
-                location: { filename: "xml_serialize", line: 0n, column: 0n },
+                location: [{ filename: "xml_serialize", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -348,7 +348,7 @@ function parseXml(
         // Expect '<'
         if (xml[pos] !== '<') {
             throw new EastError(`Expected '<' at line ${line}, column ${column}`, {
-                location: { filename: "xml_parse", line, column }
+                location: [{ filename: "xml_parse", line, column }]
             });
         }
         advance(); // skip '<'
@@ -362,7 +362,7 @@ function parseXml(
 
         if (tag.length === 0) {
             throw new EastError(`Invalid tag name at line ${line}, column ${column}`, {
-                location: { filename: "xml_parse", line, column }
+                location: [{ filename: "xml_parse", line, column }]
             });
         }
 
@@ -386,7 +386,7 @@ function parseXml(
 
             if (attrName.length === 0) {
                 throw new EastError(`Invalid attribute name at line ${line}, column ${column}`, {
-                    location: { filename: "xml_parse", line, column }
+                    location: [{ filename: "xml_parse", line, column }]
                 });
             }
 
@@ -395,7 +395,7 @@ function parseXml(
             // Expect '='
             if (xml[pos] !== '=') {
                 throw new EastError(`Expected '=' after attribute name at line ${line}, column ${column}`, {
-                    location: { filename: "xml_parse", line, column }
+                    location: [{ filename: "xml_parse", line, column }]
                 });
             }
             advance(); // skip '='
@@ -406,7 +406,7 @@ function parseXml(
             const quote = xml[pos];
             if (quote !== '"' && quote !== "'") {
                 throw new EastError(`Expected quote for attribute value at line ${line}, column ${column}`, {
-                    location: { filename: "xml_parse", line, column }
+                    location: [{ filename: "xml_parse", line, column }]
                 });
             }
             advance(); // skip opening quote
@@ -418,7 +418,7 @@ function parseXml(
 
             if (pos >= xml.length) {
                 throw new EastError(`Unclosed attribute value at line ${line}, column ${column}`, {
-                    location: { filename: "xml_parse", line, column }
+                    location: [{ filename: "xml_parse", line, column }]
                 });
             }
 
@@ -441,7 +441,7 @@ function parseXml(
         // Expect '>'
         if (xml[pos] !== '>') {
             throw new EastError(`Expected '>' at line ${line}, column ${column}`, {
-                location: { filename: "xml_parse", line, column }
+                location: [{ filename: "xml_parse", line, column }]
             });
         }
         advance(); // skip '>'
@@ -463,7 +463,7 @@ function parseXml(
 
                 if (closeTag !== tag) {
                     throw new EastError(`Mismatched closing tag: expected '</${tag}>', found '</${closeTag}>' at line ${line}, column ${column}`, {
-                        location: { filename: "xml_parse", line, column }
+                        location: [{ filename: "xml_parse", line, column }]
                     });
                 }
 
@@ -471,7 +471,7 @@ function parseXml(
 
                 if (xml[pos] !== '>') {
                     throw new EastError(`Expected '>' in closing tag at line ${line}, column ${column}`, {
-                        location: { filename: "xml_parse", line, column }
+                        location: [{ filename: "xml_parse", line, column }]
                     });
                 }
                 advance(); // skip '>'
@@ -489,7 +489,7 @@ function parseXml(
 
                 if (pos >= xml.length) {
                     throw new EastError(`Unclosed CDATA section at line ${line}, column ${column}`, {
-                        location: { filename: "xml_parse", line, column }
+                        location: [{ filename: "xml_parse", line, column }]
                     });
                 }
 
@@ -516,7 +516,7 @@ function parseXml(
 
                 if (pos >= xml.length) {
                     throw new EastError(`Unclosed comment at line ${line}, column ${column}`, {
-                        location: { filename: "xml_parse", line, column }
+                        location: [{ filename: "xml_parse", line, column }]
                     });
                 }
 
@@ -585,7 +585,7 @@ function parseXml(
 
     if (pos >= xml.length) {
         throw new EastError('Empty XML document', {
-            location: { filename: "xml_parse", line: 1n, column: 1n }
+            location: [{ filename: "xml_parse", line: 1n, column: 1n }]
         });
     }
 

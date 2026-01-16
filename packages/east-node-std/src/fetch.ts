@@ -149,14 +149,14 @@ const FetchImpl: PlatformFunction[] = [
             const response = await fetch(url);
             if (!response.ok) {
                 throw new EastError(`HTTP ${response.status}: ${response.statusText}`, {
-                    location: { filename: "fetch_get", line: 0n, column: 0n }
+                    location: [{ filename: "fetch_get", line: 0n, column: 0n }]
                 });
             }
             return await response.text();
         } catch (err: any) {
             if (err instanceof EastError) throw err;
             throw new EastError(`Failed to fetch ${url}: ${err.message}`, {
-                location: { filename: "fetch_get", line: 0n, column: 0n },
+                location: [{ filename: "fetch_get", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -172,14 +172,14 @@ const FetchImpl: PlatformFunction[] = [
             });
             if (!response.ok) {
                 throw new EastError(`HTTP ${response.status}: ${response.statusText}`, {
-                    location: { filename: "fetch_post", line: 0n, column: 0n }
+                    location: [{ filename: "fetch_post", line: 0n, column: 0n }]
                 });
             }
             return await response.text();
         } catch (err: any) {
             if (err instanceof EastError) throw err;
             throw new EastError(`Failed to post to ${url}: ${err.message}`, {
-                location: { filename: "fetch_post", line: 0n, column: 0n },
+                location: [{ filename: "fetch_post", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -217,7 +217,7 @@ const FetchImpl: PlatformFunction[] = [
             };
         } catch (err: any) {
             throw new EastError(`Failed to fetch ${url}: ${err.message}`, {
-                location: { filename: "fetch_request", line: 0n, column: 0n },
+                location: [{ filename: "fetch_request", line: 0n, column: 0n }],
                 cause: err
             });
         }

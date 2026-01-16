@@ -71,7 +71,7 @@ export function getConnection<T>(handle: string): T {
     const entry = connectionHandles.get(handle);
     if (!entry) {
         throw new EastError(`Invalid connection handle: ${handle}`, {
-            location: { filename: "connection_handle", line: 0n, column: 0n }
+            location: [{ filename: "connection_handle", line: 0n, column: 0n }]
         });
     }
     return entry.connection as T;
@@ -98,7 +98,7 @@ export function closeHandle(handle: string): void {
     const entry = connectionHandles.get(handle);
     if (!entry) {
         throw new EastError(`Cannot close invalid handle: ${handle}`, {
-            location: { filename: "connection_close", line: 0n, column: 0n }
+            location: [{ filename: "connection_close", line: 0n, column: 0n }]
         });
     }
     connectionHandles.delete(handle);

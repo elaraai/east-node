@@ -130,7 +130,7 @@ export const GzipImpl: PlatformFunction[] = [
             // Validate level
             if (level < 0 || level > 9) {
                 throw new EastError(`Invalid compression level: ${level}. Must be 0-9.`, {
-                    location: { filename: "gzip_compress", line: 0n, column: 0n }
+                    location: [{ filename: "gzip_compress", line: 0n, column: 0n }]
                 });
             }
 
@@ -140,7 +140,7 @@ export const GzipImpl: PlatformFunction[] = [
         } catch (err: any) {
             if (err instanceof EastError) throw err;
             throw new EastError(`Gzip compression failed: ${err.message}`, {
-                location: { filename: "gzip_compress", line: 0n, column: 0n },
+                location: [{ filename: "gzip_compress", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -156,7 +156,7 @@ export const GzipImpl: PlatformFunction[] = [
         } catch (err: any) {
             if (err instanceof EastError) throw err;
             throw new EastError(`Gzip decompression failed: ${err.message}`, {
-                location: { filename: "gzip_decompress", line: 0n, column: 0n },
+                location: [{ filename: "gzip_decompress", line: 0n, column: 0n }],
                 cause: err
             });
         }

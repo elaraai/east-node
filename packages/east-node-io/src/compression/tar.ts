@@ -144,7 +144,7 @@ async function createTar(entries: ValueTypeOf<typeof TarEntriesType>): Promise<U
 
         tarPack.on('error', (err: Error) => {
             reject(new EastError(`TAR creation failed: ${err.message}`, {
-                location: { filename: "tar_create", line: 0n, column: 0n },
+                location: [{ filename: "tar_create", line: 0n, column: 0n }],
                 cause: err
             }));
         });
@@ -156,7 +156,7 @@ async function createTar(entries: ValueTypeOf<typeof TarEntriesType>): Promise<U
 
             if (!name || name.length === 0) {
                 reject(new EastError("File name cannot be empty", {
-                    location: { filename: "tar_create", line: 0n, column: 0n }
+                    location: [{ filename: "tar_create", line: 0n, column: 0n }]
                 }));
                 return;
             }
@@ -170,7 +170,7 @@ async function createTar(entries: ValueTypeOf<typeof TarEntriesType>): Promise<U
             }, (err) => {
                 if (err) {
                     reject(new EastError(`Failed to add entry ${name}: ${err.message}`, {
-                        location: { filename: "tar_create", line: 0n, column: 0n },
+                        location: [{ filename: "tar_create", line: 0n, column: 0n }],
                         cause: err
                     }));
                 }
@@ -223,7 +223,7 @@ async function extractTar(tarData: ValueTypeOf<typeof BlobType>): Promise<Map<st
 
             stream.on('error', (err) => {
                 reject(new EastError(`Failed to extract entry ${header.name}: ${err.message}`, {
-                    location: { filename: "tar_extract", line: 0n, column: 0n },
+                    location: [{ filename: "tar_extract", line: 0n, column: 0n }],
                     cause: err
                 }));
             });
@@ -237,7 +237,7 @@ async function extractTar(tarData: ValueTypeOf<typeof BlobType>): Promise<Map<st
 
         tarExtract.on('error', (err) => {
             reject(new EastError(`TAR extraction failed: ${err.message}`, {
-                location: { filename: "tar_extract", line: 0n, column: 0n },
+                location: [{ filename: "tar_extract", line: 0n, column: 0n }],
                 cause: err
             }));
         });
@@ -260,7 +260,7 @@ export const TarImpl: PlatformFunction[] = [
         } catch (err: any) {
             if (err instanceof EastError) throw err;
             throw new EastError(`TAR creation failed: ${err.message}`, {
-                location: { filename: "tar_create", line: 0n, column: 0n },
+                location: [{ filename: "tar_create", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -272,7 +272,7 @@ export const TarImpl: PlatformFunction[] = [
         } catch (err: any) {
             if (err instanceof EastError) throw err;
             throw new EastError(`TAR extraction failed: ${err.message}`, {
-                location: { filename: "tar_extract", line: 0n, column: 0n },
+                location: [{ filename: "tar_extract", line: 0n, column: 0n }],
                 cause: err
             });
         }

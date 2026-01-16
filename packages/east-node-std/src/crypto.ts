@@ -112,7 +112,7 @@ const CryptoImpl: PlatformFunction[] = [
             return randomBytes(Number(length));
         } catch (err: any) {
             throw new EastError(`Failed to generate random bytes: ${err.message}`, {
-                location: { filename: "crypto_random_bytes", line: 0n, column: 0n },
+                location: [{ filename: "crypto_random_bytes", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -122,7 +122,7 @@ const CryptoImpl: PlatformFunction[] = [
             return createHash('sha256').update(data, 'utf-8').digest('hex');
         } catch (err: any) {
             throw new EastError(`Failed to compute SHA-256 hash: ${err.message}`, {
-                location: { filename: "crypto_hash_sha256", line: 0n, column: 0n },
+                location: [{ filename: "crypto_hash_sha256", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -132,7 +132,7 @@ const CryptoImpl: PlatformFunction[] = [
             return createHash('sha256').update(data).digest();
         } catch (err: any) {
             throw new EastError(`Failed to compute SHA-256 hash: ${err.message}`, {
-                location: { filename: "crypto_hash_sha256_bytes", line: 0n, column: 0n },
+                location: [{ filename: "crypto_hash_sha256_bytes", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -142,7 +142,7 @@ const CryptoImpl: PlatformFunction[] = [
             return randomUUID();
         } catch (err: any) {
             throw new EastError(`Failed to generate UUID: ${err.message}`, {
-                location: { filename: "crypto_uuid", line: 0n, column: 0n },
+                location: [{ filename: "crypto_uuid", line: 0n, column: 0n }],
                 cause: err
             });
         }

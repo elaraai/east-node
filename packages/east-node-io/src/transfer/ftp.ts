@@ -351,7 +351,7 @@ export const FtpImpl: PlatformFunction[] = [
             });
         } catch (err: any) {
             throw new EastError(`FTP connection failed: ${err.message}`, {
-                location: { filename: "ftp_connect", line: 0n, column: 0n },
+                location: [{ filename: "ftp_connect", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -372,7 +372,7 @@ export const FtpImpl: PlatformFunction[] = [
             return null;
         } catch (err: any) {
             throw new EastError(`FTP upload failed: ${err.message}`, {
-                location: { filename: "ftp_put", line: 0n, column: 0n },
+                location: [{ filename: "ftp_put", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -401,7 +401,7 @@ export const FtpImpl: PlatformFunction[] = [
             return new Uint8Array(buffer);
         } catch (err: any) {
             throw new EastError(`FTP download failed: ${err.message}`, {
-                location: { filename: "ftp_get", line: 0n, column: 0n },
+                location: [{ filename: "ftp_get", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -426,7 +426,7 @@ export const FtpImpl: PlatformFunction[] = [
             }));
         } catch (err: any) {
             throw new EastError(`FTP list failed: ${err.message}`, {
-                location: { filename: "ftp_list", line: 0n, column: 0n },
+                location: [{ filename: "ftp_list", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -442,7 +442,7 @@ export const FtpImpl: PlatformFunction[] = [
             return null;
         } catch (err: any) {
             throw new EastError(`FTP delete failed: ${err.message}`, {
-                location: { filename: "ftp_delete", line: 0n, column: 0n },
+                location: [{ filename: "ftp_delete", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -457,7 +457,7 @@ export const FtpImpl: PlatformFunction[] = [
             return null;
         } catch (err: any) {
             throw new EastError(`FTP close failed: ${err.message}`, {
-                location: { filename: "ftp_close", line: 0n, column: 0n },
+                location: [{ filename: "ftp_close", line: 0n, column: 0n }],
                 cause: err
             });
         }

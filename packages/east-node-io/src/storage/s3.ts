@@ -387,7 +387,7 @@ export const S3Impl: PlatformFunction[] = [
             return null;
         } catch (err: any) {
             throw new EastError(`S3 putObject failed: ${err.message}`, {
-                location: { filename: "s3_put_object", line: 0n, column: 0n },
+                location: [{ filename: "s3_put_object", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -427,7 +427,7 @@ export const S3Impl: PlatformFunction[] = [
             return result;
         } catch (err: any) {
             throw new EastError(`S3 getObject failed: ${err.message}`, {
-                location: { filename: "s3_get_object", line: 0n, column: 0n },
+                location: [{ filename: "s3_get_object", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -454,7 +454,7 @@ export const S3Impl: PlatformFunction[] = [
             };
         } catch (err: any) {
             throw new EastError(`S3 headObject failed: ${err.message}`, {
-                location: { filename: "s3_head_object", line: 0n, column: 0n },
+                location: [{ filename: "s3_head_object", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -474,7 +474,7 @@ export const S3Impl: PlatformFunction[] = [
             return null;
         } catch (err: any) {
             throw new EastError(`S3 deleteObject failed: ${err.message}`, {
-                location: { filename: "s3_delete_object", line: 0n, column: 0n },
+                location: [{ filename: "s3_delete_object", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -521,7 +521,7 @@ export const S3Impl: PlatformFunction[] = [
             };
         } catch (err: any) {
             throw new EastError(`S3 listObjects failed: ${err.message}`, {
-                location: { filename: "s3_list_objects", line: 0n, column: 0n },
+                location: [{ filename: "s3_list_objects", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -551,7 +551,7 @@ export const S3Impl: PlatformFunction[] = [
             return url;
         } catch (err: any) {
             throw new EastError(`S3 presignUrl failed: ${err.message}`, {
-                location: { filename: "s3_presign_url", line: 0n, column: 0n },
+                location: [{ filename: "s3_presign_url", line: 0n, column: 0n }],
                 cause: err
             });
         }

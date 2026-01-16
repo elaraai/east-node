@@ -88,7 +88,7 @@ const ConsoleImpl: PlatformFunction[] = [
             console.log(msg);
         } catch (err: any) {
             throw new EastError(`Failed to write to stdout: ${err.message}`, {
-                location: { filename: "console_log", line: 0n, column: 0n },
+                location: [{ filename: "console_log", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -98,7 +98,7 @@ const ConsoleImpl: PlatformFunction[] = [
             console.error(msg);
         } catch (err: any) {
             throw new EastError(`Failed to write to stderr: ${err.message}`, {
-                location: { filename: "console_error", line: 0n, column: 0n },
+                location: [{ filename: "console_error", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -108,7 +108,7 @@ const ConsoleImpl: PlatformFunction[] = [
             stdout.write(msg);
         } catch (err: any) {
             throw new EastError(`Failed to write to stdout: ${err.message}`, {
-                location: { filename: "console_write", line: 0n, column: 0n },
+                location: [{ filename: "console_write", line: 0n, column: 0n }],
                 cause: err
             });
         }

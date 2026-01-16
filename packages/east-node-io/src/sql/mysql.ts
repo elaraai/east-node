@@ -360,7 +360,7 @@ export const MySqlImpl: PlatformFunction[] = [
             });
         } catch (err: any) {
             throw new EastError(`MySQL connection failed: ${err.message}`, {
-                location: { filename: "mysql_connect", line: 0n, column: 0n },
+                location: [{ filename: "mysql_connect", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -408,7 +408,7 @@ export const MySqlImpl: PlatformFunction[] = [
                 // Validate ResultSetHeader structure
                 if (typeof result.affectedRows !== 'number') {
                     throw new EastError('MySQL ResultSetHeader missing affectedRows', {
-                        location: { filename: "mysql_query", line: 0n, column: 0n }
+                        location: [{ filename: "mysql_query", line: 0n, column: 0n }]
                     });
                 }
 
@@ -439,12 +439,12 @@ export const MySqlImpl: PlatformFunction[] = [
             } else {
                 // Unexpected result type
                 throw new EastError(`Unexpected result type from MySQL query: ${typeof rows}`, {
-                    location: { filename: "mysql_query", line: 0n, column: 0n }
+                    location: [{ filename: "mysql_query", line: 0n, column: 0n }]
                 });
             }
         } catch (err: any) {
             throw new EastError(`MySQL query failed: ${err.message}`, {
-                location: { filename: "mysql_query", line: 0n, column: 0n },
+                location: [{ filename: "mysql_query", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -458,7 +458,7 @@ export const MySqlImpl: PlatformFunction[] = [
             return null;
         } catch (err: any) {
             throw new EastError(`MySQL close failed: ${err.message}`, {
-                location: { filename: "mysql_close", line: 0n, column: 0n },
+                location: [{ filename: "mysql_close", line: 0n, column: 0n }],
                 cause: err
             });
         }

@@ -308,7 +308,7 @@ const FileSystemImpl: PlatformFunction[] = [
             return readFileSync(path, 'utf-8');
         } catch (err: any) {
             throw new EastError(`Failed to read file ${path}: ${err.message}`, {
-                location: { filename: "fs_read_file", line: 0n, column: 0n },
+                location: [{ filename: "fs_read_file", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -318,7 +318,7 @@ const FileSystemImpl: PlatformFunction[] = [
             writeFileSync(path, content, 'utf-8');
         } catch (err: any) {
             throw new EastError(`Failed to write file ${path}: ${err.message}`, {
-                location: { filename: "fs_write_file", line: 0n, column: 0n },
+                location: [{ filename: "fs_write_file", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -328,7 +328,7 @@ const FileSystemImpl: PlatformFunction[] = [
             appendFileSync(path, content, 'utf-8');
         } catch (err: any) {
             throw new EastError(`Failed to append to file ${path}: ${err.message}`, {
-                location: { filename: "fs_append_file", line: 0n, column: 0n },
+                location: [{ filename: "fs_append_file", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -338,7 +338,7 @@ const FileSystemImpl: PlatformFunction[] = [
             unlinkSync(path);
         } catch (err: any) {
             throw new EastError(`Failed to delete file ${path}: ${err.message}`, {
-                location: { filename: "fs_delete_file", line: 0n, column: 0n },
+                location: [{ filename: "fs_delete_file", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -365,7 +365,7 @@ const FileSystemImpl: PlatformFunction[] = [
             mkdirSync(path, { recursive: true });
         } catch (err: any) {
             throw new EastError(`Failed to create directory ${path}: ${err.message}`, {
-                location: { filename: "fs_create_directory", line: 0n, column: 0n },
+                location: [{ filename: "fs_create_directory", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -375,7 +375,7 @@ const FileSystemImpl: PlatformFunction[] = [
             return readdirSync(path);
         } catch (err: any) {
             throw new EastError(`Failed to read directory ${path}: ${err.message}`, {
-                location: { filename: "fs_read_directory", line: 0n, column: 0n },
+                location: [{ filename: "fs_read_directory", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -386,7 +386,7 @@ const FileSystemImpl: PlatformFunction[] = [
             return new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
         } catch (err: any) {
             throw new EastError(`Failed to read file bytes ${path}: ${err.message}`, {
-                location: { filename: "fs_read_file_bytes", line: 0n, column: 0n },
+                location: [{ filename: "fs_read_file_bytes", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -396,7 +396,7 @@ const FileSystemImpl: PlatformFunction[] = [
             writeFileSync(path, content);
         } catch (err: any) {
             throw new EastError(`Failed to write file bytes ${path}: ${err.message}`, {
-                location: { filename: "fs_write_file_bytes", line: 0n, column: 0n },
+                location: [{ filename: "fs_write_file_bytes", line: 0n, column: 0n }],
                 cause: err
             });
         }

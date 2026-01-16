@@ -397,7 +397,7 @@ export const MongoDBImpl: PlatformFunction[] = [
             return handle;
         } catch (err: any) {
             throw new EastError(`MongoDB connection failed: ${err.message}`, {
-                location: { filename: "mongodb_connect", line: 0n, column: 0n },
+                location: [{ filename: "mongodb_connect", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -431,7 +431,7 @@ export const MongoDBImpl: PlatformFunction[] = [
             return variant('some', bsonDict);
         } catch (err: any) {
             throw new EastError(`MongoDB findOne failed: ${err.message}`, {
-                location: { filename: "mongodb_find_one", line: 0n, column: 0n },
+                location: [{ filename: "mongodb_find_one", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -476,7 +476,7 @@ export const MongoDBImpl: PlatformFunction[] = [
             return result;
         } catch (err: any) {
             throw new EastError(`MongoDB findMany failed: ${err.message}`, {
-                location: { filename: "mongodb_find_many", line: 0n, column: 0n },
+                location: [{ filename: "mongodb_find_many", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -500,7 +500,7 @@ export const MongoDBImpl: PlatformFunction[] = [
             return result.insertedId.toString();
         } catch (err: any) {
             throw new EastError(`MongoDB insertOne failed: ${err.message}`, {
-                location: { filename: "mongodb_insert_one", line: 0n, column: 0n },
+                location: [{ filename: "mongodb_insert_one", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -531,7 +531,7 @@ export const MongoDBImpl: PlatformFunction[] = [
             return BigInt(result.modifiedCount);
         } catch (err: any) {
             throw new EastError(`MongoDB updateOne failed: ${err.message}`, {
-                location: { filename: "mongodb_update_one", line: 0n, column: 0n },
+                location: [{ filename: "mongodb_update_one", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -555,7 +555,7 @@ export const MongoDBImpl: PlatformFunction[] = [
             return BigInt(result.deletedCount);
         } catch (err: any) {
             throw new EastError(`MongoDB deleteOne failed: ${err.message}`, {
-                location: { filename: "mongodb_delete_one", line: 0n, column: 0n },
+                location: [{ filename: "mongodb_delete_one", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -579,7 +579,7 @@ export const MongoDBImpl: PlatformFunction[] = [
             return BigInt(result.deletedCount);
         } catch (err: any) {
             throw new EastError(`MongoDB deleteMany failed: ${err.message}`, {
-                location: { filename: "mongodb_delete_many", line: 0n, column: 0n },
+                location: [{ filename: "mongodb_delete_many", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -593,7 +593,7 @@ export const MongoDBImpl: PlatformFunction[] = [
             return null;
         } catch (err: any) {
             throw new EastError(`MongoDB close failed: ${err.message}`, {
-                location: { filename: "mongodb_close", line: 0n, column: 0n },
+                location: [{ filename: "mongodb_close", line: 0n, column: 0n }],
                 cause: err
             });
         }

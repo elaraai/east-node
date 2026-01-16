@@ -199,7 +199,7 @@ export const XlsxImpl: PlatformFunction[] = [
                 sheetName = options.sheetName.value;
                 if (!workbook.Sheets[sheetName]) {
                     throw new EastError(`Sheet "${sheetName}" not found in workbook`, {
-                        location: { filename: "xlsx_read", line: 0n, column: 0n }
+                        location: [{ filename: "xlsx_read", line: 0n, column: 0n }]
                     });
                 }
             } else {
@@ -207,7 +207,7 @@ export const XlsxImpl: PlatformFunction[] = [
                 const firstSheetName = workbook.SheetNames[0];
                 if (!firstSheetName) {
                     throw new EastError('Workbook contains no sheets', {
-                        location: { filename: "xlsx_read", line: 0n, column: 0n }
+                        location: [{ filename: "xlsx_read", line: 0n, column: 0n }]
                     });
                 }
                 sheetName = firstSheetName;
@@ -216,7 +216,7 @@ export const XlsxImpl: PlatformFunction[] = [
             const worksheet = workbook.Sheets[sheetName];
             if (!worksheet) {
                 throw new EastError(`Sheet "${sheetName}" not found in workbook`, {
-                    location: { filename: "xlsx_read", line: 0n, column: 0n }
+                    location: [{ filename: "xlsx_read", line: 0n, column: 0n }]
                 });
             }
 
@@ -267,7 +267,7 @@ export const XlsxImpl: PlatformFunction[] = [
                 throw err;
             }
             throw new EastError(`Failed to read XLSX file: ${err.message}`, {
-                location: { filename: "xlsx_read", line: 0n, column: 0n },
+                location: [{ filename: "xlsx_read", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -303,7 +303,7 @@ export const XlsxImpl: PlatformFunction[] = [
             return new Uint8Array(buffer);
         } catch (err: any) {
             throw new EastError(`Failed to write XLSX file: ${err.message}`, {
-                location: { filename: "xlsx_write", line: 0n, column: 0n },
+                location: [{ filename: "xlsx_write", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -341,7 +341,7 @@ export const XlsxImpl: PlatformFunction[] = [
             return { sheets };
         } catch (err: any) {
             throw new EastError(`Failed to read XLSX file info: ${err.message}`, {
-                location: { filename: "xlsx_info", line: 0n, column: 0n },
+                location: [{ filename: "xlsx_info", line: 0n, column: 0n }],
                 cause: err
             });
         }

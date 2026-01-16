@@ -7,7 +7,7 @@ import util from "node:util";
 import { test as testNode, describe as describeNode } from "node:test";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { AsyncFunctionType, East, Expr, get_location, IRType, NullType, StringType, toJSONFor, type SubtypeExprOrValue } from "@elaraai/east";
+import { AsyncFunctionType, East, Expr, get_location, IRType, NullType, printLocation, printLocations, StringType, toJSONFor, type SubtypeExprOrValue } from "@elaraai/east";
 import type { BlockBuilder, PlatformFunction, TypeSymbol } from "@elaraai/east/internal";
 
 const { str } = East;
@@ -232,7 +232,7 @@ export const Assert = {
      * @returns An East expression that performs the equality check
      */
     is<E extends Expr>(actual: E, expected: SubtypeExprOrValue<NoInfer<E>[TypeSymbol]>) {
-        const location = get_location(2);
+        const location = get_location();
         const expected_expr = Expr.from(expected, Expr.type(actual));
         return Expr.tryCatch(
             Expr.block($ => {
@@ -240,7 +240,7 @@ export const Assert = {
                 const exp = $.let(expected_expr);
                 return East.is(act as any, exp as any).ifElse(
                     _$ => testPass(),
-                    _$ => testFail(str`Expected ${act} to be ${exp} (${East.value(`${location.filename} ${location.line}:${location.column}`)})`)
+                    _$ => testFail(str`Expected ${act} to be ${exp} (${printLocations(location)})`)
                 );
             }),
             (_$, message, stack) => testFail(East.String.printError(message, stack))
@@ -256,7 +256,7 @@ export const Assert = {
      * @returns An East expression that performs the equality check
      */
     equal<E extends Expr>(actual: E, expected: SubtypeExprOrValue<NoInfer<E>[TypeSymbol]>) {
-        const location = get_location(2);
+        const location = get_location();
         const expected_expr = Expr.from(expected, Expr.type(actual));
         return Expr.tryCatch(
             Expr.block($ => {
@@ -264,7 +264,7 @@ export const Assert = {
                 const exp = $.let(expected_expr);
                 return East.equal(act as any, exp as any).ifElse(
                     _$ => testPass(),
-                    _$ => testFail(str`Expected ${act} to equal ${exp} (${East.value(`${location.filename} ${location.line}:${location.column}`)})`)
+                    _$ => testFail(str`Expected ${act} to equal ${exp} (${printLocations(location)})`)
                 );
             }),
             (_$, message, stack) => testFail(East.String.printError(message, stack))
@@ -280,7 +280,7 @@ export const Assert = {
      * @returns An East expression that performs the inequality check
      */
     notEqual<E extends Expr>(actual: E, expected: SubtypeExprOrValue<NoInfer<E>[TypeSymbol]>) {
-        const location = get_location(2);
+        const location = get_location();
         const expected_expr = Expr.from(expected, Expr.type(actual));
         return Expr.tryCatch(
             Expr.block($ => {
@@ -288,7 +288,7 @@ export const Assert = {
                 const exp = $.let(expected_expr);
                 return East.notEqual(act as any, exp as any).ifElse(
                     _$ => testPass(),
-                    _$ => testFail(str`Expected ${act} to not equal ${exp} (${East.value(`${location.filename} ${location.line}:${location.column}`)})`)
+                    _$ => testFail(str`Expected ${act} to not equal ${exp} (${printLocations(location)})`)
                 );
             }),
             (_$, message, stack) => testFail(East.String.printError(message, stack))
@@ -304,7 +304,7 @@ export const Assert = {
      * @returns An East expression that performs the less-than check
      */
     less<E extends Expr>(actual: E, expected: SubtypeExprOrValue<NoInfer<E>[TypeSymbol]>) {
-        const location = get_location(2);
+        const location = get_location();
         const expected_expr = Expr.from(expected, Expr.type(actual));
         return Expr.tryCatch(
             Expr.block($ => {
@@ -312,7 +312,7 @@ export const Assert = {
                 const exp = $.let(expected_expr);
                 return East.less(act as any, exp as any).ifElse(
                     _$ => testPass(),
-                    _$ => testFail(str`Expected ${act} to be less than ${exp} (${`${location.filename} ${location.line}:${location.column}`})`)
+                    _$ => testFail(str`Expected ${act} to be less than ${exp} (${printLocations(location)})`)
                 );
             }),
             (_$, message, stack) => testFail(East.String.printError(message, stack))
@@ -328,7 +328,7 @@ export const Assert = {
      * @returns An East expression that performs the less-than-or-equal check
      */
     lessEqual<E extends Expr>(actual: E, expected: SubtypeExprOrValue<NoInfer<E>[TypeSymbol]>) {
-        const location = get_location(2);
+        const location = get_location();
         const expected_expr = Expr.from(expected, Expr.type(actual));
         return Expr.tryCatch(
             Expr.block($ => {
@@ -336,7 +336,7 @@ export const Assert = {
                 const exp = $.let(expected_expr);
                 return East.lessEqual(act as any, exp as any).ifElse(
                     _$ => testPass(),
-                    _$ => testFail(str`Expected ${act} to be less than or equal to ${exp} (${`${location.filename} ${location.line}:${location.column}`})`)
+                    _$ => testFail(str`Expected ${act} to be less than or equal to ${exp} (${printLocations(location)})`)
                 );
             }),
             (_$, message, stack) => testFail(East.String.printError(message, stack))
@@ -352,7 +352,7 @@ export const Assert = {
      * @returns An East expression that performs the greater-than check
      */
     greater<E extends Expr>(actual: E, expected: SubtypeExprOrValue<NoInfer<E>[TypeSymbol]>) {
-        const location = get_location(2);
+        const location = get_location();
         const expected_expr = Expr.from(expected, Expr.type(actual));
         return Expr.tryCatch(
             Expr.block($ => {
@@ -360,7 +360,7 @@ export const Assert = {
                 const exp = $.let(expected_expr);
                 return East.greater(act as any, exp as any).ifElse(
                     _$ => testPass(),
-                    _$ => testFail(str`Expected ${act} to be greater than ${exp} (${`${location.filename} ${location.line}:${location.column}`})`)
+                    _$ => testFail(str`Expected ${act} to be greater than ${exp} (${printLocations(location)})`)
                 );
             }),
             (_$, message, stack) => testFail(East.String.printError(message, stack))
@@ -376,7 +376,7 @@ export const Assert = {
      * @returns An East expression that performs the greater-than-or-equal check
      */
     greaterEqual<E extends Expr>(actual: E, expected: SubtypeExprOrValue<NoInfer<E>[TypeSymbol]>) {
-        const location = get_location(2);
+        const location = get_location();
         const expected_expr = Expr.from(expected, Expr.type(actual));
         return Expr.tryCatch(
             Expr.block($ => {
@@ -384,7 +384,7 @@ export const Assert = {
                 const exp = $.let(expected_expr);
                 return East.greaterEqual(act as any, exp as any).ifElse(
                     _$ => testPass(),
-                    _$ => testFail(str`Expected ${act} to be greater than or equal to ${exp} (${`${location.filename} ${location.line}:${location.column}`})`)
+                    _$ => testFail(str`Expected ${act} to be greater than or equal to ${exp} (${printLocations(location)})`)
                 );
             }),
             (_$, message, stack) => testFail(East.String.printError(message, stack))
@@ -401,14 +401,14 @@ export const Assert = {
      * @returns An East expression that performs the range check
      */
     between<E extends Expr>(actual: E, min: SubtypeExprOrValue<NoInfer<E>[TypeSymbol]>, max: SubtypeExprOrValue<NoInfer<E>[TypeSymbol]>) {
-        const location = get_location(2);
+        const location = get_location();
         const min_expr = Expr.from(min, Expr.type(actual));
         const max_expr = Expr.from(max, Expr.type(actual));
         return Expr.tryCatch(
             East.greaterEqual(actual, min_expr as any).ifElse(
                 _$ => East.lessEqual(actual, max_expr as any).ifElse(
                     _$ => testPass(),
-                    _$ => testFail(str`Expected ${actual} to be less than or equal to ${max_expr} (${`${location.filename} ${location.line}:${location.column}`})`)
+                    _$ => testFail(str`Expected ${actual} to be less than or equal to ${max_expr} (${printLocations(location)})`)
                 ),
                 _$ => testFail(str`Expected ${actual} to be greater than or equal to ${min_expr}`)
             ),
@@ -424,11 +424,11 @@ export const Assert = {
      * @returns An East expression that verifies an error is thrown
      */
     throws(fn: Expr<any>, pattern?: RegExp) {
-        const location = get_location(2);
+        const location = get_location();
         return Expr.tryCatch(
             Expr.block($ => {
                 const result = $.let(fn);
-                $(testFail(str`Expected error, got ${result} (${East.value(`${location.filename} ${location.line}:${location.column}`)})`));
+                $(testFail(str`Expected error, got ${result} (${printLocations(location)})`));
                 return null;
             }),
             ($, message, stack) => {
@@ -453,8 +453,8 @@ export const Assert = {
      * @returns An East expression that unconditionally fails the test
      */
     fail(message: SubtypeExprOrValue<StringType>) {
-        const location = get_location(2);
+        const location = get_location();
         const message_expr = Expr.from(message, StringType);
-        return testFail(str`${message_expr} (${East.value(`${location.filename} ${location.line}:${location.column}`)})`);
+        return testFail(str`${message_expr} (${printLocations(location)})`);
     }
 };

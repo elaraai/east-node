@@ -132,7 +132,7 @@ const PathImpl: PlatformFunction[] = [
             return join(...segments);
         } catch (err: any) {
             throw new EastError(`Failed to join path segments: ${err.message}`, {
-                location: { filename: "path_join", line: 0n, column: 0n },
+                location: [{ filename: "path_join", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -142,7 +142,7 @@ const PathImpl: PlatformFunction[] = [
             return resolve(path);
         } catch (err: any) {
             throw new EastError(`Failed to resolve path: ${err.message}`, {
-                location: { filename: "path_resolve", line: 0n, column: 0n },
+                location: [{ filename: "path_resolve", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -152,7 +152,7 @@ const PathImpl: PlatformFunction[] = [
             return dirname(path);
         } catch (err: any) {
             throw new EastError(`Failed to get dirname: ${err.message}`, {
-                location: { filename: "path_dirname", line: 0n, column: 0n },
+                location: [{ filename: "path_dirname", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -162,7 +162,7 @@ const PathImpl: PlatformFunction[] = [
             return basename(path);
         } catch (err: any) {
             throw new EastError(`Failed to get basename: ${err.message}`, {
-                location: { filename: "path_basename", line: 0n, column: 0n },
+                location: [{ filename: "path_basename", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -172,7 +172,7 @@ const PathImpl: PlatformFunction[] = [
             return extname(path);
         } catch (err: any) {
             throw new EastError(`Failed to get extname: ${err.message}`, {
-                location: { filename: "path_extname", line: 0n, column: 0n },
+                location: [{ filename: "path_extname", line: 0n, column: 0n }],
                 cause: err
             });
         }

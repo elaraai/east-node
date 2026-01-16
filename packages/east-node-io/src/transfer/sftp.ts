@@ -360,7 +360,7 @@ export const SftpImpl: PlatformFunction[] = [
             });
         } catch (err: any) {
             throw new EastError(`SFTP connection failed: ${err.message}`, {
-                location: { filename: "sftp_connect", line: 0n, column: 0n },
+                location: [{ filename: "sftp_connect", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -379,7 +379,7 @@ export const SftpImpl: PlatformFunction[] = [
             return null;
         } catch (err: any) {
             throw new EastError(`SFTP upload failed: ${err.message}`, {
-                location: { filename: "sftp_put", line: 0n, column: 0n },
+                location: [{ filename: "sftp_put", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -402,7 +402,7 @@ export const SftpImpl: PlatformFunction[] = [
             }
         } catch (err: any) {
             throw new EastError(`SFTP download failed: ${err.message}`, {
-                location: { filename: "sftp_get", line: 0n, column: 0n },
+                location: [{ filename: "sftp_get", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -427,7 +427,7 @@ export const SftpImpl: PlatformFunction[] = [
             }));
         } catch (err: any) {
             throw new EastError(`SFTP list failed: ${err.message}`, {
-                location: { filename: "sftp_list", line: 0n, column: 0n },
+                location: [{ filename: "sftp_list", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -443,7 +443,7 @@ export const SftpImpl: PlatformFunction[] = [
             return null;
         } catch (err: any) {
             throw new EastError(`SFTP delete failed: ${err.message}`, {
-                location: { filename: "sftp_delete", line: 0n, column: 0n },
+                location: [{ filename: "sftp_delete", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -457,7 +457,7 @@ export const SftpImpl: PlatformFunction[] = [
             return null;
         } catch (err: any) {
             throw new EastError(`SFTP close failed: ${err.message}`, {
-                location: { filename: "sftp_close", line: 0n, column: 0n },
+                location: [{ filename: "sftp_close", line: 0n, column: 0n }],
                 cause: err
             });
         }

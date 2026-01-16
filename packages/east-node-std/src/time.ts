@@ -65,7 +65,7 @@ const TimeImpl: PlatformFunction[] = [
             return BigInt(Date.now());
         } catch (err: any) {
             throw new EastError(`Failed to get current time: ${err.message}`, {
-                location: { filename: "time_now", line: 0n, column: 0n },
+                location: [{ filename: "time_now", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -75,7 +75,7 @@ const TimeImpl: PlatformFunction[] = [
             await new Promise(resolve => setTimeout(resolve, Number(ms)));
         } catch (err: any) {
             throw new EastError(`Failed to sleep: ${err.message}`, {
-                location: { filename: "time_sleep", line: 0n, column: 0n },
+                location: [{ filename: "time_sleep", line: 0n, column: 0n }],
                 cause: err
             });
         }

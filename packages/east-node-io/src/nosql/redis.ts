@@ -306,7 +306,7 @@ export const RedisImpl: PlatformFunction[] = [
             });
         } catch (err: any) {
             throw new EastError(`Redis connection failed: ${err.message}`, {
-                location: { filename: "redis_connect", line: 0n, column: 0n },
+                location: [{ filename: "redis_connect", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -327,7 +327,7 @@ export const RedisImpl: PlatformFunction[] = [
             return variant('some', value);
         } catch (err: any) {
             throw new EastError(`Redis get failed: ${err.message}`, {
-                location: { filename: "redis_get", line: 0n, column: 0n },
+                location: [{ filename: "redis_get", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -344,7 +344,7 @@ export const RedisImpl: PlatformFunction[] = [
             return null;
         } catch (err: any) {
             throw new EastError(`Redis set failed: ${err.message}`, {
-                location: { filename: "redis_set", line: 0n, column: 0n },
+                location: [{ filename: "redis_set", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -362,7 +362,7 @@ export const RedisImpl: PlatformFunction[] = [
             return null;
         } catch (err: any) {
             throw new EastError(`Redis setex failed: ${err.message}`, {
-                location: { filename: "redis_setex", line: 0n, column: 0n },
+                location: [{ filename: "redis_setex", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -378,7 +378,7 @@ export const RedisImpl: PlatformFunction[] = [
             return BigInt(deleted);
         } catch (err: any) {
             throw new EastError(`Redis del failed: ${err.message}`, {
-                location: { filename: "redis_del", line: 0n, column: 0n },
+                location: [{ filename: "redis_del", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -392,7 +392,7 @@ export const RedisImpl: PlatformFunction[] = [
             return null;
         } catch (err: any) {
             throw new EastError(`Redis close failed: ${err.message}`, {
-                location: { filename: "redis_close", line: 0n, column: 0n },
+                location: [{ filename: "redis_close", line: 0n, column: 0n }],
                 cause: err
             });
         }

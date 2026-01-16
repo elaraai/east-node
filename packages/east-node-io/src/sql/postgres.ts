@@ -351,7 +351,7 @@ export const PostgresImpl: PlatformFunction[] = [
             });
         } catch (err: any) {
             throw new EastError(`PostgreSQL connection failed: ${err.message}`, {
-                location: { filename: "postgres_connect", line: 0n, column: 0n },
+                location: [{ filename: "postgres_connect", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -374,13 +374,13 @@ export const PostgresImpl: PlatformFunction[] = [
             // Validate result structure
             if (!result || typeof result !== 'object') {
                 throw new EastError('Invalid result from PostgreSQL query', {
-                    location: { filename: "postgres_query", line: 0n, column: 0n }
+                    location: [{ filename: "postgres_query", line: 0n, column: 0n }]
                 });
             }
 
             if (!Array.isArray(result.rows)) {
                 throw new EastError('PostgreSQL query result missing rows array', {
-                    location: { filename: "postgres_query", line: 0n, column: 0n }
+                    location: [{ filename: "postgres_query", line: 0n, column: 0n }]
                 });
             }
 
@@ -427,7 +427,7 @@ export const PostgresImpl: PlatformFunction[] = [
             }
         } catch (err: any) {
             throw new EastError(`PostgreSQL query failed: ${err.message}`, {
-                location: { filename: "postgres_query", line: 0n, column: 0n },
+                location: [{ filename: "postgres_query", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -441,7 +441,7 @@ export const PostgresImpl: PlatformFunction[] = [
             return null;
         } catch (err: any) {
             throw new EastError(`PostgreSQL close failed: ${err.message}`, {
-                location: { filename: "postgres_close", line: 0n, column: 0n },
+                location: [{ filename: "postgres_close", line: 0n, column: 0n }],
                 cause: err
             });
         }

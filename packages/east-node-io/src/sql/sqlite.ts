@@ -322,7 +322,7 @@ export const SqliteImpl: PlatformFunction[] = [
             }));
         } catch (err: any) {
             throw new EastError(`SQLite connection failed: ${err.message}`, {
-                location: { filename: "sqlite_connect", line: 0n, column: 0n },
+                location: [{ filename: "sqlite_connect", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -351,7 +351,7 @@ export const SqliteImpl: PlatformFunction[] = [
 
                 if (!Array.isArray(rows)) {
                     throw new EastError('SQLite all() did not return an array', {
-                        location: { filename: "sqlite_query", line: 0n, column: 0n }
+                        location: [{ filename: "sqlite_query", line: 0n, column: 0n }]
                     });
                 }
 
@@ -379,7 +379,7 @@ export const SqliteImpl: PlatformFunction[] = [
                 // Validate RunResult structure
                 if (typeof info !== 'object' || info === null || !('changes' in info)) {
                     throw new EastError('SQLite run() did not return valid RunResult', {
-                        location: { filename: "sqlite_query", line: 0n, column: 0n }
+                        location: [{ filename: "sqlite_query", line: 0n, column: 0n }]
                     });
                 }
 
@@ -410,7 +410,7 @@ export const SqliteImpl: PlatformFunction[] = [
             }
         } catch (err: any) {
             throw new EastError(`SQLite query failed: ${err.message}`, {
-                location: { filename: "sqlite_query", line: 0n, column: 0n },
+                location: [{ filename: "sqlite_query", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -424,7 +424,7 @@ export const SqliteImpl: PlatformFunction[] = [
             return null;
         } catch (err: any) {
             throw new EastError(`SQLite close failed: ${err.message}`, {
-                location: { filename: "sqlite_close", line: 0n, column: 0n },
+                location: [{ filename: "sqlite_close", line: 0n, column: 0n }],
                 cause: err
             });
         }

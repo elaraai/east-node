@@ -471,14 +471,14 @@ const RandomImpl: PlatformFunction[] = [
     random_range.implement((min: bigint, max: bigint) => {
         if (min > max) {
             throw new EastError(`Invalid range: min (${min}) > max (${max})`, {
-                location: { filename: "random_range", line: 0n, column: 0n },
+                location: [{ filename: "random_range", line: 0n, column: 0n }],
             });
         }
         try {
             return BigInt(uniformIntDist(globalRNG, min, max)());
         } catch (err: any) {
             throw new EastError(`Random range generation failed: ${err.message}`, {
-                location: { filename: "random_range", line: 0n, column: 0n },
+                location: [{ filename: "random_range", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -489,7 +489,7 @@ const RandomImpl: PlatformFunction[] = [
             return exponentialDist(globalRNG, lambda)();
         } catch (err: any) {
             throw new EastError(`Random exponential generation failed: ${err.message}`, {
-                location: { filename: "random_exponential", line: 0n, column: 0n },
+                location: [{ filename: "random_exponential", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -502,7 +502,7 @@ const RandomImpl: PlatformFunction[] = [
             return Math.pow(exp(), 1 / shape);
         } catch (err: any) {
             throw new EastError(`Random Weibull generation failed: ${err.message}`, {
-                location: { filename: "random_weibull", line: 0n, column: 0n },
+                location: [{ filename: "random_weibull", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -513,7 +513,7 @@ const RandomImpl: PlatformFunction[] = [
             return BigInt(bernoulliDist(globalRNG, p)());
         } catch (err: any) {
             throw new EastError(`Random Bernoulli generation failed: ${err.message}`, {
-                location: { filename: "random_bernoulli", line: 0n, column: 0n },
+                location: [{ filename: "random_bernoulli", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -524,7 +524,7 @@ const RandomImpl: PlatformFunction[] = [
             return BigInt(binomialDist(globalRNG, n, p)());
         } catch (err: any) {
             throw new EastError(`Random binomial generation failed: ${err.message}`, {
-                location: { filename: "random_binomial", line: 0n, column: 0n },
+                location: [{ filename: "random_binomial", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -535,7 +535,7 @@ const RandomImpl: PlatformFunction[] = [
             return BigInt(geometricDist(globalRNG, p)());
         } catch (err: any) {
             throw new EastError(`Random geometric generation failed: ${err.message}`, {
-                location: { filename: "random_geometric", line: 0n, column: 0n },
+                location: [{ filename: "random_geometric", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -546,7 +546,7 @@ const RandomImpl: PlatformFunction[] = [
             return BigInt(poissonDist(globalRNG, lambda)());
         } catch (err: any) {
             throw new EastError(`Random Poisson generation failed: ${err.message}`, {
-                location: { filename: "random_poisson", line: 0n, column: 0n },
+                location: [{ filename: "random_poisson", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -557,7 +557,7 @@ const RandomImpl: PlatformFunction[] = [
             return paretoDist(globalRNG, alpha)();
         } catch (err: any) {
             throw new EastError(`Random Pareto generation failed: ${err.message}`, {
-                location: { filename: "random_pareto", line: 0n, column: 0n },
+                location: [{ filename: "random_pareto", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -568,7 +568,7 @@ const RandomImpl: PlatformFunction[] = [
             return logNormalDist(globalRNG, mu, sigma)();
         } catch (err: any) {
             throw new EastError(`Random log-normal generation failed: ${err.message}`, {
-                location: { filename: "random_log_normal", line: 0n, column: 0n },
+                location: [{ filename: "random_log_normal", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -579,7 +579,7 @@ const RandomImpl: PlatformFunction[] = [
             return irwinHallDist(globalRNG, n)();
         } catch (err: any) {
             throw new EastError(`Random Irwin-Hall generation failed: ${err.message}`, {
-                location: { filename: "random_irwin_hall", line: 0n, column: 0n },
+                location: [{ filename: "random_irwin_hall", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -590,7 +590,7 @@ const RandomImpl: PlatformFunction[] = [
             return batesDist(globalRNG, n)();
         } catch (err: any) {
             throw new EastError(`Random Bates generation failed: ${err.message}`, {
-                location: { filename: "random_bates", line: 0n, column: 0n },
+                location: [{ filename: "random_bates", line: 0n, column: 0n }],
                 cause: err
             });
         }
