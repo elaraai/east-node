@@ -12,9 +12,9 @@
  * @packageDocumentation
  */
 
-import { BlobType, BooleanType, DateTimeType, East, FloatType, IntegerType, isValueOf, match, NullType, SortedMap, StringType as EastStringType, variant } from "@elaraai/east";
-import type { ValueTypeOf } from "@elaraai/east";
-import type { PlatformFunction } from "@elaraai/east/internal";
+import { ArrayType, BlobType, BooleanType, DateTimeType, East, FloatType, IntegerType, isTypeValueEqual, isValueOf, match, NullType, OptionType, SortedMap, StringType as EastStringType, toEastTypeValue, variant } from "@elaraai/east";
+import type { EastType, StructTypeValue, ValueTypeOf } from "@elaraai/east";
+import type { EastTypeValue, PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 import mysql from 'mysql2/promise';
 import { createHandle, getConnection, closeHandle, closeAllHandles } from '../connection/index.js';
@@ -172,6 +172,82 @@ export const mysql_connect = East.asyncPlatform("mysql_connect", [MySqlConfigTyp
  * - Returns lastInsertId for INSERT operations
  */
 export const mysql_query = East.asyncPlatform("mysql_query", [ConnectionHandleType, StringType, SqlParametersType], SqlResultType);
+
+/**
+ * Executes a SELECT query with user-defined return type.
+ *
+ * Runs a SELECT query against a MySQL database with parameter binding and
+ * returns results as an array of typed rows. The return type is generic,
+ * allowing users to specify the expected row structure for type-safe access.
+ *
+ * This is a generic platform function for the East language, enabling type-safe
+ * SELECT queries in East programs running on Node.js.
+ *
+ * @typeParam T - The expected row type for query results
+ * @param handle - Connection handle from mysql_connect()
+ * @param sql - SQL SELECT query string with ? placeholders
+ * @param params - Query parameters as SqlParameterType array
+ * @returns Array of rows matching the specified type T
+ *
+ * @throws {EastError} When query fails due to:
+ * - Invalid connection handle (location: "mysql_select")
+ * - SQL syntax errors (location: "mysql_select")
+ * - Query is not a SELECT (location: "mysql_select")
+ * - Type coercion failure (location: "mysql_select")
+ *
+ * @example
+ * ```ts
+ * import { East, NullType, StructType, StringType, IntegerType, variant } from "@elaraai/east";
+ * import { SQL } from "@elaraai/east-node-io";
+ *
+ * // Define the expected row type
+ * const UserRowType = StructType({
+ *     id: IntegerType,
+ *     name: StringType,
+ *     email: StringType,
+ * });
+ *
+ * const queryUsers = East.function([], NullType, ($) => {
+ *     const config = $.let({
+ *         host: "localhost",
+ *         port: 3306n,
+ *         database: "myapp",
+ *         user: "root",
+ *         password: "secret",
+ *         ssl: variant('none', null),
+ *         maxConnections: variant('none', null),
+ *     });
+ *
+ *     const conn = $.let(SQL.MySQL.connect(config));
+ *
+ *     // Query with typed results - returns Array<UserRowType>
+ *     const users = $.let(SQL.MySQL.select([UserRowType], conn,
+ *         "SELECT id, name, email FROM users WHERE active = ?",
+ *         [variant('Boolean', true)]
+ *     ));
+ *     // users is typed as Array<{ id: bigint, name: string, email: string }>
+ *
+ *     $(SQL.MySQL.close(conn));
+ *     $.return(null);
+ * });
+ *
+ * const compiled = East.compileAsync(queryUsers.toIR(), SQL.MySQL.Implementation);
+ * await compiled();
+ * ```
+ *
+ * @remarks
+ * - Only SELECT queries are supported (use mysql_query for INSERT/UPDATE/DELETE)
+ * - Uses ? for parameter placeholders
+ * - Row type T should match the structure of selected columns
+ * - All MySQL data types are mapped to appropriate East types
+ * - NULL values are preserved in the result
+ */
+export const mysql_select = East.asyncGenericPlatform(
+    "mysql_select",
+    ["T"],
+    [ConnectionHandleType, StringType, SqlParametersType],
+    ArrayType("T")
+);
 
 /**
  * Closes a MySQL connection pool.
@@ -445,6 +521,165 @@ export const MySqlImpl: PlatformFunction[] = [
         } catch (err: any) {
             throw new EastError(`MySQL query failed: ${err.message}`, {
                 location: [{ filename: "mysql_query", line: 0n, column: 0n }],
+                cause: err
+            });
+        }
+    }),
+
+    mysql_select.implement((T: EastTypeValue) => async (...args: unknown[]): Promise<unknown> => {
+        const handle = args[0] as string;
+        const sql = args[1] as string;
+        const params = args[2] as ValueTypeOf<typeof SqlParametersType>;
+        const rowType = T as EastType;
+
+        try {
+            const pool = getConnection<mysql.Pool>(handle);
+
+            // Validate row type is a Struct
+            if (rowType.type !== 'Struct') {
+                throw new EastError(
+                    `Expected row type must be a Struct, got ${rowType.type}`,
+                    { location: [{ filename: "mysql_select", line: 0n, column: 0n }] }
+                );
+            }
+
+            // Convert East parameters to native values
+            const nativeParams = params.map(convertParamToNative);
+
+            // Execute the query
+            const [rawRows, fields] = await pool.query(sql, nativeParams);
+
+            // Verify this is a SELECT query (SELECT has fields array with entries)
+            if (!Array.isArray(rawRows) || fields.length === 0) {
+                throw new EastError('mysql_select only supports SELECT queries. Use mysql_query for INSERT/UPDATE/DELETE.', {
+                    location: [{ filename: "mysql_select", line: 0n, column: 0n }]
+                });
+            }
+
+            // Get column metadata
+            const columnMetaMap = new Map<string, { fieldType: MySqlFieldType | null }>();
+            for (const field of fields) {
+                columnMetaMap.set(field.name, { fieldType: field.type as MySqlFieldType | null });
+            }
+
+            // Validate field types and determine which are OptionTypes
+            // Note: T is EastTypeValue (IR format), not EastType (runtime format)
+            const structTypeValue = rowType as unknown as StructTypeValue;
+            const fieldInfo = new Map<string, { isOption: boolean; expectedBaseType: EastType }>();
+
+            for (const field of structTypeValue.value) {
+                const fieldName = field.name;
+                const fieldType = field.type;
+                const colMeta = columnMetaMap.get(fieldName);
+                if (!colMeta) {
+                    throw new EastError(
+                        `Column '${fieldName}' not found in query result`,
+                        { location: [{ filename: "mysql_select", line: 0n, column: 0n }] }
+                    );
+                }
+
+                // Determine expected base type from MySQL field type
+                let expectedBaseType: EastType;
+                const ft = colMeta.fieldType;
+                if (ft === 1 || ft === 16) { // TINY (as boolean), BIT
+                    expectedBaseType = BooleanType;
+                } else if (ft === 2 || ft === 3 || ft === 8 || ft === 9 || ft === 13) { // SHORT, LONG, LONGLONG, INT24, YEAR
+                    expectedBaseType = IntegerType;
+                } else if (ft === 0 || ft === 4 || ft === 5 || ft === 246) { // DECIMAL, FLOAT, DOUBLE, NEWDECIMAL
+                    expectedBaseType = FloatType;
+                } else if (ft === 253 || ft === 254) { // VARCHAR, STRING (CHAR)
+                    expectedBaseType = EastStringType;
+                } else if (ft === 7 || ft === 10 || ft === 11 || ft === 12) { // TIMESTAMP, DATE, TIME, DATETIME
+                    expectedBaseType = DateTimeType;
+                } else if (ft === 252) { // BLOB or TEXT (both use 252!)
+                    // Field type 252 is ambiguous - used for both TEXT and BLOB
+                    // Check if user expects String (TEXT) or Blob
+                    const isString = isTypeValueEqual(fieldType, toEastTypeValue(EastStringType));
+                    const isStringOption = isTypeValueEqual(fieldType, toEastTypeValue(OptionType(EastStringType)));
+                    const isBlob = isTypeValueEqual(fieldType, toEastTypeValue(BlobType));
+                    const isBlobOption = isTypeValueEqual(fieldType, toEastTypeValue(OptionType(BlobType)));
+
+                    if (isString || isStringOption) {
+                        expectedBaseType = EastStringType;
+                    } else if (isBlob || isBlobOption) {
+                        expectedBaseType = BlobType;
+                    } else {
+                        throw new EastError(
+                            `Type mismatch for column '${fieldName}': MySQL field type 252 (TEXT/BLOB), got ${fieldType.type} but expected String, Blob, OptionType(String), or OptionType(Blob)`,
+                            { location: [{ filename: "mysql_select", line: 0n, column: 0n }] }
+                        );
+                    }
+                    fieldInfo.set(fieldName, { isOption: isStringOption || isBlobOption, expectedBaseType });
+                    continue;
+                } else {
+                    // Unknown field type - skip type validation, rely on isValueOf later
+                    fieldInfo.set(fieldName, { isOption: false, expectedBaseType: IntegerType });
+                    continue;
+                }
+
+                // Check if field type matches base type or OptionType(base type)
+                const isBase = isTypeValueEqual(fieldType, toEastTypeValue(expectedBaseType));
+                const isOption = isTypeValueEqual(fieldType, toEastTypeValue(OptionType(expectedBaseType)));
+
+                if (!isBase && !isOption) {
+                    throw new EastError(
+                        `Type mismatch for column '${fieldName}': MySQL field type ${ft}, got ${fieldType.type} but expected ${expectedBaseType.type} or OptionType(${expectedBaseType.type})`,
+                        { location: [{ filename: "mysql_select", line: 0n, column: 0n }] }
+                    );
+                }
+
+                fieldInfo.set(fieldName, { isOption, expectedBaseType });
+            }
+
+            // Convert values based on column metadata and handle nulls
+            const rows = rawRows.map((row: Record<string, any>, rowIndex: number) => {
+                const converted: Record<string, any> = {};
+                for (const [key, value] of Object.entries(row)) {
+                    const info = fieldInfo.get(key);
+                    const colMeta = columnMetaMap.get(key);
+                    const ft = colMeta?.fieldType;
+
+                    if (value === null) {
+                        if (info?.isOption) {
+                            converted[key] = variant('none', null);
+                        } else {
+                            throw new EastError(
+                                `null value at row[${rowIndex}] for required field '${key}' - use OptionType(${info?.expectedBaseType.type ?? 'T'}) for nullable columns`,
+                                { location: [{ filename: "mysql_select", line: 0n, column: 0n }] }
+                            );
+                        }
+                    } else {
+                        // Convert based on field type
+                        let convertedValue: any;
+                        if (ft === 2 || ft === 3 || ft === 8 || ft === 9 || ft === 13) { // SHORT, LONG, LONGLONG, INT24, YEAR
+                            convertedValue = BigInt(value);
+                        } else if (ft === 252 && Buffer.isBuffer(value)) { // BLOB
+                            convertedValue = new Uint8Array(value);
+                        } else {
+                            convertedValue = value;
+                        }
+
+                        converted[key] = info?.isOption ? variant('some', convertedValue) : convertedValue;
+                    }
+                }
+                return converted;
+            });
+
+            // Final validation with isValueOf
+            for (let index = 0; index < rows.length; index++) {
+                if (!isValueOf(rows[index], rowType)) {
+                    throw new EastError(
+                        `Type mismatch at row[${index}]: expected ${rowType.type}, got ${typeof rows[index]} (value: ${JSON.stringify(rows[index])})`,
+                        { location: [{ filename: "mysql_select", line: 0n, column: 0n }] }
+                    );
+                }
+            }
+
+            return rows;
+        } catch (err: any) {
+            if (err instanceof EastError) throw err;
+            throw new EastError(`MySQL select failed: ${err.message}`, {
+                location: [{ filename: "mysql_select", line: 0n, column: 0n }],
                 cause: err
             });
         }

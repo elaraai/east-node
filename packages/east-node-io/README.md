@@ -9,7 +9,7 @@ East Node IO provides type-safe I/O platform functions for [East](https://github
 
 ## Features
 
-- **SQL Databases**: SQLite, PostgreSQL, MySQL with connection pooling
+- **SQL Databases**: SQLite, PostgreSQL, MySQL with connection pooling, Microsoft Access (read-only)
 - **Cloud Storage**: S3 and S3-compatible object storage (MinIO, etc.)
 - **File Transfer**: FTP and SFTP for legacy system integration
 - **NoSQL**: Redis caching and MongoDB document storage
@@ -131,9 +131,10 @@ const rowCount = compiled(xlsxBlob);  // 100n
 
 ### SQL
 
-- **SQLite**: `connect`, `query`, `close`
-- **PostgreSQL**: `connect`, `query`, `close`
-- **MySQL**: `connect`, `query`, `close`
+- **SQLite**: `connect`, `query`, `select`, `close`
+- **PostgreSQL**: `connect`, `query`, `select`, `close`
+- **MySQL**: `connect`, `query`, `select`, `close`
+- **Access**: `open`, `openBlob`, `tables`, `query`, `close` (read-only, .mdb/.accdb)
 
 ### Storage
 
@@ -213,7 +214,7 @@ This project is licensed under the GNU Affero General Public License v3.0 - see 
 
 ## Dependencies
 
-- **SQL**: `better-sqlite3`, `pg`, `mysql2`
+- **SQL**: `better-sqlite3`, `pg`, `mysql2`, `mdb-reader`
 - **Storage**: `@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`
 - **Transfer**: `basic-ftp`, `ssh2-sftp-client`
 - **NoSQL**: `ioredis`, `mongodb`
@@ -224,7 +225,7 @@ This project is licensed under the GNU Affero General Public License v3.0 - see 
 
 - **[East Node](https://github.com/elaraai/east-node)**: Node.js platform functions for I/O, databases, and system operations. Connect East programs to filesystems, SQL/NoSQL databases, cloud storage, and network services.
   - [@elaraai/east-node-std](https://www.npmjs.com/package/@elaraai/east-node-std): Filesystem, console, HTTP fetch, crypto, random distributions, timestamps
-  - [@elaraai/east-node-io](https://www.npmjs.com/package/@elaraai/east-node-io): SQLite, PostgreSQL, MySQL, MongoDB, S3, FTP, SFTP
+  - [@elaraai/east-node-io](https://www.npmjs.com/package/@elaraai/east-node-io): SQLite, PostgreSQL, MySQL, Access, MongoDB, S3, FTP, SFTP
   - [@elaraai/east-node-cli](https://www.npmjs.com/package/@elaraai/east-node-cli): CLI for running East IR programs in Node.js
 
 - **[East Python](https://github.com/elaraai/east-py)**: Python runtime and platform functions for data science and machine learning. Execute East programs with access to optimization solvers, gradient boosting, neural networks, and model explainability.

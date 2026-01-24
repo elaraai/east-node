@@ -12,9 +12,9 @@
  * @packageDocumentation
  */
 
-import { BlobType, BooleanType, DateTimeType, East, FloatType, IntegerType, isValueOf, match, NullType, SortedMap, StringType as EastStringType, variant } from "@elaraai/east";
-import type { ValueTypeOf } from "@elaraai/east";
-import type { PlatformFunction } from "@elaraai/east/internal";
+import { ArrayType, BlobType, BooleanType, DateTimeType, East, FloatType, IntegerType, isTypeValueEqual, isValueOf, match, NullType, OptionType, SortedMap, StringType as EastStringType, toEastTypeValue, variant } from "@elaraai/east";
+import type { EastType, StructTypeValue, ValueTypeOf } from "@elaraai/east";
+import type { EastTypeValue, PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 import pg from 'pg';
 import { createHandle, getConnection, closeHandle, closeAllHandles } from '../connection/index.js';
@@ -168,6 +168,82 @@ export const postgres_connect = East.asyncPlatform("postgres_connect", [Postgres
  * - Parameters prevent SQL injection attacks
  */
 export const postgres_query = East.asyncPlatform("postgres_query", [ConnectionHandleType, StringType, SqlParametersType], SqlResultType);
+
+/**
+ * Executes a SELECT query with user-defined return type.
+ *
+ * Runs a SELECT query against a PostgreSQL database with parameter binding and
+ * returns results as an array of typed rows. The return type is generic,
+ * allowing users to specify the expected row structure for type-safe access.
+ *
+ * This is a generic platform function for the East language, enabling type-safe
+ * SELECT queries in East programs running on Node.js.
+ *
+ * @typeParam T - The expected row type for query results
+ * @param handle - Connection handle from postgres_connect()
+ * @param sql - SQL SELECT query string with $1, $2, etc. placeholders
+ * @param params - Query parameters as SqlParameterType array
+ * @returns Array of rows matching the specified type T
+ *
+ * @throws {EastError} When query fails due to:
+ * - Invalid connection handle (location: "postgres_select")
+ * - SQL syntax errors (location: "postgres_select")
+ * - Query is not a SELECT (location: "postgres_select")
+ * - Type coercion failure (location: "postgres_select")
+ *
+ * @example
+ * ```ts
+ * import { East, NullType, StructType, StringType, IntegerType, variant } from "@elaraai/east";
+ * import { SQL } from "@elaraai/east-node-io";
+ *
+ * // Define the expected row type
+ * const UserRowType = StructType({
+ *     id: IntegerType,
+ *     name: StringType,
+ *     email: StringType,
+ * });
+ *
+ * const queryUsers = East.function([], NullType, ($) => {
+ *     const config = $.let({
+ *         host: "localhost",
+ *         port: 5432n,
+ *         database: "myapp",
+ *         user: "postgres",
+ *         password: "secret",
+ *         ssl: variant('none', null),
+ *         maxConnections: variant('none', null),
+ *     });
+ *
+ *     const conn = $.let(SQL.Postgres.connect(config));
+ *
+ *     // Query with typed results - returns Array<UserRowType>
+ *     const users = $.let(SQL.Postgres.select([UserRowType], conn,
+ *         "SELECT id, name, email FROM users WHERE active = $1",
+ *         [variant('Boolean', true)]
+ *     ));
+ *     // users is typed as Array<{ id: bigint, name: string, email: string }>
+ *
+ *     $(SQL.Postgres.close(conn));
+ *     $.return(null);
+ * });
+ *
+ * const compiled = East.compileAsync(queryUsers.toIR(), SQL.Postgres.Implementation);
+ * await compiled();
+ * ```
+ *
+ * @remarks
+ * - Only SELECT queries are supported (use postgres_query for INSERT/UPDATE/DELETE)
+ * - Uses $1, $2, $3, etc. for parameter placeholders
+ * - Row type T should match the structure of selected columns
+ * - All PostgreSQL data types are mapped to appropriate East types
+ * - NULL values are preserved in the result
+ */
+export const postgres_select = East.asyncGenericPlatform(
+    "postgres_select",
+    ["T"],
+    [ConnectionHandleType, StringType, SqlParametersType],
+    ArrayType("T")
+);
 
 /**
  * Closes a PostgreSQL connection pool.
@@ -428,6 +504,156 @@ export const PostgresImpl: PlatformFunction[] = [
         } catch (err: any) {
             throw new EastError(`PostgreSQL query failed: ${err.message}`, {
                 location: [{ filename: "postgres_query", line: 0n, column: 0n }],
+                cause: err
+            });
+        }
+    }),
+
+    postgres_select.implement((T: EastTypeValue) => async (...args: unknown[]): Promise<unknown> => {
+        const handle = args[0] as string;
+        const sql = args[1] as string;
+        const params = args[2] as ValueTypeOf<typeof SqlParametersType>;
+        const rowType = T as EastType;
+
+        try {
+            const pool = getConnection<pg.Pool>(handle);
+
+            // Validate row type is a Struct
+            if (rowType.type !== 'Struct') {
+                throw new EastError(
+                    `Expected row type must be a Struct, got ${rowType.type}`,
+                    { location: [{ filename: "postgres_select", line: 0n, column: 0n }] }
+                );
+            }
+
+            // Convert East parameters to native values
+            const nativeParams = params.map(convertParamToNative);
+
+            // Execute the query
+            const result = await pool.query(sql, nativeParams);
+
+            // Verify this is a SELECT query
+            const command = result.command?.toUpperCase();
+            if (command !== 'SELECT') {
+                throw new EastError('postgres_select only supports SELECT queries. Use postgres_query for INSERT/UPDATE/DELETE.', {
+                    location: [{ filename: "postgres_select", line: 0n, column: 0n }]
+                });
+            }
+
+            if (!Array.isArray(result.rows)) {
+                throw new EastError('PostgreSQL query result missing rows array', {
+                    location: [{ filename: "postgres_select", line: 0n, column: 0n }]
+                });
+            }
+
+            // Get column metadata
+            const columnMetaMap = new Map<string, { oid: PostgresOid | null }>();
+            if (result.fields) {
+                for (const field of result.fields) {
+                    columnMetaMap.set(field.name, { oid: field.dataTypeID as PostgresOid | null });
+                }
+            }
+
+            // Validate field types and determine which are OptionTypes
+            // Note: T is EastTypeValue (IR format), not EastType (runtime format)
+            const structTypeValue = rowType as unknown as StructTypeValue;
+            const fieldInfo = new Map<string, { isOption: boolean; expectedBaseType: EastType }>();
+
+            for (const field of structTypeValue.value) {
+                const fieldName = field.name;
+                const fieldType = field.type;
+                const colMeta = columnMetaMap.get(fieldName);
+                if (!colMeta) {
+                    throw new EastError(
+                        `Column '${fieldName}' not found in query result`,
+                        { location: [{ filename: "postgres_select", line: 0n, column: 0n }] }
+                    );
+                }
+
+                // Determine expected base type from PostgreSQL OID
+                let expectedBaseType: EastType;
+                const oid = colMeta.oid;
+                if (oid === 16) { // bool
+                    expectedBaseType = BooleanType;
+                } else if (oid === 20 || oid === 21 || oid === 23) { // int8, int2, int4
+                    expectedBaseType = IntegerType;
+                } else if (oid === 700 || oid === 701 || oid === 1700) { // float4, float8, numeric
+                    expectedBaseType = FloatType;
+                } else if (oid === 25 || oid === 1042 || oid === 1043) { // text, bpchar, varchar
+                    expectedBaseType = EastStringType;
+                } else if (oid === 1082 || oid === 1083 || oid === 1114 || oid === 1184) { // date, time, timestamp, timestamptz
+                    expectedBaseType = DateTimeType;
+                } else if (oid === 17) { // bytea
+                    expectedBaseType = BlobType;
+                } else {
+                    // Unknown OID - skip type validation, rely on isValueOf later
+                    fieldInfo.set(fieldName, { isOption: false, expectedBaseType: IntegerType });
+                    continue;
+                }
+
+                // Check if field type matches base type or OptionType(base type)
+                const isBase = isTypeValueEqual(fieldType, toEastTypeValue(expectedBaseType));
+                const isOption = isTypeValueEqual(fieldType, toEastTypeValue(OptionType(expectedBaseType)));
+
+                if (!isBase && !isOption) {
+                    throw new EastError(
+                        `Type mismatch for column '${fieldName}': PostgreSQL column OID ${oid}, got ${fieldType.type} but expected ${expectedBaseType.type} or OptionType(${expectedBaseType.type})`,
+                        { location: [{ filename: "postgres_select", line: 0n, column: 0n }] }
+                    );
+                }
+
+                fieldInfo.set(fieldName, { isOption, expectedBaseType });
+            }
+
+            // Convert values based on column metadata and handle nulls
+            const rows = result.rows.map((row: Record<string, any>, rowIndex: number) => {
+                const converted: Record<string, any> = {};
+                for (const [key, value] of Object.entries(row)) {
+                    const info = fieldInfo.get(key);
+                    const colMeta = columnMetaMap.get(key);
+                    const oid = colMeta?.oid;
+
+                    if (value === null) {
+                        if (info?.isOption) {
+                            converted[key] = variant('none', null);
+                        } else {
+                            throw new EastError(
+                                `null value at row[${rowIndex}] for required field '${key}' - use OptionType(${info?.expectedBaseType.type ?? 'T'}) for nullable columns`,
+                                { location: [{ filename: "postgres_select", line: 0n, column: 0n }] }
+                            );
+                        }
+                    } else {
+                        // Convert based on column OID
+                        let convertedValue: any;
+                        if (oid === 20 || oid === 21 || oid === 23) { // int8, int2, int4
+                            convertedValue = BigInt(value);
+                        } else if (oid === 17 && Buffer.isBuffer(value)) { // bytea
+                            convertedValue = new Uint8Array(value);
+                        } else {
+                            convertedValue = value;
+                        }
+
+                        converted[key] = info?.isOption ? variant('some', convertedValue) : convertedValue;
+                    }
+                }
+                return converted;
+            });
+
+            // Final validation with isValueOf
+            for (let index = 0; index < rows.length; index++) {
+                if (!isValueOf(rows[index], rowType)) {
+                    throw new EastError(
+                        `Type mismatch at row[${index}]: expected ${rowType.type}, got ${typeof rows[index]} (value: ${JSON.stringify(rows[index])})`,
+                        { location: [{ filename: "postgres_select", line: 0n, column: 0n }] }
+                    );
+                }
+            }
+
+            return rows;
+        } catch (err: any) {
+            if (err instanceof EastError) throw err;
+            throw new EastError(`PostgreSQL select failed: ${err.message}`, {
+                location: [{ filename: "postgres_select", line: 0n, column: 0n }],
                 cause: err
             });
         }

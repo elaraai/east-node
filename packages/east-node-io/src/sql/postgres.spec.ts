@@ -12,8 +12,8 @@
  * Requires Docker PostgreSQL service running on localhost:5432
  */
 import { describeEast, Assert, NodePlatform } from "@elaraai/east-node-std";
-import { East, variant, type ValueTypeOf } from "@elaraai/east";
-import { postgres_connect, postgres_query, postgres_close, postgres_close_all, PostgresImpl } from "./postgres.js";
+import { East, IntegerType, StringType, FloatType, BooleanType, StructType, OptionType, variant, type ValueTypeOf } from "@elaraai/east";
+import { postgres_connect, postgres_query, postgres_select, postgres_close, postgres_close_all, PostgresImpl } from "./postgres.js";
 import { SqlRowType, SqlParameterType } from "./types.js";
 
 await describeEast("PostgreSQL platform functions", (test) => {
@@ -375,6 +375,268 @@ await describeEast("PostgreSQL platform functions", (test) => {
             update: ($, _) => $(Assert.fail("Expected select, got update")),
             delete: ($, _) => $(Assert.fail("Expected select, got delete")),
         });
+
+        $(postgres_close(conn));
+    });
+
+    // Tests for postgres_select (generic platform function)
+
+    test("select with typed row returns correct structure", $ => {
+        const config = $.let({
+            host: "localhost",
+            port: 5432n,
+            database: "testdb",
+            user: "testuser",
+            password: "testpass",
+            ssl: variant('none', null),
+            maxConnections: variant('none', null),
+        });
+
+        const conn = $.let(postgres_connect(config));
+
+        // Create temporary table and populate
+        $(postgres_query(conn, "CREATE TEMPORARY TABLE test_select_users (id INTEGER, name TEXT, active BOOLEAN)", []));
+        $(postgres_query(conn, "INSERT INTO test_select_users VALUES (1, 'Alice', true)", []));
+        $(postgres_query(conn, "INSERT INTO test_select_users VALUES (2, 'Bob', false)", []));
+
+        // Define expected row type
+        const UserRowType = StructType({
+            id: IntegerType,
+            name: StringType,
+            active: BooleanType,
+        });
+
+        // Query with typed results
+        const users = $.let(postgres_select([UserRowType], conn, "SELECT id, name, active FROM test_select_users ORDER BY id", []));
+
+        // Verify row count
+        $(Assert.equal(users.size(), East.value(2n)));
+
+        $(postgres_close(conn));
+    });
+
+    test("select with partial columns", $ => {
+        const config = $.let({
+            host: "localhost",
+            port: 5432n,
+            database: "testdb",
+            user: "testuser",
+            password: "testpass",
+            ssl: variant('none', null),
+            maxConnections: variant('none', null),
+        });
+
+        const conn = $.let(postgres_connect(config));
+
+        // Create temporary table and populate
+        $(postgres_query(conn, "CREATE TEMPORARY TABLE test_select_products (id INTEGER, name TEXT, price FLOAT8, stock INTEGER)", []));
+        $(postgres_query(conn, "INSERT INTO test_select_products VALUES (1, 'Widget', 9.99, 100)", []));
+
+        // Define partial row type (only some columns)
+        const PartialProductType = StructType({
+            name: StringType,
+            price: FloatType,
+        });
+
+        // Query with only selected columns
+        const products = $.let(postgres_select([PartialProductType], conn, "SELECT name, price FROM test_select_products", []));
+
+        // Verify we got results
+        $(Assert.equal(products.size(), East.value(1n)));
+
+        $(postgres_close(conn));
+    });
+
+    test("select with parameters", $ => {
+        const config = $.let({
+            host: "localhost",
+            port: 5432n,
+            database: "testdb",
+            user: "testuser",
+            password: "testpass",
+            ssl: variant('none', null),
+            maxConnections: variant('none', null),
+        });
+
+        const conn = $.let(postgres_connect(config));
+
+        // Create temporary table and populate
+        $(postgres_query(conn, "CREATE TEMPORARY TABLE test_select_orders (id INTEGER, customer TEXT, total FLOAT8)", []));
+        $(postgres_query(conn, "INSERT INTO test_select_orders VALUES (1, 'Alice', 50.00)", []));
+        $(postgres_query(conn, "INSERT INTO test_select_orders VALUES (2, 'Bob', 75.50)", []));
+        $(postgres_query(conn, "INSERT INTO test_select_orders VALUES (3, 'Alice', 25.00)", []));
+
+        const OrderType = StructType({
+            id: IntegerType,
+            customer: StringType,
+            total: FloatType,
+        });
+
+        // Query with parameter (PostgreSQL uses $1, $2, etc.)
+        const aliceOrders = $.let(postgres_select([OrderType], conn,
+            "SELECT id, customer, total FROM test_select_orders WHERE customer = $1",
+            [variant("String", "Alice")]
+        ));
+
+        // Alice has 2 orders
+        $(Assert.equal(aliceOrders.size(), East.value(2n)));
+
+        $(postgres_close(conn));
+    });
+
+    test("select with LIMIT returns correct count", $ => {
+        const config = $.let({
+            host: "localhost",
+            port: 5432n,
+            database: "testdb",
+            user: "testuser",
+            password: "testpass",
+            ssl: variant('none', null),
+            maxConnections: variant('none', null),
+        });
+
+        const conn = $.let(postgres_connect(config));
+
+        // Create temporary table with many rows
+        $(postgres_query(conn, "CREATE TEMPORARY TABLE test_select_items (id INTEGER, value TEXT)", []));
+        $(postgres_query(conn, "INSERT INTO test_select_items VALUES (1, 'a'), (2, 'b'), (3, 'c'), (4, 'd'), (5, 'e')", []));
+
+        const ItemType = StructType({
+            id: IntegerType,
+            value: StringType,
+        });
+
+        // Query with LIMIT
+        const items = $.let(postgres_select([ItemType], conn, "SELECT id, value FROM test_select_items LIMIT 3", []));
+
+        // Should return exactly 3 rows
+        $(Assert.equal(items.size(), East.value(3n)));
+
+        $(postgres_close(conn));
+    });
+
+    test("select empty result returns empty array", $ => {
+        const config = $.let({
+            host: "localhost",
+            port: 5432n,
+            database: "testdb",
+            user: "testuser",
+            password: "testpass",
+            ssl: variant('none', null),
+            maxConnections: variant('none', null),
+        });
+
+        const conn = $.let(postgres_connect(config));
+
+        // Create empty temporary table
+        $(postgres_query(conn, "CREATE TEMPORARY TABLE test_select_empty (id INTEGER, name TEXT)", []));
+
+        const RowType = StructType({
+            id: IntegerType,
+            name: StringType,
+        });
+
+        // Query empty table
+        const rows = $.let(postgres_select([RowType], conn, "SELECT id, name FROM test_select_empty", []));
+
+        // Should return empty array
+        $(Assert.equal(rows.size(), East.value(0n)));
+
+        $(postgres_close(conn));
+    });
+
+    // Error case tests
+
+    test("select throws error when null value encountered for non-optional field", $ => {
+        const config = $.let({
+            host: "localhost",
+            port: 5432n,
+            database: "testdb",
+            user: "testuser",
+            password: "testpass",
+            ssl: variant('none', null),
+            maxConnections: variant('none', null),
+        });
+
+        const conn = $.let(postgres_connect(config));
+
+        // Create temporary table and insert row with NULL value
+        $(postgres_query(conn, "CREATE TEMPORARY TABLE test_null_error (id INTEGER, name TEXT)", []));
+        $(postgres_query(conn, "INSERT INTO test_null_error VALUES (1, NULL)", []));
+
+        // Define row type WITHOUT OptionType for nullable column
+        const RowType = StructType({
+            id: IntegerType,
+            name: StringType,  // Not optional, but column has NULL
+        });
+
+        // Should throw error about null value for required field
+        $(Assert.throws(
+            postgres_select([RowType], conn, "SELECT id, name FROM test_null_error", []),
+            /null value.*required field.*name.*OptionType/
+        ));
+
+        $(postgres_close(conn));
+    });
+
+    test("select succeeds when null value encountered for optional field", $ => {
+        const config = $.let({
+            host: "localhost",
+            port: 5432n,
+            database: "testdb",
+            user: "testuser",
+            password: "testpass",
+            ssl: variant('none', null),
+            maxConnections: variant('none', null),
+        });
+
+        const conn = $.let(postgres_connect(config));
+
+        // Create temporary table and insert row with NULL value
+        $(postgres_query(conn, "CREATE TEMPORARY TABLE test_null_ok (id INTEGER, name TEXT)", []));
+        $(postgres_query(conn, "INSERT INTO test_null_ok VALUES (1, NULL)", []));
+
+        // Define row type WITH OptionType for nullable column
+        const RowType = StructType({
+            id: IntegerType,
+            name: OptionType(StringType),  // Optional - can handle NULL
+        });
+
+        // Should succeed
+        const rows = $.let(postgres_select([RowType], conn, "SELECT id, name FROM test_null_ok", []));
+        $(Assert.equal(rows.size(), East.value(1n)));
+
+        $(postgres_close(conn));
+    });
+
+    test("select throws error when field type does not match column type", $ => {
+        const config = $.let({
+            host: "localhost",
+            port: 5432n,
+            database: "testdb",
+            user: "testuser",
+            password: "testpass",
+            ssl: variant('none', null),
+            maxConnections: variant('none', null),
+        });
+
+        const conn = $.let(postgres_connect(config));
+
+        // Create temporary table with INTEGER column
+        $(postgres_query(conn, "CREATE TEMPORARY TABLE test_type_error (id INTEGER, count INTEGER)", []));
+        $(postgres_query(conn, "INSERT INTO test_type_error VALUES (1, 42)", []));
+
+        // Define row type with wrong type for 'count' column (String instead of Integer)
+        const WrongRowType = StructType({
+            id: IntegerType,
+            count: StringType,  // Wrong! Column is INTEGER
+        });
+
+        // Should throw error about type mismatch
+        $(Assert.throws(
+            postgres_select([WrongRowType], conn, "SELECT id, count FROM test_type_error", []),
+            /Type mismatch.*count/
+        ));
 
         $(postgres_close(conn));
     });

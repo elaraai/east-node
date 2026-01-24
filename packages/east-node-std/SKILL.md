@@ -43,7 +43,7 @@ Task → What do you need?
     │   └─ Delete → .deleteFile()
     │
     ├─ Fetch (HTTP requests)
-    │   └─ .get(), .post(), .request()
+    │   └─ .get(), .getBytes(), .post(), .request()
     │
     ├─ Crypto (hashing, UUIDs, random bytes)
     │   └─ .uuid(), .randomBytes(), .hashSha256(), .hashSha256Bytes()

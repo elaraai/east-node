@@ -41,11 +41,13 @@ Task → What do you need?
     │
     ├─ SQL Database
     │   ├─ SQL.SQLite (embedded, placeholder: ?)
-    │   │   └─ .connect(), .query(), .close()
+    │   │   └─ .connect(), .query(), .select(), .close()
     │   ├─ SQL.Postgres (placeholder: $1, $2, ...)
-    │   │   └─ .connect(), .query(), .close()
-    │   └─ SQL.MySQL (placeholder: ?)
-    │       └─ .connect(), .query(), .close()
+    │   │   └─ .connect(), .query(), .select(), .close()
+    │   ├─ SQL.MySQL (placeholder: ?)
+    │   │   └─ .connect(), .query(), .select(), .close()
+    │   └─ SQL.Access (read-only, .mdb/.accdb)
+    │       └─ .open(), .openBlob(), .tables(), .query(), .close()
     │
     ├─ NoSQL Database
     │   ├─ NoSQL.Redis (key-value cache)
@@ -103,6 +105,7 @@ const compiled = East.compileAsync(
 | SQL.SQLite | `import { SQL } from "@elaraai/east-node-io"` | SQLite database (placeholder: `?`) |
 | SQL.Postgres | `import { SQL } from "@elaraai/east-node-io"` | PostgreSQL database (placeholder: `$1`, `$2`) |
 | SQL.MySQL | `import { SQL } from "@elaraai/east-node-io"` | MySQL database (placeholder: `?`) |
+| SQL.Access | `import { SQL } from "@elaraai/east-node-io"` | Microsoft Access database (read-only, .mdb/.accdb) |
 | Storage.S3 | `import { Storage } from "@elaraai/east-node-io"` | S3 and S3-compatible storage |
 | Transfer.FTP | `import { Transfer } from "@elaraai/east-node-io"` | FTP file transfers |
 | Transfer.SFTP | `import { Transfer } from "@elaraai/east-node-io"` | SFTP file transfers |

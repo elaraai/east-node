@@ -9,9 +9,9 @@
  * These tests use describeEast following east-node conventions.
  * Tests compile East functions and run them to validate platform function behavior.
  */
-import { East, variant, type ValueTypeOf } from "@elaraai/east";
+import { East, IntegerType, StringType, FloatType, BooleanType, StructType, OptionType, variant, type ValueTypeOf } from "@elaraai/east";
 import { describeEast, Assert, NodePlatform } from "@elaraai/east-node-std";
-import { sqlite_connect, sqlite_query, sqlite_close, sqlite_close_all, SqliteImpl } from "./sqlite.js";
+import { sqlite_connect, sqlite_query, sqlite_select, sqlite_close, sqlite_close_all, SqliteImpl } from "./sqlite.js";
 import { SqlRowType, SqlParameterType } from "./types.js";
 
 await describeEast("SQLite platform functions", (test) => {
@@ -258,6 +258,236 @@ await describeEast("SQLite platform functions", (test) => {
             update: ($, _) => $(Assert.fail("Expected select, got update")),
             delete: ($, _) => $(Assert.fail("Expected select, got delete")),
         });
+
+        $(sqlite_close(conn));
+    });
+
+    // Tests for sqlite_select (generic platform function)
+
+    test("select with typed row returns correct structure", $ => {
+        const config = $.let({
+            path: ":memory:",
+            readOnly: variant('none', null),
+            memory: variant('some', true),
+        });
+
+        const conn = $.let(sqlite_connect(config));
+
+        // Create and populate table
+        $(sqlite_query(conn, "CREATE TABLE users (id INTEGER, name TEXT, active BOOLEAN)", []));
+        $(sqlite_query(conn, "INSERT INTO users VALUES (1, 'Alice', 1)", []));
+        $(sqlite_query(conn, "INSERT INTO users VALUES (2, 'Bob', 0)", []));
+
+        // Define expected row type
+        const UserRowType = StructType({
+            id: IntegerType,
+            name: StringType,
+            active: BooleanType,
+        });
+
+        // Query with typed results
+        const users = $.let(sqlite_select([UserRowType], conn, "SELECT id, name, active FROM users ORDER BY id", []));
+
+        // Verify row count
+        $(Assert.equal(users.size(), East.value(2n)));
+
+        $(sqlite_close(conn));
+    });
+
+    test("select with partial columns", $ => {
+        const config = $.let({
+            path: ":memory:",
+            readOnly: variant('none', null),
+            memory: variant('some', true),
+        });
+
+        const conn = $.let(sqlite_connect(config));
+
+        // Create and populate table
+        $(sqlite_query(conn, "CREATE TABLE products (id INTEGER, name TEXT, price REAL, stock INTEGER)", []));
+        $(sqlite_query(conn, "INSERT INTO products VALUES (1, 'Widget', 9.99, 100)", []));
+
+        // Define partial row type (only some columns)
+        const PartialProductType = StructType({
+            name: StringType,
+            price: FloatType,
+        });
+
+        // Query with only selected columns
+        const products = $.let(sqlite_select([PartialProductType], conn, "SELECT name, price FROM products", []));
+
+        // Verify we got results
+        $(Assert.equal(products.size(), East.value(1n)));
+
+        $(sqlite_close(conn));
+    });
+
+    test("select with parameters", $ => {
+        const config = $.let({
+            path: ":memory:",
+            readOnly: variant('none', null),
+            memory: variant('some', true),
+        });
+
+        const conn = $.let(sqlite_connect(config));
+
+        // Create and populate table
+        $(sqlite_query(conn, "CREATE TABLE orders (id INTEGER, customer TEXT, total REAL)", []));
+        $(sqlite_query(conn, "INSERT INTO orders VALUES (1, 'Alice', 50.00)", []));
+        $(sqlite_query(conn, "INSERT INTO orders VALUES (2, 'Bob', 75.50)", []));
+        $(sqlite_query(conn, "INSERT INTO orders VALUES (3, 'Alice', 25.00)", []));
+
+        const OrderType = StructType({
+            id: IntegerType,
+            customer: StringType,
+            total: FloatType,
+        });
+
+        // Query with parameter
+        const aliceOrders = $.let(sqlite_select([OrderType], conn,
+            "SELECT id, customer, total FROM orders WHERE customer = ?",
+            [variant("String", "Alice")]
+        ));
+
+        // Alice has 2 orders
+        $(Assert.equal(aliceOrders.size(), East.value(2n)));
+
+        $(sqlite_close(conn));
+    });
+
+    test("select with LIMIT returns correct count", $ => {
+        const config = $.let({
+            path: ":memory:",
+            readOnly: variant('none', null),
+            memory: variant('some', true),
+        });
+
+        const conn = $.let(sqlite_connect(config));
+
+        // Create and populate table with many rows
+        $(sqlite_query(conn, "CREATE TABLE items (id INTEGER, value TEXT)", []));
+        $(sqlite_query(conn, "INSERT INTO items VALUES (1, 'a'), (2, 'b'), (3, 'c'), (4, 'd'), (5, 'e')", []));
+
+        const ItemType = StructType({
+            id: IntegerType,
+            value: StringType,
+        });
+
+        // Query with LIMIT
+        const items = $.let(sqlite_select([ItemType], conn, "SELECT id, value FROM items LIMIT 3", []));
+
+        // Should return exactly 3 rows
+        $(Assert.equal(items.size(), East.value(3n)));
+
+        $(sqlite_close(conn));
+    });
+
+    test("select empty result returns empty array", $ => {
+        const config = $.let({
+            path: ":memory:",
+            readOnly: variant('none', null),
+            memory: variant('some', true),
+        });
+
+        const conn = $.let(sqlite_connect(config));
+
+        // Create empty table
+        $(sqlite_query(conn, "CREATE TABLE empty_table (id INTEGER, name TEXT)", []));
+
+        const RowType = StructType({
+            id: IntegerType,
+            name: StringType,
+        });
+
+        // Query empty table
+        const rows = $.let(sqlite_select([RowType], conn, "SELECT id, name FROM empty_table", []));
+
+        // Should return empty array
+        $(Assert.equal(rows.size(), East.value(0n)));
+
+        $(sqlite_close(conn));
+    });
+
+    // Error case tests
+
+    test("select throws error when null value encountered for non-optional field", $ => {
+        const config = $.let({
+            path: ":memory:",
+            readOnly: variant('none', null),
+            memory: variant('some', true),
+        });
+
+        const conn = $.let(sqlite_connect(config));
+
+        // Create table and insert row with NULL value
+        $(sqlite_query(conn, "CREATE TABLE nullable_test (id INTEGER, name TEXT)", []));
+        $(sqlite_query(conn, "INSERT INTO nullable_test VALUES (1, NULL)", []));
+
+        // Define row type WITHOUT OptionType for nullable column
+        const RowType = StructType({
+            id: IntegerType,
+            name: StringType,  // Not optional, but column has NULL
+        });
+
+        // Should throw error about null value for required field
+        $(Assert.throws(
+            sqlite_select([RowType], conn, "SELECT id, name FROM nullable_test", []),
+            /null value.*required field.*name.*OptionType/
+        ));
+
+        $(sqlite_close(conn));
+    });
+
+    test("select succeeds when null value encountered for optional field", $ => {
+        const config = $.let({
+            path: ":memory:",
+            readOnly: variant('none', null),
+            memory: variant('some', true),
+        });
+
+        const conn = $.let(sqlite_connect(config));
+
+        // Create table and insert row with NULL value
+        $(sqlite_query(conn, "CREATE TABLE nullable_test2 (id INTEGER, name TEXT)", []));
+        $(sqlite_query(conn, "INSERT INTO nullable_test2 VALUES (1, NULL)", []));
+
+        // Define row type WITH OptionType for nullable column
+        const RowType = StructType({
+            id: IntegerType,
+            name: OptionType(StringType),  // Optional - can handle NULL
+        });
+
+        // Should succeed
+        const rows = $.let(sqlite_select([RowType], conn, "SELECT id, name FROM nullable_test2", []));
+        $(Assert.equal(rows.size(), East.value(1n)));
+
+        $(sqlite_close(conn));
+    });
+
+    test("select throws error when field type does not match column type", $ => {
+        const config = $.let({
+            path: ":memory:",
+            readOnly: variant('none', null),
+            memory: variant('some', true),
+        });
+
+        const conn = $.let(sqlite_connect(config));
+
+        // Create table with INTEGER column
+        $(sqlite_query(conn, "CREATE TABLE type_test (id INTEGER, count INTEGER)", []));
+        $(sqlite_query(conn, "INSERT INTO type_test VALUES (1, 42)", []));
+
+        // Define row type with wrong type for 'count' column (String instead of Integer)
+        const WrongRowType = StructType({
+            id: IntegerType,
+            count: StringType,  // Wrong! Column is INTEGER
+        });
+
+        // Should throw error about type mismatch
+        $(Assert.throws(
+            sqlite_select([WrongRowType], conn, "SELECT id, count FROM type_test", []),
+            /Type mismatch.*count.*INTEGER.*String/
+        ));
 
         $(sqlite_close(conn));
     });

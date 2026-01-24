@@ -12,9 +12,9 @@
  * @packageDocumentation
  */
 
-import { match, BlobType, BooleanType, DateTimeType, East, FloatType, IntegerType, isValueOf, NullType, SortedMap, variant } from "@elaraai/east";
-import type { ValueTypeOf } from "@elaraai/east";
-import type { PlatformFunction } from "@elaraai/east/internal";
+import { match, ArrayType, BlobType, BooleanType, DateTimeType, East, FloatType, IntegerType, isTypeValueEqual, isValueOf, NullType, OptionType, SortedMap, StringType as EastStringType, toEastTypeValue, variant } from "@elaraai/east";
+import type { EastType, StructTypeValue, ValueTypeOf } from "@elaraai/east";
+import type { EastTypeValue, PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 import Database from 'better-sqlite3';
 import { createHandle, getConnection, closeHandle, closeAllHandles } from '../connection/index.js';
@@ -153,6 +153,82 @@ export const sqlite_connect = East.asyncPlatform("sqlite_connect", [SqliteConfig
  * - All queries are synchronous but wrapped in async for consistency
  */
 export const sqlite_query = East.asyncPlatform("sqlite_query", [ConnectionHandleType, StringType, SqlParametersType], SqlResultType);
+
+/**
+ * Executes a SELECT query with user-defined return type.
+ *
+ * Runs a SELECT query against a SQLite database with parameter binding and
+ * returns results as an array of typed rows. The return type is generic,
+ * allowing users to specify the expected row structure for type-safe access.
+ *
+ * This is a generic platform function for the East language, enabling type-safe
+ * SELECT queries in East programs running on Node.js.
+ *
+ * @typeParam T - The expected row type for query results
+ * @param handle - Connection handle from sqlite_connect()
+ * @param sql - SQL SELECT query string with ? placeholders
+ * @param params - Query parameters as SqlParameterType array
+ * @returns Array of rows matching the specified type T
+ *
+ * @throws {EastError} When query fails due to:
+ * - Invalid connection handle (location: "sqlite_select")
+ * - SQL syntax errors (location: "sqlite_select")
+ * - Query is not a SELECT (location: "sqlite_select")
+ * - Type coercion failure (location: "sqlite_select")
+ *
+ * @example
+ * ```ts
+ * import { East, NullType, StructType, StringType, IntegerType, variant } from "@elaraai/east";
+ * import { SQL } from "@elaraai/east-node-io";
+ *
+ * // Define the expected row type
+ * const UserRowType = StructType({
+ *     id: IntegerType,
+ *     name: StringType,
+ *     email: StringType,
+ * });
+ *
+ * const queryUsers = East.function([], NullType, ($) => {
+ *     const config = $.let({
+ *         path: ":memory:",
+ *         readOnly: variant('none', null),
+ *         memory: variant('some', true),
+ *     });
+ *
+ *     const conn = $.let(SQL.SQLite.connect(config));
+ *
+ *     // Create table and insert data
+ *     $(SQL.SQLite.query(conn, "CREATE TABLE users (id INTEGER, name TEXT, email TEXT)", []));
+ *     $(SQL.SQLite.query(conn, "INSERT INTO users VALUES (1, 'Alice', 'alice@example.com')", []));
+ *
+ *     // Query with typed results - returns Array<UserRowType>
+ *     const users = $.let(SQL.SQLite.select([UserRowType], conn,
+ *         "SELECT id, name, email FROM users",
+ *         []
+ *     ));
+ *     // users is typed as Array<{ id: bigint, name: string, email: string }>
+ *
+ *     $(SQL.SQLite.close(conn));
+ *     $.return(null);
+ * });
+ *
+ * const compiled = East.compileAsync(queryUsers.toIR(), SQL.SQLite.Implementation);
+ * await compiled();
+ * ```
+ *
+ * @remarks
+ * - Only SELECT queries are supported (use sqlite_query for INSERT/UPDATE/DELETE)
+ * - Uses `?` placeholders for parameters (not $1, $2 like PostgreSQL)
+ * - Row type T should match the structure of selected columns
+ * - All SQLite data types are mapped to appropriate East types
+ * - NULL values are preserved in the result
+ */
+export const sqlite_select = East.asyncGenericPlatform(
+    "sqlite_select",
+    ["T"],
+    [ConnectionHandleType, StringType, SqlParametersType],
+    ArrayType("T")
+);
 
 /**
  * Closes a SQLite database connection.
@@ -411,6 +487,166 @@ export const SqliteImpl: PlatformFunction[] = [
         } catch (err: any) {
             throw new EastError(`SQLite query failed: ${err.message}`, {
                 location: [{ filename: "sqlite_query", line: 0n, column: 0n }],
+                cause: err
+            });
+        }
+    }),
+
+    sqlite_select.implement((T: EastTypeValue) => async (...args: unknown[]): Promise<unknown> => {
+        const handle = args[0] as string;
+        const sql = args[1] as string;
+        const params = args[2] as ValueTypeOf<typeof SqlParametersType>;
+        const rowType = T as EastType;
+
+        try {
+            const db = await Promise.resolve(getConnection<Database.Database>(handle));
+
+            // Convert East parameters to native values
+            const nativeParams = params.map(convertParamToNative);
+
+            // Prepare the statement
+            const stmt = db.prepare(sql);
+
+            // Verify this is a SELECT query
+            if (!stmt.reader) {
+                throw new EastError('sqlite_select only supports SELECT queries. Use sqlite_query for INSERT/UPDATE/DELETE.', {
+                    location: [{ filename: "sqlite_select", line: 0n, column: 0n }]
+                });
+            }
+
+            // Validate row type is a Struct
+            if (rowType.type !== 'Struct') {
+                throw new EastError(
+                    `Expected row type must be a Struct, got ${rowType.type}`,
+                    { location: [{ filename: "sqlite_select", line: 0n, column: 0n }] }
+                );
+            }
+
+            // Get column metadata
+            const columns = stmt.columns();
+            const columnMetaMap = new Map<string, { type: SqliteColumnType | null }>();
+            for (const col of columns) {
+                columnMetaMap.set(col.name, { type: (col.type?.toUpperCase() as SqliteColumnType) || null });
+            }
+
+            // Validate field types and determine which are OptionTypes
+            // Note: T is EastTypeValue (IR format), not EastType (runtime format)
+            const structTypeValue = rowType as unknown as StructTypeValue;
+            const fieldInfo = new Map<string, { isOption: boolean; expectedBaseType: EastType }>();
+
+            for (const field of structTypeValue.value) {
+                const fieldName = field.name;
+                const fieldType = field.type;
+                const colMeta = columnMetaMap.get(fieldName);
+                if (!colMeta) {
+                    throw new EastError(
+                        `Column '${fieldName}' not found in query result`,
+                        { location: [{ filename: "sqlite_select", line: 0n, column: 0n }] }
+                    );
+                }
+
+                // Determine expected base type from SQLite column type
+                let expectedBaseType: EastType;
+                const colType = colMeta.type;
+                if (colType === 'INTEGER' || colType === 'INT' || colType === 'TINYINT' || colType === 'SMALLINT' ||
+                    colType === 'MEDIUMINT' || colType === 'BIGINT' || colType === 'UNSIGNED BIG INT' ||
+                    colType === 'INT2' || colType === 'INT8') {
+                    expectedBaseType = IntegerType;
+                } else if (colType === 'REAL' || colType === 'DOUBLE' || colType === 'DOUBLE PRECISION' ||
+                           colType === 'FLOAT' || colType === 'NUMERIC' || colType === 'DECIMAL') {
+                    expectedBaseType = FloatType;
+                } else if (colType === 'TEXT' || colType === 'CHARACTER' || colType === 'VARCHAR' ||
+                           colType === 'VARYING CHARACTER' || colType === 'NCHAR' || colType === 'NATIVE CHARACTER' ||
+                           colType === 'NVARCHAR' || colType === 'CLOB' || colType === 'DATE') {
+                    expectedBaseType = EastStringType;
+                } else if (colType === 'DATETIME') {
+                    expectedBaseType = DateTimeType;
+                } else if (colType === 'BLOB') {
+                    expectedBaseType = BlobType;
+                } else if (colType === 'BOOLEAN') {
+                    expectedBaseType = BooleanType;
+                } else {
+                    // Unknown column type - skip type validation, rely on isValueOf later
+                    fieldInfo.set(fieldName, { isOption: false, expectedBaseType: IntegerType });
+                    continue;
+                }
+
+                // Check if field type matches base type or OptionType(base type)
+                const isBase = isTypeValueEqual(fieldType, toEastTypeValue(expectedBaseType));
+                const isOption = isTypeValueEqual(fieldType, toEastTypeValue(OptionType(expectedBaseType)));
+
+                if (!isBase && !isOption) {
+                    throw new EastError(
+                        `Type mismatch for column '${fieldName}': SQLite column is ${colType}, got ${fieldType.type} but expected ${expectedBaseType.type} or OptionType(${expectedBaseType.type})`,
+                        { location: [{ filename: "sqlite_select", line: 0n, column: 0n }] }
+                    );
+                }
+
+                fieldInfo.set(fieldName, { isOption, expectedBaseType });
+            }
+
+            // Execute the query
+            const rawRows: unknown = stmt.all(...nativeParams);
+
+            if (!Array.isArray(rawRows)) {
+                throw new EastError('SQLite all() did not return an array', {
+                    location: [{ filename: "sqlite_select", line: 0n, column: 0n }]
+                });
+            }
+
+            // Convert values based on column metadata and handle nulls
+            const rows = rawRows.map((row: Record<string, any>, rowIndex: number) => {
+                const converted: Record<string, any> = {};
+                for (const [key, value] of Object.entries(row)) {
+                    const info = fieldInfo.get(key);
+                    const colMeta = columnMetaMap.get(key);
+                    const colType = colMeta?.type;
+
+                    if (value === null) {
+                        if (info?.isOption) {
+                            converted[key] = variant('none', null);
+                        } else {
+                            throw new EastError(
+                                `null value at row[${rowIndex}] for required field '${key}' - use OptionType(${info?.expectedBaseType.type ?? 'T'}) for nullable columns`,
+                                { location: [{ filename: "sqlite_select", line: 0n, column: 0n }] }
+                            );
+                        }
+                    } else {
+                        // Convert based on column type
+                        let convertedValue: any;
+                        if (colType === 'INTEGER' || colType === 'INT' || colType === 'TINYINT' ||
+                            colType === 'SMALLINT' || colType === 'MEDIUMINT' || colType === 'BIGINT' ||
+                            colType === 'UNSIGNED BIG INT' || colType === 'INT2' || colType === 'INT8') {
+                            convertedValue = BigInt(value);
+                        } else if (colType === 'DATETIME') {
+                            convertedValue = new Date(value);
+                        } else if (colType === 'BLOB' && Buffer.isBuffer(value)) {
+                            convertedValue = new Uint8Array(value);
+                        } else {
+                            convertedValue = value;
+                        }
+
+                        converted[key] = info?.isOption ? variant('some', convertedValue) : convertedValue;
+                    }
+                }
+                return converted;
+            });
+
+            // Final validation with isValueOf
+            for (let index = 0; index < rows.length; index++) {
+                if (!isValueOf(rows[index], rowType)) {
+                    throw new EastError(
+                        `Type mismatch at row[${index}]: expected ${rowType.type}, got ${typeof rows[index]} (value: ${JSON.stringify(rows[index])})`,
+                        { location: [{ filename: "sqlite_select", line: 0n, column: 0n }] }
+                    );
+                }
+            }
+
+            return rows;
+        } catch (err: any) {
+            if (err instanceof EastError) throw err;
+            throw new EastError(`SQLite select failed: ${err.message}`, {
+                location: [{ filename: "sqlite_select", line: 0n, column: 0n }],
                 cause: err
             });
         }

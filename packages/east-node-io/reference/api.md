@@ -10,6 +10,7 @@ Complete function signatures, types, and arguments for all I/O platform modules.
   - [SQLite](#sqlite)
   - [PostgreSQL](#postgresql)
   - [MySQL](#mysql)
+  - [Microsoft Access](#microsoft-access)
 - [Storage (S3)](#storage-s3)
 - [File Transfer](#file-transfer)
   - [FTP](#ftp)
@@ -41,6 +42,7 @@ import { SQL } from "@elaraai/east-node-io";
 |-----------|-------------|-------------|---------|
 | `connect(config: Expr<SqliteConfigType>): StringExpr` | Open SQLite database connection | - | `SQL.SQLite.connect(config)` |
 | `query(handle: StringExpr, sql: StringExpr, params: Expr<SqlParametersType>): Expr<SqlResultType>` | Execute SQL query | `?` | `SQL.SQLite.query(conn, "SELECT * FROM users WHERE id = ?", [id])` |
+| `select<T>(typeArgs: [T], handle: StringExpr, sql: StringExpr, params: Expr<SqlParametersType>): Expr<ArrayType<T>>` | Execute SELECT with typed results | `?` | `SQL.SQLite.select([UserRowType], conn, "SELECT * FROM users", [])` |
 | `close(handle: StringExpr): NullExpr` | Close database connection | - | `SQL.SQLite.close(conn)` |
 
 **Types:**
@@ -68,6 +70,7 @@ import { SQL } from "@elaraai/east-node-io";
 |-----------|-------------|-------------|---------|
 | `connect(config: Expr<PostgresConfigType>): StringExpr` | Create PostgreSQL connection pool | - | `SQL.Postgres.connect(config)` |
 | `query(handle: StringExpr, sql: StringExpr, params: Expr<SqlParametersType>): Expr<SqlResultType>` | Execute SQL query | `$1`, `$2`, etc. | `SQL.Postgres.query(conn, "SELECT * FROM users WHERE id = $1", [id])` |
+| `select<T>(typeArgs: [T], handle: StringExpr, sql: StringExpr, params: Expr<SqlParametersType>): Expr<ArrayType<T>>` | Execute SELECT with typed results | `$1`, `$2`, etc. | `SQL.Postgres.select([UserRowType], conn, "SELECT * FROM users", [])` |
 | `close(handle: StringExpr): NullExpr` | Close connection pool | - | `SQL.Postgres.close(conn)` |
 
 **Types:**
@@ -95,6 +98,7 @@ import { SQL } from "@elaraai/east-node-io";
 |-----------|-------------|-------------|---------|
 | `connect(config: Expr<MySqlConfigType>): StringExpr` | Create MySQL connection pool | - | `SQL.MySQL.connect(config)` |
 | `query(handle: StringExpr, sql: StringExpr, params: Expr<SqlParametersType>): Expr<SqlResultType>` | Execute SQL query | `?` | `SQL.MySQL.query(conn, "SELECT * FROM users WHERE id = ?", [id])` |
+| `select<T>(typeArgs: [T], handle: StringExpr, sql: StringExpr, params: Expr<SqlParametersType>): Expr<ArrayType<T>>` | Execute SELECT with typed results | `?` | `SQL.MySQL.select([UserRowType], conn, "SELECT * FROM users", [])` |
 | `close(handle: StringExpr): NullExpr` | Close connection pool | - | `SQL.MySQL.close(conn)` |
 
 **Types:**
@@ -107,6 +111,40 @@ SQL.MySQL.Types.Parameters     // ArrayType(SqlParameterType)
 SQL.MySQL.Types.Row            // DictType(String -> SqlParameterType)
 SQL.MySQL.Types.Result         // VariantType({ select, insert, update, delete })
 ```
+
+---
+
+### Microsoft Access
+
+**Import:**
+```typescript
+import { SQL } from "@elaraai/east-node-io";
+```
+
+**Functions:**
+| Signature | Description | Example |
+|-----------|-------------|---------|
+| `open(config: Expr<AccessConfigType>): StringExpr` | Open Access database file | `SQL.Access.open(config)` |
+| `openBlob(config: Expr<AccessBlobConfigType>): StringExpr` | Open Access database from binary data | `SQL.Access.openBlob(config)` |
+| `tables(handle: StringExpr): Expr<AccessTablesResultType>` | List all table names | `SQL.Access.tables(conn)` |
+| `query<T>(typeArgs: [T], handle: StringExpr, options: Expr<AccessQueryOptionsType>): Expr<ArrayType<T>>` | Query table with typed results | `SQL.Access.query([UserRowType], conn, options)` |
+| `close(handle: StringExpr): NullExpr` | Close database connection | `SQL.Access.close(conn)` |
+
+**Types:**
+
+Access types via `SQL.Access.Types`:
+```typescript
+SQL.Access.Types.Config        // StructType({ path, password? })
+SQL.Access.Types.BlobConfig    // StructType({ data: Blob, password? })
+SQL.Access.Types.QueryOptions  // StructType({ table, columns?, rowOffset?, rowLimit? })
+SQL.Access.Types.TablesResult  // StructType({ tables: Array<String> })
+```
+
+**Notes:**
+- Read-only: The mdb-reader library cannot create or modify Access databases
+- Supports Access 97 through Access 2019 (.mdb and .accdb formats)
+- Supports encrypted databases with password option
+- Use `openBlob()` to open databases fetched from URLs without writing to disk
 
 ---
 
