@@ -2,7 +2,7 @@
  * Copyright (c) 2025 Elara AI Pty Ltd
  * Dual-licensed under AGPL-3.0 and commercial license. See LICENSE for details.
  */
-import { East, StringType, IntegerType, BooleanType, DictType, OptionType, VariantType, NullType, StructType, type ValueTypeOf, SortedMap } from "@elaraai/east";
+import { East, StringType, IntegerType, BooleanType, DictType, OptionType, VariantType, NullType, StructType, BlobType, type ValueTypeOf, SortedMap } from "@elaraai/east";
 import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
 
@@ -76,6 +76,35 @@ export const FetchResponse = StructType({
  * ```
  */
 export const fetch_get = East.asyncPlatform("fetch_get", [StringType], StringType);
+
+/**
+ * Performs an HTTP GET request and returns the response body as binary data.
+ *
+ * Makes a simple GET request to the specified URL and returns the response body
+ * as raw bytes (Blob/Uint8Array). Useful for downloading binary files like images,
+ * PDFs, or database files.
+ * Throws an error if the response status is not in the 200-299 range.
+ *
+ * This is a platform function for the East language, enabling binary HTTP GET requests
+ * in East programs running on Node.js.
+ *
+ * @param url - The URL to fetch (must be a valid HTTP/HTTPS URL)
+ * @returns The response body as binary data (Blob)
+ *
+ * @throws {EastError} When request fails:
+ * - Invalid URL
+ * - Network error
+ * - Non-2xx HTTP status code
+ *
+ * @example
+ * ```ts
+ * const downloadFile = East.function([], BlobType, $ => {
+ *     const data = $.let(Fetch.getBytes("https://example.com/file.bin"));
+ *     return data;
+ * });
+ * ```
+ */
+export const fetch_get_bytes = East.asyncPlatform("fetch_get_bytes", [StringType], BlobType);
 
 /**
  * Performs an HTTP POST request with a string body.
@@ -157,6 +186,24 @@ const FetchImpl: PlatformFunction[] = [
             if (err instanceof EastError) throw err;
             throw new EastError(`Failed to fetch ${url}: ${err.message}`, {
                 location: [{ filename: "fetch_get", line: 0n, column: 0n }],
+                cause: err
+            });
+        }
+    }),
+    fetch_get_bytes.implement(async (url: string) => {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new EastError(`HTTP ${response.status}: ${response.statusText}`, {
+                    location: [{ filename: "fetch_get_bytes", line: 0n, column: 0n }]
+                });
+            }
+            const arrayBuffer = await response.arrayBuffer();
+            return new Uint8Array(arrayBuffer);
+        } catch (err: any) {
+            if (err instanceof EastError) throw err;
+            throw new EastError(`Failed to fetch ${url}: ${err.message}`, {
+                location: [{ filename: "fetch_get_bytes", line: 0n, column: 0n }],
                 cause: err
             });
         }
@@ -265,6 +312,29 @@ export const Fetch = {
      * ```
      */
     get: fetch_get,
+
+    /**
+     * Performs an HTTP GET request and returns the response body as binary data.
+     *
+     * Makes a simple GET request to the specified URL and returns the response body
+     * as raw bytes (Blob/Uint8Array). Useful for downloading binary files.
+     * Throws an error if the response status is not in the 200-299 range.
+     *
+     * @param url - The URL to fetch
+     * @returns The response body as binary data (Blob)
+     * @throws {EastError} When request fails or status is not 2xx
+     *
+     * @example
+     * ```ts
+     * const downloadFile = East.function([], BlobType, $ => {
+     *     return Fetch.getBytes("https://example.com/file.bin");
+     * });
+     *
+     * const compiled = await East.compileAsync(downloadFile.toIR(), Fetch.Implementation);
+     * await compiled();  // Returns: binary data as Uint8Array
+     * ```
+     */
+    getBytes: fetch_get_bytes,
 
     /**
      * Performs an HTTP POST request with a string body.

@@ -21,6 +21,7 @@ import {
     StringType,
     IntegerType,
     BooleanType,
+    BlobType,
 } from "@elaraai/east";
 import { LiteralValueType } from "@elaraai/east/internal";
 
@@ -209,3 +210,76 @@ export const SqlResultType = VariantType({
  * @internal
  */
 export const ConnectionHandleType = StringType;
+
+/**
+ * Microsoft Access database connection configuration.
+ *
+ * Configures a connection to a Microsoft Access database file (.mdb or .accdb).
+ */
+export const AccessConfigType = StructType({
+    /**
+     * Path to the Access database file (.mdb or .accdb).
+     */
+    path: StringType,
+
+    /**
+     * Password for encrypted databases.
+     * Optional, only required for password-protected databases.
+     */
+    password: OptionType(StringType),
+});
+
+/**
+ * Microsoft Access database blob configuration.
+ *
+ * Configures opening a Microsoft Access database from binary data (Blob).
+ * Useful for opening databases fetched from URLs without writing to disk.
+ */
+export const AccessBlobConfigType = StructType({
+    /**
+     * Binary data containing the Access database (.mdb or .accdb).
+     */
+    data: BlobType,
+
+    /**
+     * Password for encrypted databases.
+     * Optional, only required for password-protected databases.
+     */
+    password: OptionType(StringType),
+});
+
+/**
+ * Access query options for filtering and pagination.
+ */
+export const AccessQueryOptionsType = StructType({
+    /**
+     * Table name to query (case-sensitive).
+     */
+    table: StringType,
+
+    /**
+     * Specific columns to retrieve.
+     * Optional, defaults to all columns.
+     */
+    columns: OptionType(ArrayType(StringType)),
+
+    /**
+     * Number of rows to skip.
+     * Optional, defaults to 0.
+     */
+    rowOffset: OptionType(IntegerType),
+
+    /**
+     * Maximum number of rows to return.
+     * Optional, defaults to all rows.
+     */
+    rowLimit: OptionType(IntegerType),
+});
+
+/**
+ * Access table list result.
+ */
+export const AccessTablesResultType = StructType({
+    /** Array of table names in the database */
+    tables: ArrayType(StringType),
+});

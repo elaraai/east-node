@@ -16,6 +16,7 @@
 import { SqliteImpl } from "./sql/sqlite.js";
 import { PostgresImpl } from "./sql/postgres.js";
 import { MySqlImpl } from "./sql/mysql.js";
+import { AccessImpl } from "./sql/access.js";
 
 // Storage implementations
 import { S3Impl } from "./storage/s3.js";
@@ -45,6 +46,7 @@ const NodeIOPlatform = [
     ...SqliteImpl,
     ...PostgresImpl,
     ...MySqlImpl,
+    ...AccessImpl,
     ...S3Impl,
     ...FtpImpl,
     ...SftpImpl,

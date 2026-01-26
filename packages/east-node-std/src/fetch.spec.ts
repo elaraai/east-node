@@ -18,6 +18,15 @@ describeEast("Fetch platform functions", (test) => {
         $(Assert.greater(len, 0n));
     });
 
+    test("getBytes fetches binary data from URL", $ => {
+        // Fetch bytes from the /bytes endpoint which returns binary data
+        const response = $.let(Fetch.getBytes("http://localhost:8085/bytes/100"));
+
+        // Response should not be empty (httpbin /bytes/100 returns exactly 100 bytes)
+        const emptyBlob = $.let(new Uint8Array([]));
+        $(Assert.notEqual(response, emptyBlob));
+    });
+
     test("post sends data to URL", $ => {
         const response = $.let(Fetch.post("http://localhost:8085/post", "test data"));
         const len = $.let(response.length());

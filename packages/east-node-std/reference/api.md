@@ -67,7 +67,8 @@ import { Fetch, FetchRequestConfig, FetchMethod } from "@elaraai/east-node-std";
 **Functions:**
 | Signature | Description | Example |
 |-----------|-------------|---------|
-| `get(url: StringExpr \| string): StringExpr` | HTTP GET request, returns body | `Fetch.get("https://api.example.com/data")` |
+| `get(url: StringExpr \| string): StringExpr` | HTTP GET request, returns body as text | `Fetch.get("https://api.example.com/data")` |
+| `getBytes(url: StringExpr \| string): BlobExpr` | HTTP GET request, returns body as binary | `Fetch.getBytes("https://example.com/file.bin")` |
 | `post(url: StringExpr \| string, body: StringExpr \| string): StringExpr` | HTTP POST request, returns body | `Fetch.post(url, jsonData)` |
 | `request(config: Expr<FetchRequestConfig>): Expr<FetchResponse>` | Custom HTTP request | `Fetch.request(config)` |
 
