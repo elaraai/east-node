@@ -47,7 +47,7 @@ Task → What do you need?
     │   ├─ SQL.MySQL (placeholder: ?)
     │   │   └─ .connect(), .query(), .select(), .close()
     │   └─ SQL.Access (read-only, .mdb/.accdb)
-    │       └─ .open(), .openBlob(), .tables(), .query(), .close()
+    │       └─ .open(), .tables(), .query(), .close()
     │
     ├─ NoSQL Database
     │   ├─ NoSQL.Redis (key-value cache)

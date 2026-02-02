@@ -10,34 +10,37 @@
  * Tests compile East functions and run them to validate platform function behavior.
  *
  * The tests fetch a public Access database (Sakila sample) at runtime,
- * making them fully defined in East and exportable to other runtimes.
+ * write it to a temp file, then open it using access_open.
  */
 import { East, IntegerType, OptionType, StringType, StructType, variant } from "@elaraai/east";
-import { describeEast, Assert, NodePlatform, Fetch } from "@elaraai/east-node-std";
-import { access_open_blob, access_tables, access_query, access_close, access_close_all, AccessImpl, AccessBlobConfigType } from "./access.js";
+import { describeEast, Assert, NodePlatform, Fetch, FileSystem } from "@elaraai/east-node-std";
+import { access_open, access_tables, access_query, access_close, access_close_all, AccessImpl } from "./access.js";
+import { AccessConfigType } from "./types.js";
 
 // Public test database: Sakila sample database (Access port)
 // https://github.com/ozzymcduff/sakila-sample-database-ports
 const TEST_DB_URL = "https://raw.githubusercontent.com/ozzymcduff/sakila-sample-database-ports/master/ms-access-sakila-db/access-sakila.mdb";
+const TEST_DB_PATH = "/tmp/east-test-sakila.mdb";
 
-// Define the expected row type for actor table
+// Define the expected row type for actor table (columns are nullable in Sakila)
 const ActorRowType = StructType({
-    actor_id: IntegerType,
-    first_name: StringType,
-    last_name: StringType,
+    actor_id: OptionType(IntegerType),
+    first_name: OptionType(StringType),
+    last_name: OptionType(StringType),
 });
 
 await describeEast("Access platform functions", (test) => {
-    test("open database from blob and list tables", $ => {
-        // Fetch database bytes from URL
+    test("open database from file and list tables", $ => {
+        // Fetch database bytes from URL and write to temp file
         const bytes = $.let(Fetch.getBytes(TEST_DB_URL));
+        $(FileSystem.writeFileBytes(TEST_DB_PATH, bytes));
 
         const config = $.let({
-            data: bytes,
+            path: TEST_DB_PATH,
             password: variant('none', null),
-        }, AccessBlobConfigType);
+        }, AccessConfigType);
 
-        const handle = $.let(access_open_blob(config));
+        const handle = $.let(access_open(config));
 
         // Handle should be non-empty string
         $(Assert.greater(handle.length(), East.value(0n)));
@@ -53,12 +56,14 @@ await describeEast("Access platform functions", (test) => {
 
     test("query actor table returns rows", $ => {
         const bytes = $.let(Fetch.getBytes(TEST_DB_URL));
-        const config = $.let({
-            data: bytes,
-            password: variant('none', null),
-        }, AccessBlobConfigType);
+        $(FileSystem.writeFileBytes(TEST_DB_PATH, bytes));
 
-        const handle = $.let(access_open_blob(config));
+        const config = $.let({
+            path: TEST_DB_PATH,
+            password: variant('none', null),
+        }, AccessConfigType);
+
+        const handle = $.let(access_open(config));
 
         // Query with typed row results, limit to 5 rows
         const options = $.let({
@@ -79,17 +84,19 @@ await describeEast("Access platform functions", (test) => {
 
     test("query with column selection returns rows", $ => {
         const bytes = $.let(Fetch.getBytes(TEST_DB_URL));
+        $(FileSystem.writeFileBytes(TEST_DB_PATH, bytes));
+
         const config = $.let({
-            data: bytes,
+            path: TEST_DB_PATH,
             password: variant('none', null),
-        }, AccessBlobConfigType);
+        }, AccessConfigType);
 
-        const handle = $.let(access_open_blob(config));
+        const handle = $.let(access_open(config));
 
-        // Query with specific columns only
+        // Query with specific columns only (columns are nullable)
         const PartialActorType = StructType({
-            actor_id: IntegerType,
-            first_name: StringType,
+            actor_id: OptionType(IntegerType),
+            first_name: OptionType(StringType),
         });
 
         const options = $.let({
@@ -110,12 +117,14 @@ await describeEast("Access platform functions", (test) => {
 
     test("query with pagination returns correct count", $ => {
         const bytes = $.let(Fetch.getBytes(TEST_DB_URL));
-        const config = $.let({
-            data: bytes,
-            password: variant('none', null),
-        }, AccessBlobConfigType);
+        $(FileSystem.writeFileBytes(TEST_DB_PATH, bytes));
 
-        const handle = $.let(access_open_blob(config));
+        const config = $.let({
+            path: TEST_DB_PATH,
+            password: variant('none', null),
+        }, AccessConfigType);
+
+        const handle = $.let(access_open(config));
 
         // Query with offset and limit
         const options = $.let({
@@ -137,12 +146,14 @@ await describeEast("Access platform functions", (test) => {
 
     test("query throws error when field type does not match column type", $ => {
         const bytes = $.let(Fetch.getBytes(TEST_DB_URL));
-        const config = $.let({
-            data: bytes,
-            password: variant('none', null),
-        }, AccessBlobConfigType);
+        $(FileSystem.writeFileBytes(TEST_DB_PATH, bytes));
 
-        const handle = $.let(access_open_blob(config));
+        const config = $.let({
+            path: TEST_DB_PATH,
+            password: variant('none', null),
+        }, AccessConfigType);
+
+        const handle = $.let(access_open(config));
 
         // Define row type with wrong type for 'actor_id' column (String instead of Integer)
         const WrongActorType = StructType({
@@ -169,12 +180,14 @@ await describeEast("Access platform functions", (test) => {
 
     test("query throws error when column not found", $ => {
         const bytes = $.let(Fetch.getBytes(TEST_DB_URL));
-        const config = $.let({
-            data: bytes,
-            password: variant('none', null),
-        }, AccessBlobConfigType);
+        $(FileSystem.writeFileBytes(TEST_DB_PATH, bytes));
 
-        const handle = $.let(access_open_blob(config));
+        const config = $.let({
+            path: TEST_DB_PATH,
+            password: variant('none', null),
+        }, AccessConfigType);
+
+        const handle = $.let(access_open(config));
 
         // Define row type with non-existent column
         // Note: actor_id is nullable in this database, so use OptionType

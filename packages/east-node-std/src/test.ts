@@ -177,7 +177,12 @@ export function describeEast(
 
                     // Wrap test body in try-finally so afterEach runs even on failure
                     if (options?.afterEach) {
-                        $test.try(body).finally(options.afterEach);
+                        $test.try(body)
+                            .catch(($catch, message) => {
+                                // Re-throw the error after finally runs
+                                $catch.error(message);
+                            })
+                            .finally(options.afterEach);
                     } else {
                         body($test);
                     }

@@ -134,7 +134,7 @@ const rowCount = compiled(xlsxBlob);  // 100n
 - **SQLite**: `connect`, `query`, `select`, `close`
 - **PostgreSQL**: `connect`, `query`, `select`, `close`
 - **MySQL**: `connect`, `query`, `select`, `close`
-- **Access**: `open`, `openBlob`, `tables`, `query`, `close` (read-only, .mdb/.accdb)
+- **Access**: `open`, `tables`, `query`, `close` (read-only, .mdb/.accdb)
 
 ### Storage
 

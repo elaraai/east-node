@@ -125,7 +125,6 @@ import { SQL } from "@elaraai/east-node-io";
 | Signature | Description | Example |
 |-----------|-------------|---------|
 | `open(config: Expr<AccessConfigType>): StringExpr` | Open Access database file | `SQL.Access.open(config)` |
-| `openBlob(config: Expr<AccessBlobConfigType>): StringExpr` | Open Access database from binary data | `SQL.Access.openBlob(config)` |
 | `tables(handle: StringExpr): Expr<AccessTablesResultType>` | List all table names | `SQL.Access.tables(conn)` |
 | `query<T>(typeArgs: [T], handle: StringExpr, options: Expr<AccessQueryOptionsType>): Expr<ArrayType<T>>` | Query table with typed results | `SQL.Access.query([UserRowType], conn, options)` |
 | `close(handle: StringExpr): NullExpr` | Close database connection | `SQL.Access.close(conn)` |
@@ -135,7 +134,6 @@ import { SQL } from "@elaraai/east-node-io";
 Access types via `SQL.Access.Types`:
 ```typescript
 SQL.Access.Types.Config        // StructType({ path, password? })
-SQL.Access.Types.BlobConfig    // StructType({ data: Blob, password? })
 SQL.Access.Types.QueryOptions  // StructType({ table, columns?, rowOffset?, rowLimit? })
 SQL.Access.Types.TablesResult  // StructType({ tables: Array<String> })
 ```
@@ -144,7 +142,6 @@ SQL.Access.Types.TablesResult  // StructType({ tables: Array<String> })
 - Read-only: The mdb-reader library cannot create or modify Access databases
 - Supports Access 97 through Access 2019 (.mdb and .accdb formats)
 - Supports encrypted databases with password option
-- Use `openBlob()` to open databases fetched from URLs without writing to disk
 
 ---
 

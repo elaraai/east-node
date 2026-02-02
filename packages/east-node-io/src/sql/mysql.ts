@@ -665,16 +665,7 @@ export const MySqlImpl: PlatformFunction[] = [
                 return converted;
             });
 
-            // Final validation with isValueOf
-            for (let index = 0; index < rows.length; index++) {
-                if (!isValueOf(rows[index], rowType)) {
-                    throw new EastError(
-                        `Type mismatch at row[${index}]: expected ${rowType.type}, got ${typeof rows[index]} (value: ${JSON.stringify(rows[index])})`,
-                        { location: [{ filename: "mysql_select", line: 0n, column: 0n }] }
-                    );
-                }
-            }
-
+            // Type validation is already done field-by-field above during column metadata validation
             return rows;
         } catch (err: any) {
             if (err instanceof EastError) throw err;

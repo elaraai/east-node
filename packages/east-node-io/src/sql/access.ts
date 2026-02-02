@@ -32,14 +32,10 @@ import { readFileSync } from 'fs';
 import { createHandle, getConnection, closeHandle, closeAllHandles } from '../connection/index.js';
 import {
     AccessConfigType,
-    AccessBlobConfigType,
     AccessQueryOptionsType,
     AccessTablesResultType,
     ConnectionHandleType,
 } from './types.js';
-
-// Re-export types for direct imports
-export { AccessBlobConfigType } from './types.js';
 
 /**
  * Opens a Microsoft Access database file.
@@ -87,53 +83,6 @@ export { AccessBlobConfigType } from './types.js';
  * - Database file is read entirely into memory on open
  */
 export const access_open = East.asyncPlatform("access_open", [AccessConfigType], ConnectionHandleType);
-
-/**
- * Opens a Microsoft Access database from binary data.
- *
- * Opens an Access database from in-memory binary data (Blob) and returns an opaque
- * handle for use in queries. Useful for opening databases fetched from URLs without
- * writing to disk.
- *
- * This is a platform function for the East language, enabling Access database
- * read operations in East programs running on Node.js.
- *
- * @param config - Access blob configuration with data and optional password
- * @returns Connection handle (opaque string)
- *
- * @throws {EastError} When open fails due to:
- * - Invalid database format (location: "access_open_blob")
- * - Invalid password for encrypted database (location: "access_open_blob")
- * - Unsupported database format (location: "access_open_blob")
- *
- * @example
- * ```ts
- * import { East, NullType, variant } from "@elaraai/east";
- * import { SQL } from "@elaraai/east-node-io";
- * import { Fetch } from "@elaraai/east-node-std";
- *
- * const openFromUrl = East.function([], NullType, ($) => {
- *     // Fetch database bytes from URL
- *     const bytes = $.let(Fetch.getBytes("https://example.com/database.mdb"));
- *
- *     const config = $.let({
- *         data: bytes,
- *         password: variant('none', null),
- *     });
- *
- *     const conn = $.let(SQL.Access.openBlob(config));
- *     const tables = $.let(SQL.Access.tables(conn));
- *     $(SQL.Access.close(conn));
- *     $.return(null);
- * });
- * ```
- *
- * @remarks
- * - Access databases are read-only (mdb-reader does not support writes)
- * - Supports encrypted databases with password option
- * - No file system access required
- */
-export const access_open_blob = East.asyncPlatform("access_open_blob", [AccessBlobConfigType], ConnectionHandleType);
 
 /**
  * Lists all table names in an Access database.
@@ -329,30 +278,6 @@ export const AccessImpl: PlatformFunction[] = [
         }
     }),
 
-    access_open_blob.implement(async (config: ValueTypeOf<typeof AccessBlobConfigType>): Promise<string> => {
-        try {
-            const data = config.data;
-            const password = config.password?.type === 'some' ? config.password.value : undefined;
-
-            // Create buffer from Uint8Array
-            const buffer = Buffer.from(data);
-
-            // Create the MDB reader with optional password
-            const readerOptions = password ? { password } : undefined;
-            const reader = new MDBReader(buffer, readerOptions);
-
-            return await Promise.resolve(createHandle(reader, async () => {
-                // mdb-reader doesn't have a close method, but we clean up the handle
-                await Promise.resolve();
-            }));
-        } catch (err: any) {
-            throw new EastError(`Access database open from blob failed: ${err.message}`, {
-                location: [{ filename: "access_open_blob", line: 0n, column: 0n }],
-                cause: err
-            });
-        }
-    }),
-
     access_tables.implement(async (handle: ValueTypeOf<typeof ConnectionHandleType>): Promise<ValueTypeOf<typeof AccessTablesResultType>> => {
         try {
             const reader = await Promise.resolve(getConnection<MDBReader>(handle));
@@ -512,16 +437,7 @@ export const AccessImpl: PlatformFunction[] = [
                 return converted;
             });
 
-            // Validate rows match expected type T
-            for (let index = 0; index < data.length; index++) {
-                if (!isValueOf(data[index], rowType)) {
-                    throw new EastError(
-                        `Type mismatch at row[${index}]: expected ${rowType.type}, got ${typeof data[index]} (value: ${JSON.stringify(data[index])})`,
-                        { location: [{ filename: "access_query", line: 0n, column: 0n }] }
-                    );
-                }
-            }
-
+            // Type validation is already done field-by-field above during column metadata validation
             return data;
         } catch (err: any) {
             if (err instanceof EastError) {

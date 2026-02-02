@@ -46,7 +46,6 @@ import {
 } from "./mysql.js";
 import {
     access_open,
-    access_open_blob,
     access_tables,
     access_query,
     access_close,
@@ -58,7 +57,6 @@ import {
     PostgresConfigType,
     MySqlConfigType,
     AccessConfigType,
-    AccessBlobConfigType,
     AccessQueryOptionsType,
     AccessTablesResultType,
     SqlParameterType,
@@ -747,36 +745,6 @@ export const SQL = {
         open: access_open,
 
         /**
-         * Opens a Microsoft Access database from binary data.
-         *
-         * Opens an Access database from in-memory binary data (Blob) and returns
-         * an opaque handle for use in queries. Useful for opening databases
-         * fetched from URLs without writing to disk.
-         *
-         * @example
-         * ```ts
-         * const openFromUrl = East.function([], NullType, ($) => {
-         *     // Fetch database bytes from URL
-         *     const bytes = $.let(Fetch.getBytes("https://example.com/database.mdb"));
-         *
-         *     const config = $.let({
-         *         data: bytes,
-         *         password: variant('none', null),
-         *     });
-         *
-         *     const conn = $.let(SQL.Access.openBlob(config));
-         *     const tables = $.let(SQL.Access.tables(conn));
-         *     $(SQL.Access.close(conn));
-         *     $.return(null);
-         * });
-         *
-         * const compiled = East.compileAsync(openFromUrl.toIR(), SQL.Access.Implementation);
-         * await compiled();
-         * ```
-         */
-        openBlob: access_open_blob,
-
-        /**
          * Lists all table names in an Access database.
          *
          * Returns an array of normal table names (not system or linked tables).
@@ -907,11 +875,6 @@ export const SQL = {
              * Access connection configuration type.
              */
             Config: AccessConfigType,
-
-            /**
-             * Access blob configuration type (for opening from binary data).
-             */
-            BlobConfig: AccessBlobConfigType,
 
             /**
              * Access query options type.
