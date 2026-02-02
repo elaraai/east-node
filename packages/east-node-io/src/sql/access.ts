@@ -23,7 +23,7 @@
  * @packageDocumentation
  */
 
-import { ArrayType, BlobType, BooleanType, DateTimeType, East, FloatType, IntegerType, isTypeValueEqual, isValueOf, NullType, OptionType, StringType, toEastTypeValue, variant } from "@elaraai/east";
+import { ArrayType, BlobType, BooleanType, DateTimeType, East, FloatType, IntegerType, isTypeValueEqual, NullType, OptionType, StringType, toEastTypeValue, variant } from "@elaraai/east";
 import type { EastType, StructTypeValue, ValueTypeOf } from "@elaraai/east";
 import type { EastTypeValue, PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
