@@ -117,7 +117,7 @@
     "xlsx": "^0.18.5"
   },
   "peerDependencies": {
-    "@elaraai/east": "^0.0.1-beta.31",
+    "@elaraai/east": "^0.0.1-beta.32",
     "@elaraai/east-node-std": "*"
   }
 }

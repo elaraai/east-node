@@ -55,7 +55,7 @@
     "commander": "^14.0.0"
   },
   "peerDependencies": {
-    "@elaraai/east": "^0.0.1-beta.31"
+    "@elaraai/east": "^0.0.1-beta.32"
   },
   "devDependencies": {
     "@types/node": "^22.18.1",
