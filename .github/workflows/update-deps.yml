@@ -33,88 +33,63 @@ jobs:
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Check for @elaraai/east updates
-        id: check_updates
+      - name: Update @elaraai/east
+        id: update
         run: |
-          # Get current version from east-node-std (canonical source)
-          CURRENT_VERSION=$(node -p "require('./packages/east-node-std/package.json').peerDependencies['@elaraai/east']" | sed 's/\^//')
-          echo "current_version=${CURRENT_VERSION}" >> $GITHUB_OUTPUT
+          BEFORE=$(node -p "require('./package-lock.json').packages['node_modules/@elaraai/east'].version")
+          npm update @elaraai/east
+          AFTER=$(node -p "require('./package-lock.json').packages['node_modules/@elaraai/east'].version")
 
-          # Get latest version from npm (check both latest and beta tags)
-          LATEST_STABLE=$(npm view @elaraai/east version 2>/dev/null || echo "")
-          LATEST_BETA=$(npm view @elaraai/east dist-tags.beta 2>/dev/null || echo "")
+          echo "before=${BEFORE}" >> $GITHUB_OUTPUT
+          echo "after=${AFTER}" >> $GITHUB_OUTPUT
 
-          # Determine which version to use based on current version
-          if [[ "$CURRENT_VERSION" == *"beta"* ]]; then
-            # Currently on beta, check for newer beta
-            LATEST_VERSION="${LATEST_BETA}"
-            echo "channel=beta" >> $GITHUB_OUTPUT
-          else
-            # Currently on stable, check for newer stable
-            LATEST_VERSION="${LATEST_STABLE}"
-            echo "channel=latest" >> $GITHUB_OUTPUT
-          fi
-
-          echo "latest_version=${LATEST_VERSION}" >> $GITHUB_OUTPUT
-
-          if [[ -z "$LATEST_VERSION" ]]; then
+          if git diff --quiet package-lock.json; then
             echo "has_updates=false" >> $GITHUB_OUTPUT
-            echo "No version found on npm"
-          elif [[ "$CURRENT_VERSION" == "$LATEST_VERSION" ]]; then
-            echo "has_updates=false" >> $GITHUB_OUTPUT
-            echo "Already on latest: $CURRENT_VERSION"
+            echo "Already on latest: ${BEFORE}"
           else
             echo "has_updates=true" >> $GITHUB_OUTPUT
-            echo "Update available: $CURRENT_VERSION -> $LATEST_VERSION"
+            echo "Update available: ${BEFORE} -> ${AFTER}"
           fi
 
       - name: Create update branch
-        if: steps.check_updates.outputs.has_updates == 'true'
+        if: steps.update.outputs.has_updates == 'true'
         run: |
-          BRANCH_NAME="deps/east-${{ steps.check_updates.outputs.latest_version }}"
+          BRANCH_NAME="deps/east-${{ steps.update.outputs.after }}"
           git checkout -b "$BRANCH_NAME"
           echo "branch_name=${BRANCH_NAME}" >> $GITHUB_ENV
 
-      - name: Update @elaraai/east version
-        if: steps.check_updates.outputs.has_updates == 'true'
-        run: make set-east-version VERSION=${{ steps.check_updates.outputs.latest_version }}
-
-      - name: Cache Docker images
-        if: steps.check_updates.outputs.has_updates == 'true'
-        uses: ScribeMD/docker-cache@0.5.0
-        with:
-          key: docker-${{ runner.os }}-${{ hashFiles('docker-compose.yml') }}
-
-      - name: Install dependencies
-        if: steps.check_updates.outputs.has_updates == 'true'
-        run: npm install
-
       - name: Build
-        if: steps.check_updates.outputs.has_updates == 'true'
+        if: steps.update.outputs.has_updates == 'true'
         run: npm run build
 
       - name: Run linter
-        if: steps.check_updates.outputs.has_updates == 'true'
+        if: steps.update.outputs.has_updates == 'true'
         id: lint
         run: npm run lint
         continue-on-error: true
 
+      - name: Cache Docker images
+        if: steps.update.outputs.has_updates == 'true'
+        uses: ScribeMD/docker-cache@0.5.0
+        with:
+          key: docker-${{ runner.os }}-${{ hashFiles('docker-compose.yml') }}
+
       - name: Start test services
-        if: steps.check_updates.outputs.has_updates == 'true'
+        if: steps.update.outputs.has_updates == 'true'
         run: docker compose up -d --wait
 
       - name: Run tests
-        if: steps.check_updates.outputs.has_updates == 'true'
+        if: steps.update.outputs.has_updates == 'true'
         id: test
         run: npm test
         continue-on-error: true
 
       - name: Stop test services
-        if: steps.check_updates.outputs.has_updates == 'true'
+        if: steps.update.outputs.has_updates == 'true'
         run: docker compose down -v
 
       - name: Determine test status
-        if: steps.check_updates.outputs.has_updates == 'true'
+        if: steps.update.outputs.has_updates == 'true'
         id: test_status
         run: |
           if [[ "${{ steps.lint.outcome }}" == "success" && "${{ steps.test.outcome }}" == "success" ]]; then
@@ -128,29 +103,25 @@ jobs:
           fi
 
       - name: Commit and push
-        if: steps.check_updates.outputs.has_updates == 'true'
+        if: steps.update.outputs.has_updates == 'true'
         run: |
-          git add -A
-          git commit -m "deps: update @elaraai/east to ${{ steps.check_updates.outputs.latest_version }}"
+          git add package-lock.json
+          git commit -m "deps: update @elaraai/east to ${{ steps.update.outputs.after }}"
           git push -u --force origin "${{ env.branch_name }}"
 
       - name: Create Pull Request
-        if: steps.check_updates.outputs.has_updates == 'true'
+        if: steps.update.outputs.has_updates == 'true'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
-          # Create label if it doesn't exist
           gh label create dependencies --color 0366d6 --description "Dependency updates" 2>/dev/null || true
 
-          # Check if PR already exists for this branch
           EXISTING_PR=$(gh pr list --head "${{ env.branch_name }}" --json number --jq '.[0].number' 2>/dev/null || echo "")
 
-          PR_TITLE="${{ steps.test_status.outputs.emoji }} deps: update @elaraai/east to ${{ steps.check_updates.outputs.latest_version }}"
+          PR_TITLE="${{ steps.test_status.outputs.emoji }} deps: update @elaraai/east to ${{ steps.update.outputs.after }}"
           PR_BODY="## Dependency Update
 
-          Updates \`@elaraai/east\` from \`${{ steps.check_updates.outputs.current_version }}\` to \`${{ steps.check_updates.outputs.latest_version }}\`.
-
-          **Channel:** ${{ steps.check_updates.outputs.channel }}
+          Updates \`@elaraai/east\` from \`${{ steps.update.outputs.before }}\` to \`${{ steps.update.outputs.after }}\`.
 
           ### Test Status: ${{ steps.test_status.outputs.emoji }} ${{ steps.test_status.outputs.message }}
 

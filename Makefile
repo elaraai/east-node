@@ -1,4 +1,4 @@
-.PHONY: install build test test-export lint clean services-up services-down set-east-version version-prerelease version-patch version-minor version-major link-local-east unlink-local-east link-cli unlink-cli help
+.PHONY: install build test test-export lint clean services-up services-down version-prerelease version-patch version-minor version-major link-local-east unlink-local-east link-cli unlink-cli help
 
 # Install dependencies
 install:
@@ -35,16 +35,6 @@ services-up:
 # Stop Docker services
 services-down:
 	docker compose down -v
-
-# Update @elaraai/east version across all packages
-# Usage: make set-east-version VERSION=0.0.1-beta.1
-set-east-version:
-ifndef VERSION
-	$(error VERSION is required. Usage: make set-east-version VERSION=0.0.1-beta.1)
-endif
-	@echo "Updating @elaraai/east to version $(VERSION)..."
-	@find . -name "package.json" -exec sed -i 's/"@elaraai\/east": "[^"]*"/"@elaraai\/east": "^$(VERSION)"/g' {} \;
-	@echo "Done. Run 'npm install' to update dependencies."
 
 # Bump all package versions
 version-prerelease:
@@ -100,7 +90,6 @@ help:
 	@echo "clean             - Clean build artifacts"
 	@echo "services-up       - Start Docker services"
 	@echo "services-down     - Stop Docker services"
-	@echo "set-east-version  - Update @elaraai/east version (VERSION=x.y.z)"
 	@echo "version-prerelease - Bump all packages to next prerelease"
 	@echo "version-patch     - Bump all packages patch version"
 	@echo "version-minor     - Bump all packages minor version"
