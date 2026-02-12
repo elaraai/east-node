@@ -1,6 +1,6 @@
 {
   "name": "@elaraai/east-node-io",
-  "version": "0.0.1-beta.22",
+  "version": "0.0.1-beta.23",
   "description": "I/O platform functions for the East language on Node.js",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -87,7 +87,7 @@
     "node": ">=22.0.0"
   },
   "devDependencies": {
-    "@elaraai/east-node-std": "^0.0.1-beta.23",
+    "@elaraai/east-node-std": "^0.0.1-beta.24",
     "@types/adm-zip": "^0.5.7",
     "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^22.18.1",
