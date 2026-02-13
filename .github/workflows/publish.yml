@@ -138,14 +138,6 @@ jobs:
           fi
           echo "new_version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
-      # Update workspace dependencies before publish
-      - name: Update east-node-io workspace dependency
-        if: ${{ inputs.publish_east_node_io && inputs.publish_east_node_std }}
-        run: |
-          EAST_NODE_STD_VERSION=$(node -p "require('./packages/east-node-std/package.json').version")
-          cd packages/east-node-io
-          npm pkg set "devDependencies.@elaraai/east-node-std=^${EAST_NODE_STD_VERSION}"
-
       # Commit all version bumps
       - name: Commit version bumps
         run: |
