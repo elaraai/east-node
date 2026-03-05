@@ -193,7 +193,7 @@ export const Storage = {
          *         endpoint: variant('none', null),
          *     });
          *
-         *     $.return(Storage.S3.listObjects(config, prefix, 100n));
+         *     $.return(Storage.S3.listObjects(config, prefix, 100n, none));
          * });
          *
          * const compiled = East.compileAsync(listFiles.toIR(), Storage.S3.Implementation);
