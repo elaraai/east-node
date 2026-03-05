@@ -12,7 +12,7 @@
  * @packageDocumentation
  */
 
-import { East, BlobType, StringType, IntegerType, NullType, variant } from "@elaraai/east";
+import { East, BlobType, StringType, IntegerType, NullType, OptionType, variant } from "@elaraai/east";
 import type { ValueTypeOf } from "@elaraai/east";
 import type { PlatformFunction } from "@elaraai/east/internal";
 import { EastError } from "@elaraai/east/internal";
@@ -23,6 +23,7 @@ import {
     DeleteObjectCommand,
     ListObjectsV2Command,
     HeadObjectCommand,
+    type ListObjectsV2CommandInput,
     type _Object,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
@@ -267,7 +268,8 @@ export const s3_delete_object = East.asyncPlatform("s3_delete_object", [S3Config
  * Lists objects in an S3 bucket with a prefix.
  *
  * Retrieves metadata for objects matching a prefix, with pagination support.
- * Returns up to `maxKeys` objects per request.
+ * Returns up to `maxKeys` objects per request. Pass a continuation token
+ * from a previous result to fetch the next page.
  *
  * This is a platform function for the East language, enabling S3 object storage
  * operations in East programs running on Node.js.
@@ -275,6 +277,7 @@ export const s3_delete_object = East.asyncPlatform("s3_delete_object", [S3Config
  * @param config - S3 configuration
  * @param prefix - Prefix to filter objects (empty string for all objects)
  * @param maxKeys - Maximum number of objects to return (1-1000)
+ * @param continuationToken - Continuation token from a previous list result for pagination (None for first page)
  * @returns List result with objects and pagination info
  *
  * @throws {EastError} When listing fails due to:
@@ -298,8 +301,12 @@ export const s3_delete_object = East.asyncPlatform("s3_delete_object", [S3Config
  *         endpoint: East.none(),
  *     });
  *
- *     const result = $.let(Storage.S3.listObjects(config, "reports/", 100n));
- *     return result.objects;
+ *     // First page
+ *     const result = $.let(Storage.S3.listObjects(config, "reports/", 100n, East.none()));
+ *
+ *     // Next page using continuation token
+ *     const page2 = $.let(Storage.S3.listObjects(config, "reports/", 100n, result.continuationToken));
+ *     return page2.objects;
  * });
  *
  * const compiled = East.compileAsync(listReports.toIR(), Storage.S3.Implementation);
@@ -308,10 +315,11 @@ export const s3_delete_object = East.asyncPlatform("s3_delete_object", [S3Config
  *
  * @remarks
  * - Returns objects sorted by key (lexicographically)
- * - Use continuationToken from result to fetch next page
+ * - Pass the `continuationToken` from the result to fetch the next page
+ * - When `isTruncated` is false, there are no more pages
  * - maxKeys is clamped to 1-1000 range
  */
-export const s3_list_objects = East.asyncPlatform("s3_list_objects", [S3ConfigType, StringType, IntegerType], S3ListResultType);
+export const s3_list_objects = East.asyncPlatform("s3_list_objects", [S3ConfigType, StringType, IntegerType, OptionType(StringType)], S3ListResultType);
 
 /**
  * Generates a presigned URL for temporary access to an S3 object.
@@ -483,7 +491,8 @@ export const S3Impl: PlatformFunction[] = [
     s3_list_objects.implement(async (
         config: ValueTypeOf<typeof S3ConfigType>,
         prefix: ValueTypeOf<typeof StringType>,
-        maxKeys: ValueTypeOf<typeof IntegerType>
+        maxKeys: ValueTypeOf<typeof IntegerType>,
+        continuationToken: ValueTypeOf<ReturnType<typeof OptionType<typeof StringType>>>
     ): Promise<ValueTypeOf<typeof S3ListResultType>> => {
         try {
             const client = createS3Client(config);
@@ -492,11 +501,14 @@ export const S3Impl: PlatformFunction[] = [
             const maxKeysNum = Number(maxKeys);
             const clampedMaxKeys = Math.max(1, Math.min(1000, maxKeysNum));
 
-            const command = new ListObjectsV2Command({
+            const commandInput: ListObjectsV2CommandInput = {
                 Bucket: config.bucket,
                 Prefix: prefix,
                 MaxKeys: clampedMaxKeys,
-            });
+                ContinuationToken: continuationToken.type === 'some' ? continuationToken.value : undefined,
+            };
+
+            const command = new ListObjectsV2Command(commandInput);
 
             const response = await client.send(command);
 

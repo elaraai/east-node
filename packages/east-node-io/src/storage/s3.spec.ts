@@ -12,7 +12,7 @@
  * Note: These tests require MinIO running on localhost:9000.
  * Run `npm run dev:services` to start Docker containers.
  */
-import { East, variant } from "@elaraai/east";
+import { East, variant, none } from "@elaraai/east";
 import { describeEast, Assert, NodePlatform } from "@elaraai/east-node-std";
 import { s3_put_object, s3_get_object, s3_head_object, s3_delete_object, s3_list_objects, s3_presign_url, S3Impl } from "./s3.js";
 
@@ -121,7 +121,7 @@ await describeEast("S3 platform functions", (test) => {
         $(s3_put_object(config, "list-test/file3.bin", testData));
 
         // List files with prefix
-        const result = $.let(s3_list_objects(config, "list-test/", 100n));
+        const result = $.let(s3_list_objects(config, "list-test/", 100n, none));
 
         // Should have at least 3 objects
         $(Assert.greaterEqual(result.objects.size(), East.value(3n)));
@@ -130,6 +130,36 @@ await describeEast("S3 platform functions", (test) => {
         $(s3_delete_object(config, "list-test/file1.bin"));
         $(s3_delete_object(config, "list-test/file2.bin"));
         $(s3_delete_object(config, "list-test/file3.bin"));
+    });
+
+    test("listObjects paginates with continuation token", $ => {
+        console.log("listObjects paginates with continuation token");
+
+        const config = $.let(TEST_CONFIG);
+        const testData = $.let(new Uint8Array([1, 2, 3]));
+
+        // Upload 3 files
+        $(s3_put_object(config, "page-test/file1.bin", testData));
+        $(s3_put_object(config, "page-test/file2.bin", testData));
+        $(s3_put_object(config, "page-test/file3.bin", testData));
+
+        // First page: maxKeys=2
+        const page1 = $.let(s3_list_objects(config, "page-test/", 2n, none));
+        // With 3 uploaded objects and maxKeys=2, the first page must contain exactly 2 objects
+        $(Assert.equal(page1.objects.size(), East.value(2n)));
+        $(Assert.equal(page1.isTruncated, true));
+        // When truncated, a continuation token must be provided
+        $(Assert.notEqual(page1.continuationToken, none));
+
+        // Second page using continuation token
+        const page2 = $.let(s3_list_objects(config, "page-test/", 2n, page1.continuationToken));
+        // The second page should contain the remaining single object
+        $(Assert.equal(page2.objects.size(), East.value(1n)));
+
+        // Clean up
+        $(s3_delete_object(config, "page-test/file1.bin"));
+        $(s3_delete_object(config, "page-test/file2.bin"));
+        $(s3_delete_object(config, "page-test/file3.bin"));
     });
 
     test("listObjects respects maxKeys limit", $ => {
@@ -144,7 +174,7 @@ await describeEast("S3 platform functions", (test) => {
         $(s3_put_object(config, "maxkeys-test/file3.bin", testData));
 
         // List with maxKeys=2
-        const result = $.let(s3_list_objects(config, "maxkeys-test/", 2n));
+        const result = $.let(s3_list_objects(config, "maxkeys-test/", 2n, none));
 
         // Should return at most 2 objects
         $(Assert.lessEqual(result.objects.size(), East.value(2n)));
@@ -214,7 +244,7 @@ await describeEast("S3 platform functions", (test) => {
         $(s3_put_object(config, "root-level-file.bin", testData));
 
         // List all objects (empty prefix)
-        const result = $.let(s3_list_objects(config, "", 1000n));
+        const result = $.let(s3_list_objects(config, "", 1000n, none));
 
         // Should have at least 1 object
         $(Assert.greaterEqual(result.objects.size(), East.value(1n)));
@@ -233,7 +263,7 @@ await describeEast("S3 platform functions", (test) => {
         $(s3_put_object(config, "metadata-test.bin", testData));
 
         // List to get metadata
-        const result = $.let(s3_list_objects(config, "metadata-test.bin", 10n));
+        const result = $.let(s3_list_objects(config, "metadata-test.bin", 10n, none));
 
         // Should have exactly 1 object
         $(Assert.equal(result.objects.size(), East.value(1n)));
