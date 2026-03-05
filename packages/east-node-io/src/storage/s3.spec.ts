@@ -145,12 +145,16 @@ await describeEast("S3 platform functions", (test) => {
 
         // First page: maxKeys=2
         const page1 = $.let(s3_list_objects(config, "page-test/", 2n, none));
-        $(Assert.lessEqual(page1.objects.size(), East.value(2n)));
+        // With 3 uploaded objects and maxKeys=2, the first page must contain exactly 2 objects
+        $(Assert.equal(page1.objects.size(), East.value(2n)));
         $(Assert.equal(page1.isTruncated, true));
+        // When truncated, a continuation token must be provided
+        $(Assert.notEqual(page1.continuationToken, none));
 
         // Second page using continuation token
         const page2 = $.let(s3_list_objects(config, "page-test/", 2n, page1.continuationToken));
-        $(Assert.greaterEqual(page2.objects.size(), East.value(1n)));
+        // The second page should contain the remaining single object
+        $(Assert.equal(page2.objects.size(), East.value(1n)));
 
         // Clean up
         $(s3_delete_object(config, "page-test/file1.bin"));
