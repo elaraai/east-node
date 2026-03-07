@@ -1,4 +1,4 @@
-.PHONY: install build test test-export lint clean services-up services-down version-prerelease version-patch version-minor version-major link-local-east unlink-local-east link-cli unlink-cli help
+.PHONY: update install build test test-export lint clean services-up services-down version-prerelease version-patch version-minor version-major link-local-east unlink-local-east link-cli unlink-cli help
 
 # Install dependencies
 install:
@@ -7,6 +7,10 @@ install:
 # Build the project
 build:
 	npm run build
+
+# Update @elaraai dependencies (including transitive)
+update:
+	$(NVM) npm update @elaraai/east
 
 # Run all tests
 test:
