@@ -973,4 +973,4 @@ export const Random = {
 } as const;
 
 // Export RandomImpl for backwards compatibility
-export { RandomImpl };
+export { RandomImpl, XorShift128RNG };

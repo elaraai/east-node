@@ -7,7 +7,7 @@ import util from "node:util";
 import { test as testNode, describe as describeNode } from "node:test";
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { AsyncFunctionType, East, Expr, get_location, IRType, NullType, printLocations, StringType, toJSONFor, type SubtypeExprOrValue } from "@elaraai/east";
+import { AsyncFunctionType, East, Expr, get_location, IRType, NullType, printLocations, StringType, toJSONFor, type SubtypeExprOrValue, type ExampleDef } from "@elaraai/east";
 import type { BlockBuilder, PlatformFunction, TypeSymbol } from "@elaraai/east/internal";
 
 const { str } = East;
@@ -461,5 +461,29 @@ export const Assert = {
         const location = get_location();
         const message_expr = Expr.from(message, StringType);
         return testFail(str`${message_expr} (${printLocations(location)})`);
-    }
+    },
+
+    /**
+     * Runs all examples as tests, calling each with its inputs and asserting the result equals returns.
+     *
+     * @param test - The test function from describeEast's builder
+     * @param examples - A record of named ExampleDef exports (e.g. `import * as examples from "./array.examples.js"`)
+     */
+    examples(
+        test: (name: string, body: ($: BlockBuilder<NullType>) => void) => void,
+        examples: Record<string, ExampleDef>,
+    ): void {
+        for (const ex of Object.values(examples)) {
+            if (ex.returns !== undefined) {
+                test(ex.description, $ => {
+                    const result = $.let(ex.fn(...ex.inputs));
+                    $(Assert.equal(result, ex.returns));
+                });
+            } else {
+                test(ex.description, $ => {
+                    $(ex.fn(...ex.inputs));
+                });
+            }
+        }
+    },
 };
