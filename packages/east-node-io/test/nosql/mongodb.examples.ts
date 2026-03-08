@@ -9,7 +9,7 @@ import { NoSQL } from "@elaraai/east-node-io";
 const mongoConfig = {
     uri: "mongodb://testuser:testpass@localhost:27017",
     database: "test",
-    collection: "east_examples",
+    collection: "east_test",
 };
 
 export const mongodbConnect = example({
