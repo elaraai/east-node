@@ -1,6 +1,6 @@
 {
   "name": "@elaraai/east-node-std",
-  "version": "0.0.1-beta.35",
+  "version": "0.0.1-beta.36",
   "description": "East Node - Node.js platform integration for East language",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
@@ -26,12 +26,10 @@
   "scripts": {
     "build": "tsc",
     "package": "npm run build && mkdir -p .package && npm pack --pack-destination .package",
-
     "test": "npm run build && node --enable-source-maps --test 'dist/test/**/*.spec.js'",
     "test:check": "tsc -p tsconfig.test.json",
     "test:coverage": "npm run build && node --enable-source-maps --test --experimental-test-coverage 'dist/test/**/*.spec.js'",
     "test:export": "npm run build && EXPORT_TEST_IR=/tmp/east-node-std npm test 2>&1 | grep 'Exported test IR'",
-
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "version:patch": "npm version patch -m 'chore: bump version to %s'",
@@ -80,7 +78,6 @@
     "@typescript-eslint/parser": "^8.42.0",
     "eslint": "^9.34.0",
     "eslint-plugin-headers": "^1.3.3",
-
     "typescript": "~5.9.2"
   },
   "peerDependencies": {
