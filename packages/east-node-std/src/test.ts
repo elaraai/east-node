@@ -481,7 +481,7 @@ export const Assert = {
                 });
             } else {
                 test(ex.description, $ => {
-                    $(ex.fn(...ex.inputs));
+                    $.let(ex.fn(...ex.inputs));
                 });
             }
         }
