@@ -1,4 +1,4 @@
-.PHONY: update install build test test-export lint clean services-up services-down version-prerelease version-patch version-minor version-major link-local-east unlink-local-east link-cli unlink-cli help
+.PHONY: update install build test test-export lint clean services-up services-down version-prerelease version-patch version-minor version-major link unlink link-local-east unlink-local-east link-cli unlink-cli help
 
 # Install dependencies
 install:
@@ -52,6 +52,14 @@ version-minor:
 
 version-major:
 	npm run version:all:major
+
+# Register all workspace packages globally so sibling repos can npm link them
+link:
+	npm link --workspaces
+
+# Unregister
+unlink:
+	npm unlink --workspaces
 
 # Link local east package for development/testing
 # Usage: make link-local-east EAST_PATH=../east
