@@ -94,10 +94,10 @@ export async function runProgram(
             console.error(`Writing output to: ${outputPath}`);
         }
 
-        // Get output type from the IR
+        // Get output type from the IR's function type signature
         const outputType = ir.type === 'Function'
-            ? (ir as ValueTypeOf<FunctionIR>).value.output
-            : (ir as ValueTypeOf<AsyncFunctionIR>).value.output;
+            ? (ir as ValueTypeOf<FunctionIR>).value.type.value.output
+            : (ir as ValueTypeOf<AsyncFunctionIR>).value.type.value.output;
 
         writeOutput(outputPath, result, outputType);
         return undefined;
