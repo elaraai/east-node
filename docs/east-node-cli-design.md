@@ -233,6 +233,7 @@ Arguments:
 
 Options:
   -p, --package <package>   Platform package providing functions (can be repeated)
+  -l, --link <file>          Module .beast2 file to link (can be repeated)
   -i, --input <file>         Input data file (can be repeated, order matches function parameters)
   -o, --output <file>        Output file path for result
   -v, --verbose              Enable verbose output
@@ -248,6 +249,12 @@ east-node run ./program.beast2 -p @elaraai/east-node-std
 east-node run ./db-query.beast2 \
     -p @elaraai/east-node-std \
     -p @elaraai/east-node-io
+
+# Run with linked modules
+east-node run ./program.beast2 \
+    -p @elaraai/east-node-std \
+    -l math-module.beast2 \
+    -l utils-module.beast2
 
 # Run with input files
 east-node run ./transform.beast2 \
@@ -319,7 +326,18 @@ my-platform/
 └── ...
 ```
 
-### 3. Format Detection
+### 3. Module Linking
+
+The `-l, --link` flag loads pre-compiled East module files (`.beast2` format, serialized as `EastModuleType`). Modules contain a symbol table mapping fully-qualified symbol names to their IR. At execution time:
+
+1. Module files are loaded and decoded from `.beast2` format
+2. Symbol tables from all modules are merged (duplicate symbol names are an error)
+3. The merged symbol map is passed to `EastIR.compile()` / `AsyncEastIR.compile()`
+4. The compiler resolves `SymbolIR` nodes in the program by looking up symbols in this map
+
+This is analogous to a C compiler's `-l` flag for linking object files. Modules are self-contained artifacts that can be compiled separately and linked at execution time.
+
+### 4. Format Detection
 
 File formats are detected by extension:
 - `.beast2`, `.beast` → Binary East format (beast2)
@@ -395,6 +413,7 @@ program
     .description('Run an East IR program')
     .argument('<ir_file>', 'Path to IR file (.beast2, .beast, .east, or .json)')
     .option('-p, --package <package...>', 'Platform packages to load (can be repeated)')
+    .option('-l, --link <file...>', 'Module .beast2 files to link (can be repeated)')
     .option('-i, --input <file...>', 'Input data files (order matches function parameters)')
     .option('-o, --output <file>', 'Output file path for result')
     .option('-v, --verbose', 'Enable verbose output')

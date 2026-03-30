@@ -12,7 +12,7 @@ import {
     encodeEastFor,
     encodeJSONFor,
 } from '@elaraai/east';
-import type { PlatformFunction, FunctionIR, AsyncFunctionIR, ValueTypeOf } from '@elaraai/east/internal';
+import type { PlatformFunction, FunctionIR, AsyncFunctionIR, IR, ValueTypeOf } from '@elaraai/east/internal';
 import { loadIR, loadInput } from './loader.js';
 
 /**
@@ -21,6 +21,7 @@ import { loadIR, loadInput } from './loader.js';
  * @param irPath - Path to the IR file
  * @param platformFns - Platform functions to use for execution
  * @param inputPaths - Paths to input data files (order matches function parameters)
+ * @param symbolIRs - Symbol IR definitions from linked modules
  * @param outputPath - Optional path to write the result
  * @param verbose - Enable verbose logging
  * @returns The result of execution (or undefined if written to file)
@@ -29,6 +30,7 @@ export async function runProgram(
     irPath: string,
     platformFns: PlatformFunction[],
     inputPaths: string[],
+    symbolIRs: Map<string, ValueTypeOf<IR>> = new Map(),
     outputPath?: string,
     verbose: boolean = false
 ): Promise<unknown> {
@@ -60,13 +62,14 @@ export async function runProgram(
 
     // Compile and run
     let result: unknown;
+    const symbolValues = new Map<string, unknown>();
 
     if (ir.type === 'Function') {
         if (verbose) {
             console.error('Compiling synchronous function...');
         }
         const eastIR = new EastIR(ir as FunctionIR);
-        const compiled = eastIR.compile(platformFns);
+        const compiled = eastIR.compile(symbolIRs, symbolValues, platformFns);
 
         if (verbose) {
             console.error('Executing...');
@@ -77,7 +80,7 @@ export async function runProgram(
             console.error('Compiling asynchronous function...');
         }
         const asyncEastIR = new AsyncEastIR(ir as AsyncFunctionIR);
-        const compiled = asyncEastIR.compile(platformFns);
+        const compiled = asyncEastIR.compile(symbolIRs, symbolValues, platformFns);
 
         if (verbose) {
             console.error('Executing...');
