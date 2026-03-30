@@ -277,13 +277,7 @@ export function loadModule(filePath: string): Map<string, ValueTypeOf<IR>> {
     const data = readFileSync(filePath);
     const module = decodeModuleFromBeast2(data);
 
-    // Convert the SortedDict to a Map<string, IR>
-    const symbols = new Map<string, ValueTypeOf<IR>>();
-    for (const [name, ir] of module.symbols) {
-        symbols.set(name, ir);
-    }
-
-    return symbols;
+    return module.symbols;
 }
 
 /**
