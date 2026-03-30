@@ -15,7 +15,7 @@ import {
     variant,
 } from '@elaraai/east';
 import type { IR } from '@elaraai/east/internal';
-import { loadModule, loadModules } from './loader.js';
+import { loadModule, loadModules } from '../src/loader.js';
 
 const encodeModule = encodeBeast2For(EastModuleType);
 

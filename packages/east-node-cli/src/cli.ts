@@ -10,7 +10,7 @@ import { loadPlatforms, loadPlatformWithMetadata, loadModules } from './loader.j
 import { runProgram } from './runner.js';
 
 const require = createRequire(import.meta.url);
-const pkg = require('../package.json') as { version: string; name: string };
+const pkg = require('../../package.json') as { version: string; name: string };
 
 interface RunOptions {
     package?: string[];
