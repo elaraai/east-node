@@ -10,3 +10,5 @@ coverage
 !package.json
 !tsconfig.json
 !package-lock.json
+# Local registry (Verdaccio)
+.npmrc
