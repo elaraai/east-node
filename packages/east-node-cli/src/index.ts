@@ -14,7 +14,7 @@ import { createRequire } from 'module';
 import { main } from './cli.js';
 
 const require = createRequire(import.meta.url);
-const pkg = require('../package.json') as { version: string };
+const pkg = require('../../package.json') as { version: string };
 
 export const __version__ = pkg.version;
 export { main };

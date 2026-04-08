@@ -18,8 +18,8 @@ East Node CLI is a TypeScript package that depends on the East language package 
 - `/src` - source code for the CLI
   - `index.ts` - entry point with hashbang
   - `cli.ts` - Commander-based argument parsing
-  - `loader.ts` - IR and platform loading utilities
-  - `runner.ts` - compilation and execution
+  - `loader.ts` - IR, platform, and module loading utilities
+  - `runner.ts` - compilation and execution (supports module linking via symbol maps)
 
 ## Development
 

@@ -8,6 +8,7 @@ import { createRequire } from 'module';
 import { extname } from 'path';
 import {
     IRType,
+    EastModuleType,
     decodeBeast2For,
     decodeBeast2,
     decodeEastFor,
@@ -20,6 +21,9 @@ const require = createRequire(import.meta.url);
 
 // Decoder for IR from beast2 format (self-describing)
 const decodeIRFromBeast2 = decodeBeast2For(IRType);
+
+// Decoder for modules from beast2 format
+const decodeModuleFromBeast2 = decodeBeast2For(EastModuleType);
 
 // Decoder for IR from east text format
 const decodeIRFromEast = decodeEastFor(IRType);
@@ -251,4 +255,53 @@ export function loadInput(filePath: string, type: EastTypeValue): unknown {
             return decoder(data);
         }
     }
+}
+
+/**
+ * Loads a module from a .beast2 file.
+ *
+ * Module files contain serialized `EastModuleType` data: a symbol table
+ * mapping fully-qualified symbol names to their IR, and import metadata.
+ *
+ * @param filePath - Path to the module .beast2 file
+ * @returns Map of symbol names to their IR definitions
+ */
+export function loadModule(filePath: string): Map<string, ValueTypeOf<IR>> {
+    const format = getFileFormat(filePath);
+    if (format !== 'beast2') {
+        throw new Error(
+            `Module files must be in .beast2 format, got "${extname(filePath)}"`
+        );
+    }
+
+    const data = readFileSync(filePath);
+    const module = decodeModuleFromBeast2(data);
+
+    return module.symbols;
+}
+
+/**
+ * Loads and merges symbols from multiple module files.
+ *
+ * @param filePaths - Paths to module .beast2 files
+ * @returns Merged map of all symbol names to their IR definitions
+ * @throws Error if duplicate symbol names are found across modules
+ */
+export function loadModules(filePaths: string[]): Map<string, ValueTypeOf<IR>> {
+    const merged = new Map<string, ValueTypeOf<IR>>();
+
+    for (const filePath of filePaths) {
+        const symbols = loadModule(filePath);
+
+        for (const [name, ir] of symbols) {
+            if (merged.has(name)) {
+                throw new Error(
+                    `Duplicate symbol "${name}" found in module file "${filePath}"`
+                );
+            }
+            merged.set(name, ir);
+        }
+    }
+
+    return merged;
 }

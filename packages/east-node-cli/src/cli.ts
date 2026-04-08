@@ -6,15 +6,16 @@
 import { Command } from 'commander';
 import { createRequire } from 'module';
 import { EastError } from '@elaraai/east/internal';
-import { loadPlatforms, loadPlatformWithMetadata } from './loader.js';
+import { loadPlatforms, loadPlatformWithMetadata, loadModules } from './loader.js';
 import { runProgram } from './runner.js';
 
 const require = createRequire(import.meta.url);
-const pkg = require('../package.json') as { version: string; name: string };
+const pkg = require('../../package.json') as { version: string; name: string };
 
 interface RunOptions {
     package?: string[];
     input?: string[];
+    link?: string[];
     output?: string;
     verbose?: boolean;
 }
@@ -25,6 +26,7 @@ interface VersionOptions {
 
 async function cmdRun(irFile: string, options: RunOptions): Promise<void> {
     const packages = options.package ?? [];
+    const linkFiles = options.link ?? [];
 
     if (packages.length === 0) {
         console.error('Error: At least one platform package is required.');
@@ -41,6 +43,21 @@ async function cmdRun(irFile: string, options: RunOptions): Promise<void> {
 
         if (options.verbose) {
             console.error(`Loaded ${platformFns.length} platform function(s)`);
+        }
+
+        // Load module files for linking
+        let symbolIRs = new Map<string, any>();
+        if (linkFiles.length > 0) {
+            if (options.verbose) {
+                console.error(`Linking ${linkFiles.length} module file(s)...`);
+            }
+            symbolIRs = loadModules(linkFiles);
+            if (options.verbose) {
+                console.error(`Loaded ${symbolIRs.size} symbol(s)`);
+            }
+        }
+
+        if (options.verbose) {
             console.error(`Running: ${irFile}`);
         }
 
@@ -48,6 +65,7 @@ async function cmdRun(irFile: string, options: RunOptions): Promise<void> {
             irFile,
             platformFns,
             options.input ?? [],
+            symbolIRs,
             options.output,
             options.verbose ?? false
         );
@@ -106,6 +124,7 @@ export function main(): void {
         .description('Run an East IR program')
         .argument('<ir_file>', 'Path to IR file (.beast2, .beast, .east, or .json)')
         .option('-p, --package <package...>', 'Platform packages to load (can be repeated)')
+        .option('-l, --link <file...>', 'Module .beast2 files to link (can be repeated)')
         .option('-i, --input <file...>', 'Input data files (order matches function parameters)')
         .option('-o, --output <file>', 'Output file path for result')
         .option('-v, --verbose', 'Enable verbose output')
